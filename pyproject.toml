@@ -14,7 +14,15 @@ dependencies = [
 embgen = "embgen.cli:main"
 
 [dependency-groups]
-dev = ["pre-commit>=4.5.1", "pytest>=9.0.2", "ruff>=0.14.10", "ty>=0.0.5"]
+dev = [
+    "pre-commit>=4.5.1",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "pytest-html>=4.1.1",
+    "pytest-sugar>=1.1.1",
+    "ruff>=0.14.10",
+    "ty>=0.0.5",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -23,8 +31,13 @@ build-backend = "hatchling.build"
 [tool.pytest.ini_options]
 # Force sequential execution (disable any parallel plugins)
 addopts = [
-    "--tb=short",       # Shorter traceback format
-    "--strict-markers", # Require markers to be defined
+    "--tb=short",                              # Shorter traceback format
+    "--strict-markers",                        # Require markers to be defined
+    "--html=reports/test_report.html",         # HTML report output
+    "--self-contained-html",                   # Embed CSS in HTML report
+    "--cov=embgen",                            # Measure coverage for embgen package
+    "--cov-report=html",                       # Generate HTML coverage report
+    "--cov-report=html:reports/coverage_html", # Output HTML coverage report to specific directory
 ]
 # Ensure no parallel execution
 testpaths = ["test"]

@@ -218,3 +218,6 @@ __marimo__/
 
 # Generated files
 generated/
+
+# Reports
+reports/
