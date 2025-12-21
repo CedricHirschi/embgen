@@ -1,0 +1,51 @@
+name: TinyProbeCommands
+commands:
+  - name: ping
+    id: 0
+    description: "Ping the device"
+    args:
+      - name: probe_id
+        default: 1
+        type: B
+        description: "ID of the probe to ping"
+
+  - name: en_replies
+    id: 1
+    description: "Enable or disable replies from the device"
+    args:
+      - name: enable
+        default: true
+        type: B
+        description: "True to enable replies, False to disable"
+
+  - name: switch_spi
+    id: 2
+    description: "Switch the SPI MUX"
+    args:
+      - name: code
+        enums:
+          - { name: PLL, value: 0, description: "PLL" }
+          - { name: FPGA, value: 1, description: "FPGA" }
+          - { name: AFE, value: 2, description: "AFE" }
+          - { name: TX, value: 3, description: "TX" }
+        type: B
+        description: "SPI MUX code"
+
+  - name: write_spi
+    id: 3
+    description: "Write a raw SPI packet"
+    args:
+      - name: data
+        type: s
+        description: "Array of bytes to send over SPI"
+
+  - name: write_fpga
+    id: 4
+    description: "Write to a FPGA register"
+    args:
+      - name: address
+        type: B
+        description: "Address of the FPGA register to write"
+      - name: value
+        type: I
+        description: "Value to write to the FPGA register"

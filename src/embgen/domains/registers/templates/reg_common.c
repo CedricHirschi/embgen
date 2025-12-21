@@ -1,0 +1,44 @@
+#include "reg_common.h"
+
+// Encode header (big-endian, MSB of first byte is R/W)
+void reg_header_encode(reg_header_t *h, uint8_t is_read, reg_field_t addr, reg_field_t length)
+{
+#if REG_FIELD_SIZE == 1
+    h->data[0] = (is_read ? 0x80 : 0x00) | (addr & 0x7F);
+    h->data[1] = length;
+#elif REG_FIELD_SIZE == 2
+    h->data[0] = (is_read ? 0x80 : 0x00) | ((addr >> 8) & 0x7F);
+    h->data[1] = addr & 0xFF;
+    h->data[2] = (length >> 8) & 0xFF;
+    h->data[3] = length & 0xFF;
+#elif REG_FIELD_SIZE == 4
+    h->data[0] = (is_read ? 0x80 : 0x00) | ((addr >> 24) & 0x7F);
+    h->data[1] = (addr >> 16) & 0xFF;
+    h->data[2] = (addr >> 8) & 0xFF;
+    h->data[3] = addr & 0xFF;
+    h->data[4] = (length >> 24) & 0xFF;
+    h->data[5] = (length >> 16) & 0xFF;
+    h->data[6] = (length >> 8) & 0xFF;
+    h->data[7] = length & 0xFF;
+#endif
+}
+
+// Decode header (big-endian)
+void reg_header_decode(const reg_header_t *h, uint8_t *is_read, reg_field_t *addr, reg_field_t *length)
+{
+#if REG_FIELD_SIZE == 1
+    *is_read = (h->data[0] & 0x80) != 0;
+    *addr = h->data[0] & 0x7F;
+    *length = h->data[1];
+#elif REG_FIELD_SIZE == 2
+    *is_read = (h->data[0] & 0x80) != 0;
+    *addr = ((reg_field_t)(h->data[0] & 0x7F) << 8) | h->data[1];
+    *length = ((reg_field_t)h->data[2] << 8) | h->data[3];
+#elif REG_FIELD_SIZE == 4
+    *is_read = (h->data[0] & 0x80) != 0;
+    *addr = ((reg_field_t)(h->data[0] & 0x7F) << 24) | ((reg_field_t)h->data[1] << 16) | ((reg_field_t)h->data[2] << 8) |
+            h->data[3];
+    *length =
+        ((reg_field_t)h->data[4] << 24) | ((reg_field_t)h->data[5] << 16) | ((reg_field_t)h->data[6] << 8) | h->data[7];
+#endif
+}

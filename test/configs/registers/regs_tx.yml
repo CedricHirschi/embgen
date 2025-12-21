@@ -1,0 +1,377 @@
+name: TXRegmap
+file: regs_tx
+regmap:
+  - name: REG_0x00
+    description: Global control register
+    address: 0
+    bitfields:
+      - name: RESET
+        description: Software reset (self-clearing).
+        width: 1
+        offset: 0
+        reset: 0
+        access: wo
+      - name: READ_EN
+        description: Select die for register readback.
+        width: 2
+        offset: 1
+        reset: 0
+        access: wo
+        enums:
+          - { name: NORMAL, value: 0, description: "Normal operation" }
+          - { name: READ_DIE_2, value: 1, description: "Enable register read for die 2" }
+          - { name: READ_DIE_1, value: 2, description: "Enable register read for die 1" }
+      - name: LOAD_PROF
+        description: Load profile data into memory (self-clearing).
+        width: 1
+        offset: 3
+        reset: 0
+        access: wo
+      - name: BURST_WR_EN
+        description: Enables burst mode for register write operation.
+        width: 1
+        offset: 8
+        reset: 0
+        access: wo
+
+  - name: REG_0x01
+    description: Standby control for group 1/2 channels.
+    address: 1
+    bitfields:
+      - name: STNDBY_G2
+        description: Standby all group 2 channels (1=standby).
+        width: 1
+        offset: 0
+        reset: 0
+        access: rw
+      - name: STNDBY_G1
+        description: Standby all group 1 channels (1=standby).
+        width: 1
+        offset: 16
+        reset: 0
+        access: rw
+
+  - name: REG_0x06
+    description: Disable/enable dynamic power mode for die 2.
+    address: 6
+    bitfields:
+      - name: DIS_DYN_CNTRL_2
+        description: 0=Dynamic power mode enabled; 1=disabled (die 2).
+        width: 1
+        offset: 4
+        reset: 0
+        access: rw
+
+  - name: REG_0x0B
+    description: LDO power mode group 1.
+    address: 11
+    bitfields:
+      - name: LDO_MODE_G1
+        description: Floating LDO mode for group 1. Other codes unused.
+        width: 4
+        offset: 22
+        reset: 0
+        access: rw
+        enums:
+          - { name: DEFAULT_PWR, value: 0, description: "Default power mode" }
+          - { name: HIGH_PWR, value: 15, description: "High power mode" }
+
+  - name: REG_0x0C
+    description: T/R switch turn-OFF delay per group (on-chip BF).
+    address: 12
+    bitfields:
+      - name: TR_SW_OFF_DEL_G3
+        description: Turn-OFF delay for channels 17-24.
+        width: 6
+        offset: 0
+        reset: 0
+        access: rw
+      - name: TR_SW_OFF_DEL_G4
+        description: Turn-OFF delay for channels 25-32.
+        width: 6
+        offset: 8
+        reset: 0
+        access: rw
+      - name: TR_SW_OFF_DEL_G1
+        description: Turn-OFF delay for channels 1-8.
+        width: 6
+        offset: 16
+        reset: 0
+        access: rw
+      - name: TR_SW_OFF_DEL_G2
+        description: Turn-OFF delay for channels 9-16.
+        width: 6
+        offset: 24
+        reset: 0
+        access: rw
+
+  - name: REG_0x0F
+    description: Disable/enable dynamic power mode for die 1.
+    address: 15
+    bitfields:
+      - name: DIS_DYN_CNTRL_1
+        description: 0=Dynamic power mode enabled; 1=disabled (die 1).
+        width: 1
+        offset: 4
+        reset: 0
+        access: rw
+
+  - name: REG_0x14
+    description: LDO power mode group 2.
+    address: 20
+    bitfields:
+      - name: LDO_MODE_G2
+        description: Floating LDO mode for group 2. Other codes unused.
+        width: 4
+        offset: 22
+        reset: 0
+        access: rw
+        enums:
+          - { name: DEFAULT_PWR, value: 0, description: "Default power mode" }
+          - { name: HIGH_PWR, value: 15, description: "High power mode" }
+
+  - name: REG_0x15
+    description: T/R switch turn-ON delay (groups 2 & 4).
+    address: 21
+    bitfields:
+      - name: TR_SW_DEL_G4
+        description: Turn-ON delay for channels 25-32. Must be >25 cycles.
+        width: 12
+        offset: 0
+        reset: 256
+        access: rw
+      - name: TR_SW_DEL_G2
+        description: Turn-ON delay for channels 9-16. Must be >25 cycles.
+        width: 12
+        offset: 16
+        reset: 256
+        access: rw
+
+  - name: REG_0x16
+    description: Delay profile select and T/R turn-ON delay (groups 1 & 2).
+    address: 22
+    bitfields:
+      - name: TR_SW_DEL_G2
+        description: Turn-ON delay for channels 17-24. Must be >25 cycles. (TODO verify grouping note)
+        width: 12
+        offset: 0
+        reset: 256
+        access: rw
+      - name: BF_PROF_SEL_G2
+        description: Delay profile select (group 2).
+        width: 4
+        offset: 12
+        reset: 0
+        access: rw
+      - name: TR_SW_DEL_G1
+        description: Turn-ON delay for channels 1-8. Must be >25 cycles.
+        width: 12
+        offset: 16
+        reset: 256
+        access: rw
+      - name: BF_PROF_SEL_G1
+        description: Delay profile select (group 1).
+        width: 4
+        offset: 28
+        reset: 0
+        access: rw
+
+  - name: REG_0x17
+    description: Drive strength, resync control, clock/sync power-down.
+    address: 23
+    bitfields:
+      - name: EN_RESYNC
+        description: Enable re-synchronization (when MUX_SEL=1).
+        width: 1
+        offset: 0
+        reset: 0
+        access: rw
+      - name: EN_RESYNC_MUX_SEL
+        description: 0=RESYNC pin controls; 1=EN_RESYNC bit controls.
+        width: 1
+        offset: 1
+        reset: 0
+        access: rw
+      - name: DRV_SEL
+        description: Output transistor drive current (requires DRV_MUX_SEL=1).
+        width: 2
+        offset: 2
+        reset: 0
+        access: rw
+        enums:
+          - { name: CURRENT_1A, value: 0, description: "1 A" }
+          - { name: CURRENT_0P75A, value: 1, description: "0.75 A" }
+          - { name: CURRENT_0P5A, value: 2, description: "0.5 A" }
+          - { name: CURRENT_0P25A, value: 3, description: "0.25 A" }
+      - name: DRV_MUX_SEL
+        description: 0=Drive via DSEL_0/1 pins; 1=Drive via DRV_SEL bits.
+        width: 1
+        offset: 4
+        reset: 0
+        access: rw
+      - name: PDN_CLK_SYNC_2
+        description: Power-down clock & sync buffer for die 2 (1=power-down).
+        width: 1
+        offset: 9
+        reset: 0
+        access: rw
+      - name: PDN_CLK_SYNC_1
+        description: Power-down clock & sync buffer for die 1 (1=power-down).
+        width: 1
+        offset: 10
+        reset: 0
+        access: rw
+
+  - name: REG_0x18
+    description: On-chip BF mode, timing, CW mode, clock division, pattern invert.
+    address: 24
+    bitfields:
+      - name: TX_BF_MODE
+        description: 0=Off-chip BF; 1=On-chip BF.
+        width: 1
+        offset: 0
+        reset: 0
+        access: rw
+      - name: TR_SW_DEL_MODE
+        description: 0=TR-ON delay from TR_BF_SYNC; 1=from end of transmission.
+        width: 1
+        offset: 1
+        reset: 0
+        access: rw
+      - name: CLK_DIV
+        description: Clock division factor for TxBF (see spec).
+        width: 3
+        offset: 3
+        reset: 0
+        access: rw
+      - name: PAT_INV
+        description: Invert output pattern when set.
+        width: 1
+        offset: 6
+        reset: 0
+        access: rw
+      - name: CW_DAMP_CNT
+        description: CW waveform damping duration.
+        width: 3
+        offset: 9
+        reset: 0
+        access: rw
+      - name: CW_EN_2
+        description: CW enable for die 2 (valid if CW_EN_MUX_SEL=1).
+        width: 1
+        offset: 13
+        reset: 0
+        access: rw
+      - name: CW_EN_1
+        description: CW enable for die 1 (valid if CW_EN_MUX_SEL=1).
+        width: 1
+        offset: 14
+        reset: 0
+        access: rw
+      - name: CW_EN_MUX_SEL
+        description: 0=CW enable via pin; 1=via CW_EN_1/2 bits.
+        width: 1
+        offset: 15
+        reset: 0
+        access: rw
+      - name: CW_WAVE_MODE
+        description: CW waveform polarity/mode.
+        width: 2
+        offset: 16
+        reset: 0
+        access: rw
+        enums:
+          - { name: BIPOLAR, value: 0, description: "Bipolar CW" }
+          - { name: POS_ONLY, value: 1, description: "Positive polarity only" }
+          - { name: NEG_ONLY, value: 2, description: "Negative polarity only" }
+      - name: TX_START_DEL
+        description: Transmit start delay (cycles). See spec for timing.
+        width: 9
+        offset: 18
+        reset: 0
+        access: rw
+
+  - name: REG_0x19
+    description: Dynamic LDO mode, elastic mode & repeat/tail count, global PDN.
+    address: 25
+    bitfields:
+      - name: REPEAT_COUNT
+        description: Pattern repeat count.
+        width: 5
+        offset: 1
+        reset: 0
+        access: rw
+      - name: TAIL_COUNT
+        description: Tail count for pattern generator.
+        width: 5
+        offset: 6
+        reset: 0
+        access: rw
+      - name: EN_ELASTIC_MODE
+        description: Enable elastic mode.
+        width: 1
+        offset: 11
+        reset: 0
+        access: rw
+      - name: ELASTIC_REPEAT
+        description: Repeat count for elastic mode.
+        width: 16
+        offset: 12
+        reset: 0
+        access: rw
+      - name: EN_DYN_LDO
+        description: Enable dynamic mode for floating LDOs.
+        width: 1
+        offset: 30
+        reset: 0
+        access: rw
+      - name: PDN_GBL
+        description: Global power-down. See power-mode notes. 
+        width: 1
+        offset: 31
+        reset: 0
+        access: rw
+
+  - name: REG_0x1E
+    description: Pattern select for group 2 channels.
+    address: 30
+    bitfields:
+      - name: PAT_SEL_G2
+        description: Pattern profile index (group 2).
+        width: 6
+        offset: 0
+        reset: 0
+        access: rw
+
+  - name: REG_0x1F
+    description: Pattern select for group 1 channels.
+    address: 31
+    bitfields:
+      - name: PAT_SEL_G1
+        description: Pattern profile index (group 1).
+        width: 6
+        offset: 0
+        reset: 0
+        access: rw
+
+  - name: REG_0x1A
+    description: TR Switch channels disable.
+    address: 26
+    bitfields:
+      - name: TR_SW_DIS
+        description: Disable T/R switch channels (1=disable) (see datasheet for map).
+        width: 32
+        offset: 0
+        reset: 0
+        access: rw
+  
+  - name: REG_0x1B
+    description: Pulser disable.
+    address: 27
+    bitfields:
+      - name: PULSER_DIS
+        description: Disable pulser channels (1=disable) (see datasheet for map).
+        width: 32
+        offset: 0
+        reset: 0
+        access: rw

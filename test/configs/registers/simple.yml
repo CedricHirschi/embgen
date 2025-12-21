@@ -1,0 +1,69 @@
+name: SimpleRegmap
+file: simple
+regmap:
+  - name: CONTROL
+    description: Control register
+    address: 0
+    bitfields:
+      - name: ENABLE
+        description: Enable bit
+        width: 1
+        offset: 0
+        reset: 0
+      - name: MODE
+        description: Operating mode
+        width: 3
+        offset: 1
+        reset: 0
+        enums:
+          - { name: POWER_OFF, value: 0, description: "Device is off" }
+          - { name: NORMAL, value: 1, description: "Device is on" }
+          - { name: STANDBY, value: 2, description: "Device is in standby" }
+          - { name: SLEEP, value: 3, description: "Device is in sleep mode" }
+          - { name: TEST, value: 4, description: "Device is in test mode" }
+      - name: RESET
+        description: Reset bit
+        width: 1
+        offset: 4
+        reset: 0
+      - name: START
+        description: Start operation bit
+        width: 1
+        offset: 5
+        reset: 0
+      - name: STOP
+        description: Stop operation bit
+        width: 1
+        offset: 6
+        reset: 0
+
+  - name: STATUS
+    description: Status register
+    address: 1
+    access: ro
+    bitfields:
+      - name: READY
+        description: Ready status bit
+        width: 1
+        offset: 0
+        reset: 0
+      - name: BUSY
+        description: Busy status bit
+        width: 1
+        offset: 1
+        reset: 0
+      - name: ERROR
+        description: Error flag
+        width: 1
+        offset: 2
+        reset: 0
+
+  - name: DATA
+    description: Data register
+    address: 2
+    bitfields:
+      - name: VALUE
+        description: Data value
+        width: 16
+        offset: 0
+        reset: 0

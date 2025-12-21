@@ -1,0 +1,117 @@
+# Register Map: {{ name }}
+
+> **Auto-generated documentation** - Do not edit manually.
+
+## Summary
+
+| Property | Value |
+|----------|-------|
+| Register Map Name | {{ name }} |
+| Total Registers | {{ regmap|length }} |
+| Address Range | `0x{{ '%02X' % regmap[0].address }}` - `0x{{ '%02X' % regmap[-1].address }}` |
+| Generated On | {{ generated_on }} |
+
+## Table of Contents
+
+| Address | Name | Access | Description |
+|---------|------|--------|-------------|
+{% for register in regmap %}
+| [`0x{{ '%02X' % register.address }}`](#register-0x{{ '%02x' % register.address }}-{{ register.name | lower | replace(' ', '-') }}) | {{ register.name }} | {{ register.access.name }} | {{ register.description or 'No description' }} |
+{% endfor %}
+
+---
+{% for register in regmap %}
+
+## Register `0x{{ '%02X' % register.address }}`: {{ register.name }}
+
+{% if register.description %}
+{{ register.description }}
+{% endif %}
+
+{% set reset_val = namespace(value=0) %}
+{% for field in register.bitfields %}
+{% set reset_val.value = reset_val.value + (field.reset * (2 ** field.offset)) %}
+{% endfor %}
+| Property | Value |
+|----------|-------|
+| Address | `0x{{ '%02X' % register.address }}` |
+| Access | {{ register.access.name }}{% if register.access.name == 'RO' %} (Read Only){% elif register.access.name == 'WO' %} (Write Only){% elif register.access.name == 'RW' %} (Read/Write){% elif register.access.name == 'RWC' %} (Read/Write 1 to Clear){% elif register.access.name == 'WOS' %} (Write Only, Self-clearing){% elif register.access.name == 'ROLH' %} (Read Only, Latch High){% endif %} |
+| Reset Value | `0x{{ '%04X' % reset_val.value }}` |
+
+### Bit Layout
+
+{% set reg_width = 16 %}
+{% set sorted_fields = register.bitfields | sort(attribute='offset', reverse=true) %}
+```
+{% set bit_line = [] %}
+{% set field_line = [] %}
+{% for i in range(reg_width - 1, -1, -1) %}
+{% set ns = namespace(found=false, field_name='') %}
+{% for field in register.bitfields %}
+{% if i >= field.offset and i < field.offset + field.width %}
+{% set ns.found = true %}
+{% set ns.field_name = field.name %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+  Bit: |{% for i in range(reg_width - 1, -1, -1) %}{{ '%3d' % i }}|{% endfor %}
+
+       +{% for i in range(reg_width) %}---+{% endfor %}
+
+       |{% for i in range(reg_width - 1, -1, -1) %}{% set ns = namespace(found=false, char='-') %}{% for field in register.bitfields %}{% if i >= field.offset and i < field.offset + field.width %}{% set ns.found = true %}{% set ns.char = field.name[0] | upper %}{% endif %}{% endfor %}{{ ' %s ' % ns.char }}|{% endfor %}
+
+       +{% for i in range(reg_width) %}---+{% endfor %}
+
+Reset: |{% for i in range(reg_width - 1, -1, -1) %}{% set ns = namespace(bit_val=0) %}{% for field in register.bitfields %}{% if i >= field.offset and i < field.offset + field.width %}{% set bit_pos = i - field.offset %}{% set ns.bit_val = (field.reset // (2 ** bit_pos)) % 2 %}{% endif %}{% endfor %}{{ '  %d' % ns.bit_val }}|{% endfor %}
+
+```
+
+**Legend:** {% for field in register.bitfields %}`{{ field.name[0] | upper }}` = {{ field.name }}{% if not loop.last %}, {% endif %}{% endfor %}{% set used_bits = [] %}{% for field in register.bitfields %}{% for i in range(field.offset, field.offset + field.width) %}{% set _ = used_bits.append(i) %}{% endfor %}{% endfor %}{% set has_reserved = false %}{% for i in range(reg_width) %}{% if i not in used_bits %}{% set has_reserved = true %}{% endif %}{% endfor %}{% if has_reserved %}, `-` = Reserved{% endif %}
+
+
+### Bitfields
+
+| Bitfield | Bits | Width | Reset | Reset (Hex) | Description |
+|----------|------|-------|-------|-------------|-------------|
+{% for bitfield in register.bitfields | sort(attribute='offset') %}
+| `{{ bitfield.name }}` | [{{ bitfield.offset + bitfield.width - 1 }}:{{ bitfield.offset }}] | {{ bitfield.width }} | {{ bitfield.reset }} | `0x{{ '%0*X' % ((bitfield.width + 3) // 4, bitfield.reset) }}` | {{ bitfield.description or '-' }} |
+{% endfor %}
+
+{% for bitfield in register.bitfields %}
+{% if bitfield.enums %}
+### Enum: {{ bitfield.name }}
+
+{{ bitfield.description or '' }}
+
+| Value | Name | Description |
+|-------|------|-------------|
+{% for enum in bitfield.enums | sort(attribute='value') %}
+| {{ enum.value }} (`0x{{ '%X' % enum.value }}`) | `{{ enum.name }}` | {{ enum.description or '-' }} |
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+---
+
+## Quick Reference
+
+### All Registers at a Glance
+
+| Addr | Register | Access | Fields |
+|------|----------|--------|--------|
+{% for register in regmap %}
+| `0x{{ '%02X' % register.address }}` | {{ register.name }} | {{ register.access.name }} | {% for field in register.bitfields %}{{ field.name }}{% if not loop.last %}, {% endif %}{% endfor %} |
+{% endfor %}
+
+### Reset Values
+
+| Register | Reset Value |
+|----------|-------------|
+{% for register in regmap %}
+{% set reset_val = namespace(value=0) %}
+{% for field in register.bitfields %}
+{% set reset_val.value = reset_val.value + (field.reset * (2 ** field.offset)) %}
+{% endfor %}
+| {{ register.name }} | `0x{{ '%04X' % reset_val.value }}` |
+{% endfor %}

@@ -1,0 +1,75 @@
+{# Jinja2 template for commands documentation generation #}
+# Commands: {{ name }}
+
+> **Auto-generated documentation** - Do not edit manually.
+
+## Summary
+
+| Property | Value |
+|----------|-------|
+| Command Map Name | {{ name }} |
+| Total Commands | {{ commands|length }} |
+| Generated On | {{ generated_on }} |
+
+## Table of Contents
+
+| Command ID | Name | Description |
+|------------|------|-------------|
+{% for command in commands %}
+| [`{{ command.id }}`](#command-{{ command.id }}-{{ command.name | lower | replace(' ', '-') }}) | {{ command.name|upper }} | {{ command.description or 'No description' }} |
+{% endfor %}
+
+---
+{% for command in commands %}
+
+## Command `{{ command.id }}`: {{ command.name|upper }}
+
+{% if command.description %}
+{{ command.description }}
+{% endif %}
+
+| Property | Value |
+|----------|-------|
+| Command ID | `{{ command.id }}` |
+| Name | {{ command.name|upper }} |
+| Arguments | {{ command.args|length if command.args else 0 }} |
+{% if command.args %}
+
+### Arguments
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+{% for arg in command.args %}
+| `{{ arg.name|lower }}` | `{{ arg.type }}` | `{{ arg.default.name if arg.default is defined and arg.default.name is defined else arg.default if arg.default != None else 'None' }}` | {{ arg.description or '-' }} |
+{% endfor %}
+{% for arg in command.args %}
+{% if arg.enums %}
+
+### Enum: {{ arg.name }}
+
+{{ arg.description or '' }}
+
+| Value | Name | Description |
+|-------|------|-------------|
+{% for enum in arg.enums | sort(attribute='value') %}
+| {{ enum.value }} (`0x{{ '%X' % enum.value }}`) | `{{ enum.name }}` | {{ enum.description or '-' }} |
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% else %}
+
+**Arguments:** None
+{% endif %}
+{% endfor %}
+
+---
+
+## Quick Reference
+
+### All Commands at a Glance
+
+| ID | Command | Arguments |
+|----|---------|----------|
+{% for command in commands %}
+| `{{ command.id }}` | {{ command.name|upper }} | {% for arg in command.args %}{{ arg.name }}{% if not loop.last %}, {% endif %}{% endfor %}{% if not command.args %}-{% endif %} |
+{% endfor %}
