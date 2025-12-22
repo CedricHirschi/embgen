@@ -489,6 +489,8 @@ class TestGeneratedPythonInterface:
 
             py_file = output_path / "simple.py"
             spec = importlib.util.spec_from_file_location("simple_test_module", py_file)
+            assert spec is not None, "Failed to create module spec"
+            assert spec.loader is not None, "Module spec has no loader"
             module = importlib.util.module_from_spec(spec)
             sys.modules["simple_test_module"] = module
             spec.loader.exec_module(module)

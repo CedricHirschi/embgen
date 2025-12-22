@@ -128,6 +128,55 @@ domains/
 
 The CLI will automatically discover and expose your new domain as a subcommand.
 
+### Multifile Templates
+
+embgen supports generating multiple output files from a single YAML input. This is useful for:
+- Generating paired files like `.c` and `.h` for C modules
+- Generating multiple files of the same type (e.g., multiple `.sv` SystemVerilog files)
+
+#### Template Naming Conventions
+
+**Different extensions (e.g., C header + source):**
+```
+template.{group}_multi.{ext}.j2
+```
+
+Examples:
+- `template.c_multi.h.j2` → generates `{name}.h`
+- `template.c_multi.c.j2` → generates `{name}.c`
+
+**Same extension with numbered suffix:**
+```
+template.{group}_multi.{ext}.{suffix}.j2
+```
+
+Examples:
+- `template.sv_multi.sv.1.j2` → generates `{name}_1.sv`
+- `template.sv_multi.sv.2.j2` → generates `{name}_2.sv`
+
+#### CLI Usage
+
+Multifile groups appear as CLI flags with the pattern `--{group}-multi`:
+
+```bash
+# Generate C header + source files
+embgen mydom input.yml -o output/ --c-multi
+
+# Generate multiple SystemVerilog files
+embgen mydom input.yml -o output/ --sv-multi
+```
+
+#### Example Directory Structure
+
+```
+templates/
+├── template.py.j2           # Single-file template → {name}.py
+├── template.c_multi.h.j2    # Multifile C header  → {name}.h
+├── template.c_multi.c.j2    # Multifile C source  → {name}.c
+├── template.sv_multi.sv.1.j2  # SV file 1 → {name}_1.sv
+└── template.sv_multi.sv.2.j2  # SV file 2 → {name}_2.sv
+```
+
 ## YAML Examples
 
 ### Commands

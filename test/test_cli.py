@@ -106,18 +106,18 @@ class TestGetTemplateArgs:
     def test_commands_templates(self):
         """Test that commands templates are discovered."""
         generator = CommandsGenerator()
-        templates = get_template_args(generator)
+        single_templates, multifile_groups = get_template_args(generator)
 
-        assert "h" in templates
-        assert "py" in templates
-        assert "md" in templates
+        assert "h" in single_templates
+        assert "py" in single_templates
+        assert "md" in single_templates
 
     def test_template_format(self):
         """Test template info format."""
         generator = CommandsGenerator()
-        templates = get_template_args(generator)
+        single_templates, multifile_groups = get_template_args(generator)
 
-        for ext, (desc, filename) in templates.items():
+        for ext, (desc, filename) in single_templates.items():
             assert isinstance(desc, str)
             assert filename.endswith((".j2", ".jinja"))
 

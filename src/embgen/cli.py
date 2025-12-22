@@ -15,44 +15,40 @@ from .domains import (
     get_builtin_domains_path,
 )
 from .core import parse_and_render, parse_yaml
-from .templates import file_type
+from .templates import discover_templates, MultifileGroup
 
 
-def get_template_args(generator: DomainGenerator) -> dict[str, tuple[str, str]]:
+def get_template_args(
+    generator: DomainGenerator,
+) -> tuple[
+    dict[str, tuple[str, str]],  # Single templates: ext -> (description, filename)
+    dict[str, MultifileGroup],  # Multifile groups: group_name -> MultifileGroup
+]:
     """
     Discover available templates for a generator.
 
     Returns:
-        Dict mapping extension to (description, template_filename)
+        Tuple of (single_templates, multifile_groups).
     """
-    templates = {}
-    templates_path = generator.templates_path
-
-    if not templates_path.exists():
-        return templates
-
-    for path in templates_path.iterdir():
-        if not path.name.endswith((".j2", ".jinja")):
-            continue
-
-        # Extract extension from template.{ext}.j2
-        parts = path.name.split(".")
-        if len(parts) >= 3:
-            ext = parts[-2].lower()
-            desc = file_type(ext)
-            templates[ext] = (desc, path.name)
-
-    return templates
+    return discover_templates(generator.templates_path)
 
 
 def add_template_flags(
-    parser: argparse.ArgumentParser, templates: dict[str, tuple[str, str]]
-) -> list[str]:
-    """Add template output flags to a parser."""
+    parser: argparse.ArgumentParser,
+    single_templates: dict[str, tuple[str, str]],
+    multifile_groups: dict[str, MultifileGroup],
+) -> tuple[list[str], list[str]]:
+    """Add template output flags to a parser.
+
+    Returns:
+        Tuple of (single_template_extensions, multifile_group_names).
+    """
     group = parser.add_argument_group("output", "Output formats to generate")
 
-    added_shorts = []
-    for ext, (desc, _) in templates.items():
+    added_shorts: list[str] = []
+
+    # Add single template flags
+    for ext, (desc, _) in single_templates.items():
         # Generate unique short flag
         short = desc.lower().replace(" ", "")[0]
         i = 1
@@ -70,7 +66,37 @@ def add_template_flags(
             help=f"Generate {desc} output",
         )
 
-    return list(templates.keys())
+    # Add multifile group flags
+    for group_name, mf_group in multifile_groups.items():
+        # Generate unique short flag
+        desc = mf_group.description
+        short = group_name[0]
+        i = 1
+        while (short in added_shorts or short in ("o", "d", "h", "i")) and i < len(
+            group_name
+        ):
+            short = group_name[i]
+            i += 1
+        added_shorts.append(short)
+
+        # Build help text listing output files
+        output_files = []
+        for t in mf_group.templates:
+            if t.suffix:
+                output_files.append(f".{t.output_ext} (#{t.suffix})")
+            else:
+                output_files.append(f".{t.output_ext}")
+        outputs_str = ", ".join(output_files)
+
+        group.add_argument(
+            f"-{short}",
+            f"--{group_name}-multi",
+            action="store_true",
+            dest=f"{group_name}_multi",
+            help=f"Generate {desc} outputs ({outputs_str})",
+        )
+
+    return list(single_templates.keys()), list(multifile_groups.keys())
 
 
 def scaffold_domain(name: str, location: Path) -> list[Path]:
@@ -248,12 +274,14 @@ def main():
     subparsers = ap.add_subparsers(dest="domain", help="Domain to generate")
 
     # Track templates per domain for later use
-    domain_templates: dict[str, dict[str, tuple[str, str]]] = {}
+    domain_templates: dict[
+        str, tuple[dict[str, tuple[str, str]], dict[str, MultifileGroup]]
+    ] = {}
 
     # Auto-generate subcommand for each domain
     for name, generator in domains.items():
-        templates = get_template_args(generator)
-        domain_templates[name] = templates
+        single_templates, multifile_groups = get_template_args(generator)
+        domain_templates[name] = (single_templates, multifile_groups)
 
         sub = subparsers.add_parser(name, help=generator.description)
         sub.add_argument("input", help="Input YAML file")
@@ -263,7 +291,7 @@ def main():
             default=Path.cwd() / "generated",
             help="Output directory (relative to invocation directory)",
         )
-        add_template_flags(sub, templates)
+        add_template_flags(sub, single_templates, multifile_groups)
 
     # Auto-detect mode
     auto_sub = subparsers.add_parser(
@@ -278,10 +306,12 @@ def main():
     )
 
     # For auto mode, we need to add all possible template flags
-    all_templates: dict[str, tuple[str, str]] = {}
-    for templates in domain_templates.values():
-        all_templates.update(templates)
-    add_template_flags(auto_sub, all_templates)
+    all_single_templates: dict[str, tuple[str, str]] = {}
+    all_multifile_groups: dict[str, MultifileGroup] = {}
+    for single_templates, multifile_groups in domain_templates.values():
+        all_single_templates.update(single_templates)
+        all_multifile_groups.update(multifile_groups)
+    add_template_flags(auto_sub, all_single_templates, all_multifile_groups)
 
     # New domain scaffolding subcommand
     new_sub = subparsers.add_parser("new", help="Create a new domain scaffold")
@@ -363,25 +393,36 @@ def main():
         assert detected is not None  # Help type checker after sys.exit
         generator = detected
         log.info(f"Auto-detected domain: {generator.name}")
-        templates = domain_templates.get(generator.name, get_template_args(generator))
+        single_templates, multifile_groups = domain_templates.get(
+            generator.name, get_template_args(generator)
+        )
     else:
         generator = domains[args.domain]
-        templates = domain_templates[args.domain]
+        single_templates, multifile_groups = domain_templates[args.domain]
 
-    # Collect selected template types
+    # Collect selected single template types
     selected_templates = {
         ext: template_name
-        for ext, (_, template_name) in templates.items()
+        for ext, (_, template_name) in single_templates.items()
         if getattr(args, ext, False)
     }
 
-    if not selected_templates:
+    # Collect selected multifile groups
+    selected_multifile = {
+        group_name: mf_group
+        for group_name, mf_group in multifile_groups.items()
+        if getattr(args, f"{group_name}_multi", False)
+    }
+
+    if not selected_templates and not selected_multifile:
         log.error("No output formats specified. Use -h to see available formats.")
         sys.exit(1)
 
     # Run generation
     try:
-        parse_and_render(generator, args.input, args.output, selected_templates)
+        parse_and_render(
+            generator, args.input, args.output, selected_templates, selected_multifile
+        )
     except Exception as e:
         log.error(f"Generation failed: {e}")
         if args.debug:
