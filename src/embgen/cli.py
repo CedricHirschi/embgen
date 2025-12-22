@@ -257,7 +257,12 @@ def main():
 
         sub = subparsers.add_parser(name, help=generator.description)
         sub.add_argument("input", help="Input YAML file")
-        sub.add_argument("-o", "--output", default="generated", help="Output directory")
+        sub.add_argument(
+            "-o",
+            "--output",
+            default=Path.cwd() / "generated",
+            help="Output directory (relative to invocation directory)",
+        )
         add_template_flags(sub, templates)
 
     # Auto-detect mode
@@ -266,7 +271,10 @@ def main():
     )
     auto_sub.add_argument("input", help="Input YAML file")
     auto_sub.add_argument(
-        "-o", "--output", default="generated", help="Output directory"
+        "-o",
+        "--output",
+        default=Path.cwd() / "generated",
+        help="Output directory (relative to invocation directory)",
     )
 
     # For auto mode, we need to add all possible template flags
