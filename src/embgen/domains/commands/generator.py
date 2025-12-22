@@ -15,11 +15,6 @@ class CommandsGenerator(DomainGenerator):
     def description(self) -> str:
         return "Generate code from command definitions"
 
-    @property
-    def templates_path(self) -> Path:
-        """Path to this domain's templates."""
-        return Path(__file__).parent / "templates"
-
     def detect(self, data: dict[str, Any]) -> bool:
         return "commands" in data
 
