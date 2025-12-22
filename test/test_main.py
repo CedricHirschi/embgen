@@ -141,7 +141,7 @@ class TestRegistersGeneration:
         config = generator.validate(data)
         assert isinstance(config, RegistersConfig)
         assert config.name == "SimpleRegmap"
-        assert len(config.regmap) == 3
+        assert len(config.regmap) == 4  # CONTROL, STATUS, DATA, CONFIG
 
     def test_generate_registers(self, registers_config: Path):
         """Test generating registers outputs."""

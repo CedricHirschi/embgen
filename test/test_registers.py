@@ -301,7 +301,7 @@ class TestRegistersGeneration:
     def test_parse_yaml(self, registers_config: Path):
         data = parse_yaml(registers_config)
         assert data["name"] == "SimpleRegmap"
-        assert len(data["regmap"]) == 3
+        assert len(data["regmap"]) == 4  # CONTROL, STATUS, DATA, CONFIG
 
     def test_validate_full_config(
         self, registers_config: Path, generator: RegistersGenerator
@@ -462,3 +462,185 @@ class TestRegistersEdgeCases:
         assert cfg.regmap[1].access == Access.RW
         assert cfg.regmap[2].access == Access.WO
         assert cfg.regmap[3].access == Access.RWC
+
+
+class TestGeneratedPythonInterface:
+    """Test the generated Python register interface for correct behavior."""
+
+    @pytest.fixture
+    def registers_config(self) -> Path:
+        return Path(__file__).parent / "configs" / "registers" / "simple.yml"
+
+    @pytest.fixture
+    def generator(self) -> RegistersGenerator:
+        return RegistersGenerator()
+
+    @pytest.fixture
+    def generated_module(self, registers_config: Path, generator: RegistersGenerator):
+        """Generate the Python module and import it."""
+        import sys
+        import importlib.util
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"py": "template.py.j2"}
+
+            parse_and_render(generator, registers_config, output_path, templates)
+
+            py_file = output_path / "simple.py"
+            spec = importlib.util.spec_from_file_location("simple_test_module", py_file)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules["simple_test_module"] = module
+            spec.loader.exec_module(module)
+            yield module
+            del sys.modules["simple_test_module"]
+
+    def test_nonzero_reset_integer_bitfield(self, generated_module):
+        """Test that integer bitfields with non-zero reset values are read correctly."""
+        import logging
+
+        Interface = generated_module.Interface
+        SimpleRegmap = generated_module.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        # STATUS.READY has reset=1
+        assert rm.status.ready.value == 1
+
+        # CONFIG.GAIN has reset=5
+        assert rm.config.gain.value == 5
+
+        # CONFIG.OFFSET has reset=128
+        assert rm.config.offset.value == 128
+
+    def test_nonzero_reset_enum_bitfield(self, generated_module):
+        """Test that enum bitfields with non-zero reset values return correct enum."""
+        import logging
+
+        Interface = generated_module.Interface
+        SimpleRegmap = generated_module.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        # CONTROL.MODE has reset=1, which is EnumMode.NORMAL
+        mode_value = rm.control.mode.value
+        assert mode_value == SimpleRegmap.EnumMode.NORMAL
+        assert mode_value.value == 1
+
+        # CONFIG.POLARITY has reset=1, which is EnumPolarity.INVERTED
+        polarity_value = rm.config.polarity.value
+        assert polarity_value == SimpleRegmap.EnumPolarity.INVERTED
+        assert polarity_value.value == 1
+
+    def test_nonzero_reset_hex_value(self, generated_module):
+        """Test that hex reset values (like 0xCAFE) are correctly handled."""
+        import logging
+
+        Interface = generated_module.Interface
+        SimpleRegmap = generated_module.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        # DATA.VALUE has reset=0xCAFE (51966)
+        assert rm.data.value.value == 0xCAFE
+        assert rm.data.value.value == 51966
+
+    def test_write_then_read_preserves_value(self, generated_module):
+        """Test that writing a value and reading it back returns the written value."""
+        import logging
+
+        Interface = generated_module.Interface
+        SimpleRegmap = generated_module.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        # Write a new value to GAIN
+        rm.config.gain.value = 10
+        assert rm.config.gain.value == 10
+
+        # Write a new value to MODE (enum)
+        rm.control.mode.value = SimpleRegmap.EnumMode.STANDBY
+        assert rm.control.mode.value == SimpleRegmap.EnumMode.STANDBY
+
+    def test_reset_restores_reset_values(self, generated_module):
+        """Test that interface reset restores all bitfields to their reset values."""
+        import logging
+
+        Interface = generated_module.Interface
+        SimpleRegmap = generated_module.SimpleRegmap
+
+        interface = Interface(logging.getLogger())
+        rm = SimpleRegmap(interface)
+
+        # Change some values
+        rm.config.gain.value = 15
+        rm.control.mode.value = SimpleRegmap.EnumMode.SLEEP
+        assert rm.config.gain.value == 15
+        assert rm.control.mode.value == SimpleRegmap.EnumMode.SLEEP
+
+        # Reset interface
+        interface.reset()
+
+        # Values should now be back to reset values
+        assert rm.config.gain.value == 5  # reset value
+        assert rm.control.mode.value == SimpleRegmap.EnumMode.NORMAL  # reset=1
+
+    def test_bitfield_width_validation(self, generated_module):
+        """Test that bitfield width validation works correctly."""
+        import logging
+
+        Interface = generated_module.Interface
+        SimpleRegmap = generated_module.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        # ENABLE has width=1, so max value is 1
+        rm.control.enable.value = 1
+        assert rm.control.enable.value == 1
+
+        # Try to write a value that exceeds the width
+        with pytest.raises(ValueError, match="exceeds width"):
+            rm.control.enable.value = 2
+
+    def test_bitfield_negative_value_validation(self, generated_module):
+        """Test that negative values are rejected."""
+        import logging
+
+        Interface = generated_module.Interface
+        SimpleRegmap = generated_module.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        with pytest.raises(ValueError, match="cannot be negative"):
+            rm.control.enable.value = -1
+
+    def test_enum_bitfield_type_validation(self, generated_module):
+        """Test that enum bitfields reject non-enum values."""
+        import logging
+
+        Interface = generated_module.Interface
+        SimpleRegmap = generated_module.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        # MODE requires an EnumMode, not an int
+        with pytest.raises(TypeError, match="must be of type"):
+            rm.control.mode.value = 1
+
+    def test_zero_reset_bitfields(self, generated_module):
+        """Test that bitfields with zero reset values still work correctly."""
+        import logging
+
+        Interface = generated_module.Interface
+        SimpleRegmap = generated_module.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        # ENABLE has reset=0
+        assert rm.control.enable.value == 0
+
+        # BUSY has reset=0
+        assert rm.status.busy.value == 0
+
+        # ERROR has reset=0
+        assert rm.status.error.value == 0

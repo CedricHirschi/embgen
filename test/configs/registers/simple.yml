@@ -14,7 +14,7 @@ regmap:
         description: Operating mode
         width: 3
         offset: 1
-        reset: 0
+        reset: 1
         enums:
           - { name: POWER_OFF, value: 0, description: "Device is off" }
           - { name: NORMAL, value: 1, description: "Device is on" }
@@ -46,7 +46,7 @@ regmap:
         description: Ready status bit
         width: 1
         offset: 0
-        reset: 0
+        reset: 1
       - name: BUSY
         description: Busy status bit
         width: 1
@@ -66,4 +66,27 @@ regmap:
         description: Data value
         width: 16
         offset: 0
-        reset: 0
+        reset: 0xCAFE
+
+  - name: CONFIG
+    description: Configuration register with non-zero resets
+    address: 3
+    bitfields:
+      - name: GAIN
+        description: Gain setting
+        width: 4
+        offset: 0
+        reset: 5
+      - name: OFFSET
+        description: Offset value
+        width: 8
+        offset: 4
+        reset: 128
+      - name: POLARITY
+        description: Signal polarity
+        width: 1
+        offset: 12
+        reset: 1
+        enums:
+          - { name: NORMAL, value: 0, description: "Normal polarity" }
+          - { name: INVERTED, value: 1, description: "Inverted polarity" }

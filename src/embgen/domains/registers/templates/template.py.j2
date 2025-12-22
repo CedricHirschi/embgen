@@ -92,14 +92,17 @@ class BitField:
         self._access = access
 
     @property
-    def value(self) -> int:
+    def value(self) -> int | BaseEnum:
         if not self._interface:
             raise RuntimeError(f"Interface not set for bitfield {self._name}")
 
         if self._access not in [Access.RO, Access.RW, Access.ROLH]:
             raise RuntimeError(f"BitField {self._name} is not readable (access={self._access})")
 
-        return self._interface.read(self._register_address, self._offset, self._reset)
+        raw_value = self._interface.read(self._register_address, self._offset, self._reset)
+        if self._enums is not None:
+            return self._enums(raw_value)
+        return raw_value
 
     @value.setter
     def value(self, value: int | BaseEnum) -> None:
@@ -131,7 +134,14 @@ class BitField:
             int_value = value
 
         self._interface.write(self._register_address, self._offset, int(int_value))
-
+    
+    @property
+    def raw(self) -> int:
+        """Read the raw bitfield value."""
+        return (
+            (self.value if isinstance(self.value, int) else self.value.value)
+            & ((1 << self._width) - 1)
+        ) << self._offset
 
 class Register:
     """Base class for hardware registers."""
@@ -152,6 +162,21 @@ class Register:
 
     def __repr__(self) -> str:
         return str(self)
+    
+    @property
+    def raw(self) -> int:
+        """Read the raw register value."""
+        if not self._interface:
+            raise RuntimeError(
+                f"Interface not set for register at address {self._address}"
+            )
+
+        result = 0
+        for _, attr_value in self.__class__.__dict__.items():
+            if isinstance(attr_value, BitField):
+                result |= attr_value.raw
+
+        return result
 
 
 class RegisterMap:
@@ -193,6 +218,26 @@ class {{ name }}(RegisterMap):
 # ============================================================================
 
 {% for register in regmap %}
+{% for bitfield in register.bitfields %}
+class BitField{{ register.name }}{{ bitfield.name|capitalize }}(BitField):
+    """BitField {{ bitfield.name|upper }} in Register {{ register.name|upper }}
+
+    {{ bitfield.description or '' }}
+    """
+
+    _name = "{{ bitfield.name }}"
+    _description = "{{ bitfield.description or '' }}"
+    _reset = {{ bitfield.reset }}
+    _width = {{ bitfield.width }}
+    _offset = {{ bitfield.offset }}
+{% if bitfield.enums %}
+    _enums = {{ name }}.Enum{{ bitfield.name|capitalize }}
+{% else %}
+    _enums = None
+{% endif %}
+
+
+{% endfor %}
 class Register{{ register.name }}(Register):
     """Register {{ register.name|upper }}
 
@@ -206,39 +251,8 @@ class Register{{ register.name }}(Register):
     _access = Access.{{ register.access.name }}
 
 {% for bitfield in register.bitfields %}
-{% if bitfield.enums %}
-    @property
-    def {{ bitfield.name.lower() }}(self) -> {{ name }}.Enum{{ bitfield.name|capitalize }}:
-        """Bitfield {{ bitfield.name|upper }}
-
-        {{ bitfield.description or '' }}
-
-        Use {{ name }}.Enum{{ bitfield.name|capitalize }} to set/get values"""
-        return {{ name }}.Enum{{ bitfield.name|capitalize }}(self._interface.read(self._address, {{ bitfield.offset }}, {{ bitfield.reset }}))
-
-    @{{ bitfield.name.lower() }}.setter
-    def {{ bitfield.name.lower() }}(self, value: {{ name }}.Enum{{ bitfield.name|capitalize }}) -> None:
-        self._interface.write(self._address, {{ bitfield.offset }}, int(value.value))
-{% else %}
-    @property
-    def {{ bitfield.name.lower() }}(self) -> int:
-        """Bitfield {{ bitfield.name|upper }}
-
-        {{ bitfield.description or '' }}"""
-
-        if self._access not in [Access.RO, Access.RW, Access.ROLH]:
-            raise RuntimeError("BitField {{ bitfield.name }} is not readable (access={{ register.access.name }})")
-
-        return self._interface.read(self._address, {{ bitfield.offset }}, {{ bitfield.reset }})
-
-    @{{ bitfield.name.lower() }}.setter
-    def {{ bitfield.name.lower() }}(self, value: int) -> None:
-        if self._access not in [Access.WO, Access.RW, Access.RWC, Access.WOS, Access.ROLH]:
-            raise RuntimeError("BitField {{ bitfield.name }} is not writable (access={{ register.access.name }})")
-
-        self._interface.write(self._address, {{ bitfield.offset }}, value)
-{% endif %}
-
+    {{ bitfield.name.lower() }}: BitField{{ register.name }}{{ bitfield.name|capitalize }} = BitField{{ register.name }}{{ bitfield.name|capitalize }}()
 {% endfor %}
+
 
 {% endfor %}
