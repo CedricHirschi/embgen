@@ -83,15 +83,15 @@ class TestCommandsGeneration:
                 generator, commands_config, output_path, templates
             )
 
-            assert "tinyprobecommands.h" in filenames
-            assert "tinyprobecommands.md" in filenames
-            assert "tinyprobecommands.py" in filenames
+            assert "commands.h" in filenames
+            assert "commands.md" in filenames
+            assert "commands.py" in filenames
             assert "commands_base.py" in filenames  # Only copied when py is generated
 
             # Check files exist
-            assert (output_path / "tinyprobecommands.h").exists()
-            assert (output_path / "tinyprobecommands.md").exists()
-            assert (output_path / "tinyprobecommands.py").exists()
+            assert (output_path / "commands.h").exists()
+            assert (output_path / "commands.md").exists()
+            assert (output_path / "commands.py").exists()
             assert (output_path / "commands_base.py").exists()
 
     def test_generate_commands_no_python(self, commands_config: Path):
@@ -107,13 +107,13 @@ class TestCommandsGeneration:
                 generator, commands_config, output_path, templates
             )
 
-            assert "tinyprobecommands.h" in filenames
-            assert "tinyprobecommands.md" in filenames
+            assert "commands.h" in filenames
+            assert "commands.md" in filenames
             assert "commands_base.py" not in filenames
 
             # Check files exist
-            assert (output_path / "tinyprobecommands.h").exists()
-            assert (output_path / "tinyprobecommands.md").exists()
+            assert (output_path / "commands.h").exists()
+            assert (output_path / "commands.md").exists()
             assert not (output_path / "commands_base.py").exists()
 
 

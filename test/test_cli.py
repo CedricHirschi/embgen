@@ -280,7 +280,7 @@ class TestCLIGeneration:
                 cwd=Path(__file__).parent.parent,
             )
             assert result.returncode == 0
-            assert (Path(tmpdir) / "tinyprobecommands.h").exists()
+            assert (Path(tmpdir) / "commands.h").exists()
 
     def test_generate_registers_header(self, registers_config: Path):
         """Test generating registers header via CLI."""
@@ -324,9 +324,9 @@ class TestCLIGeneration:
                 cwd=Path(__file__).parent.parent,
             )
             assert result.returncode == 0
-            assert (Path(tmpdir) / "tinyprobecommands.h").exists()
-            assert (Path(tmpdir) / "tinyprobecommands.py").exists()
-            assert (Path(tmpdir) / "tinyprobecommands.md").exists()
+            assert (Path(tmpdir) / "commands.h").exists()
+            assert (Path(tmpdir) / "commands.py").exists()
+            assert (Path(tmpdir) / "commands.md").exists()
             assert (Path(tmpdir) / "commands_base.py").exists()
 
     def test_auto_detect_commands(self, commands_config: Path):

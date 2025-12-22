@@ -1,4 +1,5 @@
 name: TinyProbeCommands
+file: commands
 commands:
   - name: ping
     id: 0

@@ -177,7 +177,7 @@ class TestParseAndRender:
             )
 
             assert len(filenames) >= 1
-            assert any("tinyprobecommands" in f for f in filenames)
+            assert any("commands" in f for f in filenames)
 
     def test_parse_and_render_registers(self, registers_config: Path):
         """Test full pipeline for registers."""

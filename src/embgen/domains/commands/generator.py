@@ -44,7 +44,7 @@ class CommandsGenerator(DomainGenerator):
 
         src = self.templates_path / "commands_base.py"
         if src.exists():
-            dst = output / "commands_base.py"
+            dst = output / (config.output_filename + "_base.py")
             dst.write_text(src.read_text())
-            return ["commands_base.py"]
+            return [config.output_filename + "_base.py"]
         return []

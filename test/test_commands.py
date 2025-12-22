@@ -331,8 +331,8 @@ class TestCommandsGeneration:
                 generator, commands_config, output_path, templates
             )
 
-            assert "tinyprobecommands.h" in filenames
-            header_file = output_path / "tinyprobecommands.h"
+            assert "commands.h" in filenames
+            header_file = output_path / "commands.h"
             assert header_file.exists()
 
             content = header_file.read_text()
@@ -348,10 +348,10 @@ class TestCommandsGeneration:
                 generator, commands_config, output_path, templates
             )
 
-            assert "tinyprobecommands.py" in filenames
+            assert "commands.py" in filenames
             assert "commands_base.py" in filenames  # Post-generate copies this
 
-            py_file = output_path / "tinyprobecommands.py"
+            py_file = output_path / "commands.py"
             base_file = output_path / "commands_base.py"
             assert py_file.exists()
             assert base_file.exists()
@@ -367,8 +367,8 @@ class TestCommandsGeneration:
                 generator, commands_config, output_path, templates
             )
 
-            assert "tinyprobecommands.md" in filenames
-            md_file = output_path / "tinyprobecommands.md"
+            assert "commands.md" in filenames
+            md_file = output_path / "commands.md"
             assert md_file.exists()
 
             content = md_file.read_text()
