@@ -313,7 +313,7 @@ class TestCommandsGeneration:
     def test_parse_yaml(self, commands_config: Path):
         data = parse_yaml(commands_config)
         assert data["name"] == "TinyProbeCommands"
-        assert len(data["commands"]) == 5
+        assert len(data["commands"]) == 11
 
     def test_validate_full_config(
         self, commands_config: Path, generator: CommandsGenerator

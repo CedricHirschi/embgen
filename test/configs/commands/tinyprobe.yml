@@ -49,3 +49,94 @@ commands:
       - name: value
         type: I
         description: "Value to write to the FPGA register"
+
+  - name: write_afe
+    id: 5
+    description: "Write to an AFE register"
+    args:
+      - name: dtgc
+        type: B
+        description: "True to write to DTGC AFE, False to write to standard AFE"
+      - name: address
+        type: B
+        description: "Address of the AFE register to write"
+      - name: value
+        type: H
+        description: "Value to write to the AFE register"
+
+  - name: write_tx
+    id: 6
+    description: "Write to a TX register"
+    args:
+      - name: address
+        type: H
+        description: "Address of the TX register to write"
+      - name: value
+        type: I
+        description: "Value to write to the TX register"
+
+  - name: delay_ns
+    id: 7
+    description: "Delay for a specified number of nanoseconds"
+    args:
+      - name: ns
+        type: Q
+        description: "Number of nanoseconds to delay"
+
+  - name: sleep_ms
+    id: 8
+    description: "Sleep for a specified number of milliseconds"
+    args:
+      - name: ms
+        type: I
+        description: "Number of milliseconds to sleep"
+
+  - name: power
+    id: 9
+    description: "Control the state of a power domain"
+    args:
+      - name: domain
+        enums:
+          - { name: LVDS_2_5V, value: 0, description: "LVDS 2.5V" }
+          - { name: POS_HV, value: 1, description: "Positive High Voltage" }
+          - { name: NEG_HV, value: 2, description: "Negative High Voltage" }
+          - { name: NEG_5V, value: 3, description: "Negative 5V" }
+          - { name: PLL_PWD, value: 4, description: "PLL Powerdown" }
+        type: B
+        description: "Power domain to control (0: LVDS 2.5V, 1: Pos. HV, 2: Neg. HV, 3: Neg. 5V, 4: PLL Powerdown)"
+      - name: enable
+        type: B
+        description: "State to set (False: OFF, True: ON)"
+  
+  - name: trigger
+    id: 10
+    description: "Trigger a shot"
+    args:
+      - name: num_shots
+        default: 1
+        type: H
+        description: "Number of shots to trigger"
+      - name: num_packets
+        default: 82
+        type: H
+        description: "Number of packets to expect"
+      - name: dcdc_off_delay_0p1us
+        default: 61
+        type: B
+        description: TODO
+      - name: read_fifo_delay_us
+        default: 200
+        type: B
+        description: TODO
+      - name: trig_pack_id
+        default: 65535
+        type: H
+        description: TODO
+      - name: sw_trigger
+        default: true
+        type: B
+        description: TODO
+      - name: dcdc_pwd_at_rx
+        default: true
+        type: B
+        description: TODO

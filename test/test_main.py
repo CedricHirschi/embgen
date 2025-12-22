@@ -63,7 +63,7 @@ class TestCommandsGeneration:
         config = generator.validate(data)
         assert isinstance(config, CommandsConfig)
         assert config.name == "TinyProbeCommands"
-        assert len(config.commands) == 5
+        assert len(config.commands) == 11
 
     def test_generate_commands(self, commands_config: Path):
         """Test generating commands outputs."""

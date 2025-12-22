@@ -10,25 +10,6 @@ from enum import Enum as BaseEnum
 
 from commands_base import Command
 
-
-# ============================================================================
-
-class {{ name }}:
-    """Command map containing all available commands."""
-{% for command in commands %}
-{% for arg in command.args %}
-{% if arg.enums %}
-
-    class Enum{{ arg.name|capitalize }}(BaseEnum):
-        """Enum for argument {{ arg.name|upper }} in command {{ command.name|upper }}"""
-{% for enum in arg.enums %}
-        {{ enum.name }} = {{ enum.value }}
-{% endfor %}
-{% endif %}
-{% endfor %}
-{% endfor %}
-
-# ============================================================================
 {% for command in commands %}
 
 @dataclass
@@ -43,13 +24,23 @@ class Command{{ command.name|capitalize }}(Command):
 
 {% endfor %}
     """
+{% for arg in command.args %}
+{% if arg.enums %}
+
+    class Enum{{ arg.name|capitalize }}(BaseEnum):
+        """Enum for argument {{ arg.name|upper }}"""
+{% for enum in arg.enums %}
+        {{ enum.name }} = {{ enum.value }}
+{% endfor %}
+{% endif %}
+{% endfor %}
 
     _id: int = field(default={{ command.id }}, init=False)
     _description: str = field(default="{{ command.description or '' }}", init=False)
     _format: str = field(default="{% for arg in command.args %}{{ arg.type }}{% endfor %}", init=False)
 {% for arg in command.args %}
 {% if arg.enums %}
-    {{ arg.name|lower }}: {{ name }}.Enum{{ arg.name|capitalize }}{% if arg.default != None %} = field(default={{ name }}.Enum{{ arg.name|capitalize }}.{{ arg.default.name if arg.default is defined and arg.default.name is defined else arg.default }}){% endif %}
+    {{ arg.name|lower }}: Enum{{ arg.name|capitalize }}{% if arg.default != None %} = field(default=Enum{{ arg.name|capitalize }}.{{ arg.default.name if arg.default is defined and arg.default.name is defined else arg.default }}){% endif %}
 
 {% else %}
     {{ arg.name|lower }}: {{ arg.type_python }}{% if arg.default != None %} = field(default={{ arg.default }}){% endif %}
