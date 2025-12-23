@@ -236,6 +236,6 @@ typedef struct {{ name | lower | replace(' ', '_') }} {
  * ========================================================================== */
 
 /** @brief Initialize register map with reset values */
-#define {{ name | upper | replace(' ', '_') }}_INIT { {% for register in regmap %}.{{ register.name | lower | replace(' ', '_') }}.raw = {{ name | upper | replace(' ', '_') }}_{{ register.name | upper | replace(' ', '_') }}_RESET{% if not loop.last %}, {% endif %}{% endfor %} }
+#define {{ name | upper | replace(' ', '_') }}_INIT ({{ name | lower | replace(' ', '_') }}_t){ {% for register in regmap %}.{{ register.name | lower | replace(' ', '_') }}.raw = {{ name | upper | replace(' ', '_') }}_{{ register.name | upper | replace(' ', '_') }}_RESET{% if not loop.last %}, {% endif %}{% endfor %} }
 
 #endif /* {{ name | upper | replace(' ', '_') }}_H */
