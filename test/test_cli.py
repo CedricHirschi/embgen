@@ -23,7 +23,7 @@ from embgen.templates import discover_templates
 from embgen.domains.commands.generator import CommandsGenerator
 
 
-def run_cli(*args: str) -> tuple[int, str, str]:
+def run_cli(*args: str) -> tuple[int | str, str, str]:
     """Run CLI in-process and capture output.
 
     Returns:

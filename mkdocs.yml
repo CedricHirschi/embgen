@@ -47,7 +47,7 @@ theme:
       scheme: slate
       toggle:
         icon: material/weather-sunny
-        name: Switch to light mode
+        name: Switch to auto mode
       primary: black
       accent: amber
 
