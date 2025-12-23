@@ -1,36 +1,32 @@
+"""Domain generator interface.
+
+This module defines the abstract base class that all domain generators must implement.
+The discovery and detection logic has been moved to embgen.discovery.
+"""
+
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, TypeVar
-import importlib
-import importlib.util
-import os
-import sys
+from typing import Any
 
-from pydantic import BaseModel
 from jinja2 import Template
 
+# Re-export BaseConfig from models for backwards compatibility
+from ..models import BaseConfig
 
-# Environment variable for user domains directory
-EMBGEN_DOMAINS_DIR_ENV = "EMBGEN_DOMAINS_DIR"
-
-
-class BaseConfig(BaseModel):
-    """All domain configs must have these fields."""
-
-    name: str
-    file: str | None = None
-
-    @property
-    def output_filename(self) -> str:
-        return self.file or self.name.lower()
-
-
-# TypeVar for subclass-specific config types (covariant for return types)
-ConfigT = TypeVar("ConfigT", bound=BaseConfig)
+__all__ = ["DomainGenerator", "BaseConfig"]
 
 
 class DomainGenerator(ABC):
-    """Interface every domain must implement."""
+    """Abstract base class that every domain generator must implement.
+
+    A domain generator is responsible for:
+    - Detecting if YAML data belongs to this domain
+    - Validating YAML data into a typed configuration
+    - Rendering configurations to Jinja2 templates
+    - Optionally copying extra files after generation
+
+    To create a new domain, subclass this and implement all abstract methods.
+    """
 
     @property
     @abstractmethod
@@ -46,131 +42,69 @@ class DomainGenerator(ABC):
 
     @abstractmethod
     def detect(self, data: dict[str, Any]) -> bool:
-        """Return True if this YAML data belongs to this domain."""
+        """Return True if this YAML data belongs to this domain.
+
+        Used for auto-detection of domain from YAML content.
+
+        Args:
+            data: Parsed YAML data.
+
+        Returns:
+            True if this domain should handle this data.
+        """
         ...
 
     @abstractmethod
     def validate(self, data: dict[str, Any]) -> BaseConfig:
-        """Parse and validate YAML into domain config."""
+        """Parse and validate YAML data into a domain-specific config.
+
+        Args:
+            data: Parsed YAML data.
+
+        Returns:
+            A validated configuration object (subclass of BaseConfig).
+
+        Raises:
+            ValidationError: If the data doesn't match the expected schema.
+        """
         ...
 
     @abstractmethod
     def render(self, config: Any, template: Template) -> str:
-        """Render config to a template."""
+        """Render a configuration to a Jinja2 template.
+
+        Args:
+            config: The validated configuration object.
+            template: The Jinja2 template to render.
+
+        Returns:
+            The rendered template content as a string.
+        """
         ...
 
     @property
     def templates_path(self) -> Path:
-        """Path to this domain's templates (auto-derived)."""
+        """Path to this domain's templates directory.
+
+        By default, looks for a 'templates' subdirectory in the domain's package.
+        Override this if your templates are in a different location.
+        """
         return Path(__file__).parent / self.name / "templates"
 
     def post_generate(
         self, config: BaseConfig, output: Path, generated_extensions: set[str]
     ) -> list[str]:
-        """Optional: copy extra files after generation.
+        """Hook called after all templates are rendered.
+
+        Use this to copy additional static files (e.g., base classes, utilities)
+        that should accompany the generated code.
 
         Args:
             config: The validated domain configuration.
             output: Path to the output directory.
-            generated_extensions: Set of file extensions that were generated (e.g., {'h', 'py', 'md'}).
+            generated_extensions: Set of file extensions that were generated.
 
         Returns:
             List of extra filenames that were copied.
         """
         return []
-
-
-def _discover_domains_in_path(
-    domains_path: Path, package_name: str | None = None
-) -> dict[str, DomainGenerator]:
-    """Discover domain generators in a specific directory.
-
-    Args:
-        domains_path: Path to the domains directory.
-        package_name: Package name for relative imports (None for external dirs).
-
-    Returns:
-        Dict mapping domain name to generator instance.
-    """
-    domains: dict[str, DomainGenerator] = {}
-
-    if not domains_path.exists() or not domains_path.is_dir():
-        return domains
-
-    for item in domains_path.iterdir():
-        if not item.is_dir() or not (item / "__init__.py").exists():
-            continue
-        if item.name.startswith("_"):
-            continue
-
-        try:
-            if package_name:
-                # Internal package import
-                module = importlib.import_module(f".{item.name}", package_name)
-            else:
-                # External directory import
-                spec = importlib.util.spec_from_file_location(
-                    f"embgen_user_domain_{item.name}",
-                    item / "__init__.py",
-                    submodule_search_locations=[str(item)],
-                )
-                if spec is None or spec.loader is None:
-                    continue
-                module = importlib.util.module_from_spec(spec)
-                sys.modules[spec.name] = module
-                spec.loader.exec_module(module)
-
-            if hasattr(module, "generator"):
-                domains[module.generator.name] = module.generator
-        except Exception:
-            # Skip domains that fail to load
-            pass
-
-    return domains
-
-
-def discover_domains(
-    extra_domains_dir: Path | str | None = None,
-) -> dict[str, DomainGenerator]:
-    """Auto-discover all domain generators.
-
-    Args:
-        extra_domains_dir: Optional path to additional user domains directory.
-            Can also be set via EMBGEN_DOMAINS_DIR environment variable.
-
-    Returns:
-        Dict mapping domain name to generator instance.
-        User domains override built-in domains with the same name.
-    """
-    # Discover built-in domains
-    builtin_path = Path(__file__).parent
-    domains = _discover_domains_in_path(builtin_path, __package__)
-
-    # Check for extra domains directory from argument or environment
-    user_domains_path: Path | None = None
-    if extra_domains_dir:
-        user_domains_path = Path(extra_domains_dir)
-    elif EMBGEN_DOMAINS_DIR_ENV in os.environ:
-        user_domains_path = Path(os.environ[EMBGEN_DOMAINS_DIR_ENV])
-
-    # Discover user domains (these override built-in domains)
-    if user_domains_path:
-        user_domains = _discover_domains_in_path(user_domains_path, None)
-        domains.update(user_domains)
-
-    return domains
-
-
-def detect_domain(
-    data: dict[str, Any], extra_domains_dir: Path | str | None = None
-) -> DomainGenerator | None:
-    """Auto-detect domain from YAML content."""
-    for generator in discover_domains(extra_domains_dir).values():
-        if generator.detect(data):
-            return generator
-    return None
-
-
-def get_builtin_domains_path() -> Path:
-    """Get the path to the built-in domains directory."""
-    return Path(__file__).parent

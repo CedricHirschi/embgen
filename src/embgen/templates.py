@@ -1,12 +1,14 @@
-"""Shared template utilities."""
+"""Template utilities and discovery."""
 
 import re
-from dataclasses import dataclass, field
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+from .models import MultifileGroup, TemplateInfo
 
+
+# Human-readable names for file extensions
 FILE_TYPES = {
     "md": "Markdown",
     "py": "Python",
@@ -27,39 +29,16 @@ FILE_TYPES = {
 
 def file_type(extension: str) -> str:
     """Get human-readable file type from extension."""
-    if extension in FILE_TYPES:
-        return FILE_TYPES[extension]
-    return "Unknown"
+    return FILE_TYPES.get(extension, "Unknown")
 
 
 def get_env(templates_path: Path) -> Environment:
     """Create a Jinja2 environment for a given templates directory."""
     return Environment(
-        loader=FileSystemLoader(templates_path), trim_blocks=True, lstrip_blocks=True
+        loader=FileSystemLoader(templates_path),
+        trim_blocks=True,
+        lstrip_blocks=True,
     )
-
-
-@dataclass
-class TemplateInfo:
-    """Information about a single template file."""
-
-    filename: str  # Full template filename, e.g., "template.h.j2"
-    output_ext: str  # Output file extension, e.g., "h"
-    suffix: str | None = None  # Suffix for multifile output, e.g., "1", "2", or None
-
-
-@dataclass
-class MultifileGroup:
-    """A group of templates that produce multiple output files."""
-
-    group_name: str  # Group identifier, e.g., "c" for c_multi, "sv" for sv_multi
-    description: str  # Human-readable description
-    templates: list[TemplateInfo] = field(default_factory=list)
-
-    @property
-    def output_extensions(self) -> list[str]:
-        """Get all output extensions for this group."""
-        return [t.output_ext for t in self.templates]
 
 
 def parse_template_name(filename: str) -> tuple[str | None, str, str | None]:
@@ -92,10 +71,8 @@ def parse_template_name(filename: str) -> tuple[str | None, str, str | None]:
         return None, "", None
 
     # Check for multifile pattern: *_multi.{ext}[.{suffix}]
-    # Pattern: template.{group}_multi.{ext}[.{suffix}]
     multi_match = re.match(r"^(.+)\.(\w+)_multi\.(\w+)(?:\.(\w+))?$", base)
     if multi_match:
-        # prefix = multi_match.group(1)  # e.g., "template"
         group = multi_match.group(2)  # e.g., "c" or "sv"
         ext = multi_match.group(3)  # e.g., "h", "c", or "sv"
         suffix = multi_match.group(4)  # e.g., "1", "2", or None

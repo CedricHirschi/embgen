@@ -6,11 +6,11 @@ from pathlib import Path
 import pytest
 import yaml
 
-from embgen.core import parse_yaml, parse_and_render, ensure_output_dir
+from embgen.generator import CodeGenerator
+from embgen.discovery import discover_domains
 from embgen.domains import (
     BaseConfig,
     DomainGenerator,
-    discover_domains,
 )
 from embgen.templates import file_type, get_env
 
@@ -18,56 +18,77 @@ from embgen.templates import file_type, get_env
 class TestParseYaml:
     """Test YAML parsing functionality."""
 
-    def test_parse_valid_yaml(self):
+    @pytest.fixture
+    def code_gen(self) -> CodeGenerator:
+        """Create a CodeGenerator for testing YAML parsing."""
+        domains = discover_domains()
+        generator = list(domains.values())[0]
+        return CodeGenerator(generator, Path.cwd())
+
+    def test_parse_valid_yaml(self, code_gen: CodeGenerator):
         """Test parsing a valid YAML file."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump({"name": "Test", "value": 42}, f)
             f.flush()
 
-            data = parse_yaml(Path(f.name))
+            data = code_gen.parse_yaml(Path(f.name))
             assert data["name"] == "Test"
             assert data["value"] == 42
 
-    def test_parse_yaml_with_lists(self):
+    def test_parse_yaml_with_lists(self, code_gen: CodeGenerator):
         """Test parsing YAML with lists."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump({"items": [1, 2, 3], "nested": {"a": 1}}, f)
             f.flush()
 
-            data = parse_yaml(Path(f.name))
+            data = code_gen.parse_yaml(Path(f.name))
             assert data["items"] == [1, 2, 3]
             assert data["nested"]["a"] == 1
 
-    def test_parse_nonexistent_file(self):
+    def test_parse_nonexistent_file(self, code_gen: CodeGenerator):
         """Test that parsing nonexistent file raises error."""
         with pytest.raises(FileNotFoundError):
-            parse_yaml(Path("/nonexistent/file.yml"))
+            code_gen.parse_yaml(Path("/nonexistent/file.yml"))
 
 
 class TestEnsureOutputDir:
-    """Test output directory creation."""
+    """Test output directory creation via CodeGenerator."""
 
-    def test_creates_directory(self):
+    @pytest.fixture
+    def code_gen_factory(self):
+        """Create a factory for CodeGenerator with custom output path."""
+        domains = discover_domains()
+        generator = list(domains.values())[0]
+
+        def create(output_path: Path) -> CodeGenerator:
+            return CodeGenerator(generator, output_path)
+
+        return create
+
+    def test_creates_directory(self, code_gen_factory):
         """Test that output directory is created when parent exists."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir) / "new_dir"
-            result = ensure_output_dir(output_dir)
+            code_gen = code_gen_factory(output_dir)
+            result = code_gen.ensure_output_dir()
             assert result.exists()
             assert result.is_dir()
 
-    def test_existing_directory(self):
+    def test_existing_directory(self, code_gen_factory):
         """Test that existing directory is handled."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
-            ensure_output_dir(output_dir)  # Should not raise
+            code_gen = code_gen_factory(output_dir)
+            code_gen.ensure_output_dir()  # Should not raise
             assert output_dir.exists()
 
-    def test_raises_if_parent_missing(self):
+    def test_raises_if_parent_missing(self, code_gen_factory):
         """Test that error is raised if parent directory doesn't exist."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir) / "nonexistent" / "nested" / "dir"
+            code_gen = code_gen_factory(output_dir)
             with pytest.raises(FileNotFoundError):
-                ensure_output_dir(output_dir)
+                code_gen.ensure_output_dir()
 
 
 class TestFileType:
@@ -152,8 +173,8 @@ class TestDomainGeneratorInterface:
             assert isinstance(result, bool)
 
 
-class TestParseAndRender:
-    """Test the parse_and_render function."""
+class TestCodeGenerator:
+    """Test the CodeGenerator class."""
 
     @pytest.fixture
     def commands_config(self) -> Path:
@@ -163,7 +184,7 @@ class TestParseAndRender:
     def registers_config(self) -> Path:
         return Path(__file__).parent / "configs" / "registers" / "simple.yml"
 
-    def test_parse_and_render_commands(self, commands_config: Path):
+    def test_generate_from_file_commands(self, commands_config: Path):
         """Test full pipeline for commands."""
         domains = discover_domains()
         generator = domains["commands"]
@@ -172,14 +193,13 @@ class TestParseAndRender:
             output_path = Path(tmpdir)
             templates = {"h": "template.h.j2"}
 
-            filenames = parse_and_render(
-                generator, commands_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(commands_config, templates)
 
             assert len(filenames) >= 1
             assert any("commands" in f for f in filenames)
 
-    def test_parse_and_render_registers(self, registers_config: Path):
+    def test_generate_from_file_registers(self, registers_config: Path):
         """Test full pipeline for registers."""
         domains = discover_domains()
         generator = domains["registers"]
@@ -188,14 +208,13 @@ class TestParseAndRender:
             output_path = Path(tmpdir)
             templates = {"h": "template.h.j2"}
 
-            filenames = parse_and_render(
-                generator, registers_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(registers_config, templates)
 
             assert len(filenames) >= 1
             assert any("simple" in f for f in filenames)
 
-    def test_parse_and_render_creates_output_dir(self, commands_config: Path):
+    def test_generate_creates_output_dir(self, commands_config: Path):
         """Test that output directory is created if parent exists."""
         domains = discover_domains()
         generator = domains["commands"]
@@ -205,7 +224,8 @@ class TestParseAndRender:
             output_path = Path(tmpdir) / "output"
             templates = {"h": "template.h.j2"}
 
-            parse_and_render(generator, commands_config, output_path, templates)
+            code_gen = CodeGenerator(generator, output_path)
+            code_gen.generate_from_file(commands_config, templates)
 
             assert output_path.exists()
 

@@ -9,13 +9,14 @@ from unittest.mock import patch
 
 import pytest
 
-from embgen.cli import scaffold_domain, get_template_args
-from embgen.domains import (
+from embgen.scaffold import scaffold_domain
+from embgen.discovery import (
     discover_domains,
     detect_domain,
-    get_builtin_domains_path,
+    BUILTIN_DOMAINS_PATH,
     EMBGEN_DOMAINS_DIR_ENV,
 )
+from embgen.templates import discover_templates
 from embgen.domains.commands.generator import CommandsGenerator
 
 
@@ -100,13 +101,15 @@ class TestDetectDomain:
         assert generator is None
 
 
-class TestGetTemplateArgs:
-    """Test template argument discovery."""
+class TestDiscoverTemplates:
+    """Test template discovery."""
 
     def test_commands_templates(self):
         """Test that commands templates are discovered."""
         generator = CommandsGenerator()
-        single_templates, multifile_groups = get_template_args(generator)
+        single_templates, multifile_groups = discover_templates(
+            generator.templates_path
+        )
 
         assert "h" in single_templates
         assert "py" in single_templates
@@ -115,7 +118,9 @@ class TestGetTemplateArgs:
     def test_template_format(self):
         """Test template info format."""
         generator = CommandsGenerator()
-        single_templates, multifile_groups = get_template_args(generator)
+        single_templates, multifile_groups = discover_templates(
+            generator.templates_path
+        )
 
         for ext, (desc, filename) in single_templates.items():
             assert isinstance(desc, str)
@@ -714,17 +719,15 @@ class TestCLIDomainsDir:
             assert (output_dir / "testconfig.h").exists()
 
 
-class TestGetBuiltinDomainsPath:
-    """Test get_builtin_domains_path function."""
+class TestBuiltinDomainsPath:
+    """Test BUILTIN_DOMAINS_PATH constant."""
 
-    def test_returns_valid_path(self):
-        """Test that it returns a valid path."""
-        path = get_builtin_domains_path()
-        assert path.exists()
-        assert path.is_dir()
+    def test_is_valid_path(self):
+        """Test that it is a valid path."""
+        assert BUILTIN_DOMAINS_PATH.exists()
+        assert BUILTIN_DOMAINS_PATH.is_dir()
 
     def test_contains_builtin_domains(self):
         """Test that path contains builtin domains."""
-        path = get_builtin_domains_path()
-        assert (path / "commands").exists()
-        assert (path / "registers").exists()
+        assert (BUILTIN_DOMAINS_PATH / "commands").exists()
+        assert (BUILTIN_DOMAINS_PATH / "registers").exists()

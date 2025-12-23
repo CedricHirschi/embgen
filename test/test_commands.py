@@ -15,7 +15,7 @@ from embgen.domains.commands.models import (
     Enum,
 )
 from embgen.domains.commands.generator import CommandsGenerator
-from embgen.core import parse_yaml, parse_and_render
+from embgen.generator import CodeGenerator
 
 
 class TestArgumentType:
@@ -310,15 +310,17 @@ class TestCommandsGeneration:
     def generator(self) -> CommandsGenerator:
         return CommandsGenerator()
 
-    def test_parse_yaml(self, commands_config: Path):
-        data = parse_yaml(commands_config)
+    def test_parse_yaml(self, commands_config: Path, generator: CommandsGenerator):
+        code_gen = CodeGenerator(generator, Path.cwd())
+        data = code_gen.parse_yaml(commands_config)
         assert data["name"] == "TinyProbeCommands"
         assert len(data["commands"]) == 11
 
     def test_validate_full_config(
         self, commands_config: Path, generator: CommandsGenerator
     ):
-        data = parse_yaml(commands_config)
+        code_gen = CodeGenerator(generator, Path.cwd())
+        data = code_gen.parse_yaml(commands_config)
         config = generator.validate(data)
         assert config.name == "TinyProbeCommands"
 
@@ -327,9 +329,8 @@ class TestCommandsGeneration:
             output_path = Path(tmpdir)
             templates = {"h": "template.h.j2"}
 
-            filenames = parse_and_render(
-                generator, commands_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(commands_config, templates)
 
             assert "commands.h" in filenames
             header_file = output_path / "commands.h"
@@ -344,9 +345,8 @@ class TestCommandsGeneration:
             output_path = Path(tmpdir)
             templates = {"py": "template.py.j2"}
 
-            filenames = parse_and_render(
-                generator, commands_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(commands_config, templates)
 
             assert "commands.py" in filenames
             assert "commands_base.py" in filenames  # Post-generate copies this
@@ -363,9 +363,8 @@ class TestCommandsGeneration:
             output_path = Path(tmpdir)
             templates = {"md": "template.md.j2"}
 
-            filenames = parse_and_render(
-                generator, commands_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(commands_config, templates)
 
             assert "commands.md" in filenames
             md_file = output_path / "commands.md"
@@ -385,9 +384,8 @@ class TestCommandsGeneration:
                 "md": "template.md.j2",
             }
 
-            filenames = parse_and_render(
-                generator, commands_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(commands_config, templates)
 
             assert len(filenames) == 4  # 3 templates + commands_base.py
 
@@ -399,9 +397,8 @@ class TestCommandsGeneration:
             output_path = Path(tmpdir)
             templates = {"h": "template.h.j2", "md": "template.md.j2"}
 
-            filenames = parse_and_render(
-                generator, commands_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(commands_config, templates)
 
             assert "commands_base.py" not in filenames
             assert not (output_path / "commands_base.py").exists()

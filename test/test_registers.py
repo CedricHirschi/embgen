@@ -14,7 +14,7 @@ from embgen.domains.registers.models import (
 )
 from embgen.domains.registers.generator import RegistersGenerator
 from embgen.models import Enum
-from embgen.core import parse_yaml, parse_and_render
+from embgen.generator import CodeGenerator
 
 
 class TestAccessEnum:
@@ -298,15 +298,17 @@ class TestRegistersGeneration:
     def generator(self) -> RegistersGenerator:
         return RegistersGenerator()
 
-    def test_parse_yaml(self, registers_config: Path):
-        data = parse_yaml(registers_config)
+    def test_parse_yaml(self, registers_config: Path, generator: RegistersGenerator):
+        code_gen = CodeGenerator(generator, Path.cwd())
+        data = code_gen.parse_yaml(registers_config)
         assert data["name"] == "SimpleRegmap"
         assert len(data["regmap"]) == 4  # CONTROL, STATUS, DATA, CONFIG
 
     def test_validate_full_config(
         self, registers_config: Path, generator: RegistersGenerator
     ):
-        data = parse_yaml(registers_config)
+        code_gen = CodeGenerator(generator, Path.cwd())
+        data = code_gen.parse_yaml(registers_config)
         config = generator.validate(data)
         assert config.name == "SimpleRegmap"
 
@@ -317,9 +319,8 @@ class TestRegistersGeneration:
             output_path = Path(tmpdir)
             templates = {"h": "template.h.j2"}
 
-            filenames = parse_and_render(
-                generator, registers_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(registers_config, templates)
 
             assert "simple.h" in filenames
             header_file = output_path / "simple.h"
@@ -335,9 +336,8 @@ class TestRegistersGeneration:
             output_path = Path(tmpdir)
             templates = {"py": "template.py.j2"}
 
-            filenames = parse_and_render(
-                generator, registers_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(registers_config, templates)
 
             assert "simple.py" in filenames
             py_file = output_path / "simple.py"
@@ -350,9 +350,8 @@ class TestRegistersGeneration:
             output_path = Path(tmpdir)
             templates = {"md": "template.md.j2"}
 
-            filenames = parse_and_render(
-                generator, registers_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(registers_config, templates)
 
             assert "simple.md" in filenames
             md_file = output_path / "simple.md"
@@ -372,9 +371,8 @@ class TestRegistersGeneration:
                 "md": "template.md.j2",
             }
 
-            filenames = parse_and_render(
-                generator, registers_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(registers_config, templates)
 
             # 3 templates + 2 post_generate files (reg_common.h, reg_common.c) when h is generated
             assert len(filenames) >= 3
@@ -485,7 +483,8 @@ class TestGeneratedPythonInterface:
             output_path = Path(tmpdir)
             templates = {"py": "template.py.j2"}
 
-            parse_and_render(generator, registers_config, output_path, templates)
+            code_gen = CodeGenerator(generator, output_path)
+            code_gen.generate_from_file(registers_config, templates)
 
             py_file = output_path / "simple.py"
             spec = importlib.util.spec_from_file_location("simple_test_module", py_file)

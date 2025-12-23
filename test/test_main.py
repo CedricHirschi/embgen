@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from embgen.domains import discover_domains, detect_domain
-from embgen.core import parse_yaml, parse_and_render
+from embgen.discovery import discover_domains, detect_domain
+from embgen.generator import CodeGenerator
 
 
 class TestDomainDiscovery:
@@ -48,7 +48,10 @@ class TestCommandsGeneration:
 
     def test_parse_commands_yaml(self, commands_config: Path):
         """Test parsing commands YAML."""
-        data = parse_yaml(commands_config)
+        domains = discover_domains()
+        generator = domains["commands"]
+        code_gen = CodeGenerator(generator, Path.cwd())
+        data = code_gen.parse_yaml(commands_config)
         assert "name" in data
         assert "commands" in data
         assert data["name"] == "TinyProbeCommands"
@@ -59,7 +62,8 @@ class TestCommandsGeneration:
 
         domains = discover_domains()
         generator = domains["commands"]
-        data = parse_yaml(commands_config)
+        code_gen = CodeGenerator(generator, Path.cwd())
+        data = code_gen.parse_yaml(commands_config)
         config = generator.validate(data)
         assert isinstance(config, CommandsConfig)
         assert config.name == "TinyProbeCommands"
@@ -79,9 +83,8 @@ class TestCommandsGeneration:
                 "py": "template.py.j2",
             }
 
-            filenames = parse_and_render(
-                generator, commands_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(commands_config, templates)
 
             assert "commands.h" in filenames
             assert "commands.md" in filenames
@@ -103,9 +106,8 @@ class TestCommandsGeneration:
             output_path = Path(tmpdir)
             templates = {"h": "template.h.j2", "md": "template.md.j2"}
 
-            filenames = parse_and_render(
-                generator, commands_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(commands_config, templates)
 
             assert "commands.h" in filenames
             assert "commands.md" in filenames
@@ -126,7 +128,10 @@ class TestRegistersGeneration:
 
     def test_parse_registers_yaml(self, registers_config: Path):
         """Test parsing registers YAML."""
-        data = parse_yaml(registers_config)
+        domains = discover_domains()
+        generator = domains["registers"]
+        code_gen = CodeGenerator(generator, Path.cwd())
+        data = code_gen.parse_yaml(registers_config)
         assert "name" in data
         assert "regmap" in data
         assert data["name"] == "SimpleRegmap"
@@ -137,7 +142,8 @@ class TestRegistersGeneration:
 
         domains = discover_domains()
         generator = domains["registers"]
-        data = parse_yaml(registers_config)
+        code_gen = CodeGenerator(generator, Path.cwd())
+        data = code_gen.parse_yaml(registers_config)
         config = generator.validate(data)
         assert isinstance(config, RegistersConfig)
         assert config.name == "SimpleRegmap"
@@ -152,9 +158,8 @@ class TestRegistersGeneration:
             output_path = Path(tmpdir)
             templates = {"h": "template.h.j2", "md": "template.md.j2"}
 
-            filenames = parse_and_render(
-                generator, registers_config, output_path, templates
-            )
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(registers_config, templates)
 
             assert "simple.h" in filenames
             assert "simple.md" in filenames

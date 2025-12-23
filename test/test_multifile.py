@@ -10,7 +10,7 @@ from embgen.templates import (
     TemplateInfo,
     MultifileGroup,
 )
-from embgen.core import parse_and_render
+from embgen.generator import CodeGenerator
 from embgen.domains.commands.generator import CommandsGenerator
 
 
@@ -212,7 +212,7 @@ class TestMultifileGeneration:
             # Verify multifile group was found
             assert "c" in multifile
 
-            # Generate using parse_and_render with multifile
+            # Generate using CodeGenerator with multifile
             from embgen.domains.commands.generator import CommandsGenerator
 
             generator = CommandsGenerator()
@@ -223,10 +223,9 @@ class TestMultifileGeneration:
                     lambda self: templates_path
                 )
 
-                filenames = parse_and_render(
-                    generator,
+                code_gen = CodeGenerator(generator, output_path)
+                filenames = code_gen.generate_from_file(
                     config_file,
-                    output_path,
                     {},  # No single templates
                     multifile,  # Use multifile group
                 )
@@ -287,7 +286,7 @@ class TestMultifileGeneration:
             assert "sv" in multifile
             assert len(multifile["sv"].templates) == 2
 
-            # Generate using parse_and_render with multifile
+            # Generate using CodeGenerator with multifile
             from embgen.domains.commands.generator import CommandsGenerator
 
             generator = CommandsGenerator()
@@ -298,10 +297,9 @@ class TestMultifileGeneration:
                     lambda self: templates_path
                 )
 
-                filenames = parse_and_render(
-                    generator,
+                code_gen = CodeGenerator(generator, output_path)
+                filenames = code_gen.generate_from_file(
                     config_file,
-                    output_path,
                     {},  # No single templates
                     multifile,  # Use multifile group
                 )
