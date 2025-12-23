@@ -74,7 +74,7 @@ class Item(BaseModel):
         return len(self.tags) + sum(len(c.tags) for c in self.children)
 
 
-class TestingConfig(BaseConfig):
+class ConfigTesting(BaseConfig):
     """Configuration for the testing domain.
 
     This exercises many config features:

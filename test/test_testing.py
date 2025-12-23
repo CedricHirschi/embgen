@@ -17,7 +17,7 @@ import pytest
 from pydantic import ValidationError
 
 from embgen.domains.testing.models import (
-    TestingConfig,
+    ConfigTesting,
     Item,
     Tag,
     NestedItem,
@@ -155,7 +155,7 @@ class TestTestingConfig:
     """Test TestingConfig model."""
 
     def test_minimal_config(self):
-        cfg = TestingConfig(name="Test")
+        cfg = ConfigTesting(name="Test")
         assert cfg.name == "Test"
         assert cfg.file is None
         assert cfg.version == "1.0"
@@ -165,15 +165,15 @@ class TestTestingConfig:
         assert cfg.settings == {}
 
     def test_output_filename_default(self):
-        cfg = TestingConfig(name="TestConfig")
+        cfg = ConfigTesting(name="TestConfig")
         assert cfg.output_filename == "testconfig"
 
     def test_output_filename_explicit(self):
-        cfg = TestingConfig(name="TestConfig", file="custom_output")
+        cfg = ConfigTesting(name="TestConfig", file="custom_output")
         assert cfg.output_filename == "custom_output"
 
     def test_full_config(self):
-        cfg = TestingConfig(
+        cfg = ConfigTesting(
             name="FullTest",
             file="fulltest",
             version="2.0",
@@ -192,14 +192,14 @@ class TestTestingConfig:
         assert cfg.settings["debug"] is True
 
     def test_computed_item_count(self):
-        cfg = TestingConfig(
+        cfg = ConfigTesting(
             name="CountTest",
             items=[Item(name="a"), Item(name="b"), Item(name="c")],
         )
         assert cfg.item_count == 3
 
     def test_computed_enabled_items(self):
-        cfg = TestingConfig(
+        cfg = ConfigTesting(
             name="EnabledTest",
             items=[
                 Item(name="a", enabled=True),
@@ -212,7 +212,7 @@ class TestTestingConfig:
         assert all(i.enabled for i in enabled)
 
     def test_computed_items_by_type(self):
-        cfg = TestingConfig(
+        cfg = ConfigTesting(
             name="TypeTest",
             items=[
                 Item(name="a", item_type=ItemType.SIMPLE),
@@ -228,7 +228,7 @@ class TestTestingConfig:
 
     def test_validation_missing_name(self):
         with pytest.raises(ValidationError):
-            TestingConfig.model_validate({"items": []})
+            ConfigTesting.model_validate({"items": []})
 
 
 # =============================================================================
@@ -597,7 +597,7 @@ class TestEdgeCases:
 
     def test_empty_items_list(self):
         """Config with no items."""
-        cfg = TestingConfig(name="Empty", items=[])
+        cfg = ConfigTesting(name="Empty", items=[])
         assert len(cfg.items) == 0
         assert cfg.item_count == 0
 
@@ -633,7 +633,7 @@ class TestEdgeCases:
 
     def test_all_item_types(self):
         """Config with all item types."""
-        cfg = TestingConfig(
+        cfg = ConfigTesting(
             name="AllTypes",
             items=[
                 Item(name="s", item_type=ItemType.SIMPLE),

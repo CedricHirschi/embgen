@@ -92,14 +92,21 @@ def add_template_flags(
     return list(single_templates.keys()), list(multifile_groups.keys())
 
 
-def main():
-    """Main entry point for embgen CLI."""
+def main(argv: list[str] | None = None) -> int:
+    """Main entry point for embgen CLI.
+
+    Args:
+        argv: Command-line arguments. If None, uses sys.argv[1:].
+
+    Returns:
+        Exit code (0 for success, non-zero for failure).
+    """
     start_time = time.time()
 
     # Pre-parse to get domains-dir before loading domains
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("--domains-dir", type=Path, default=None)
-    pre_args, _ = pre_parser.parse_known_args()
+    pre_args, _ = pre_parser.parse_known_args(argv)
 
     domains_dir: Path | None = pre_args.domains_dir
     domains = discover_domains(domains_dir)
@@ -180,7 +187,7 @@ def main():
     )
 
     # Parse arguments
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     # Setup logging
     log = logging.getLogger("embgen")
@@ -191,7 +198,7 @@ def main():
     # Check if domain was specified
     if args.domain is None:
         ap.print_help()
-        sys.exit(1)
+        return 1
 
     # Handle 'new' subcommand
     if args.domain == "new":
@@ -208,7 +215,7 @@ def main():
         target_dir = location / domain_name
         if target_dir.exists():
             log.error(f"Domain directory already exists: {target_dir}")
-            sys.exit(1)
+            return 1
 
         log.info(f"Creating new domain '{domain_name}' in {location}")
         created = scaffold_domain(domain_name, location)
@@ -227,7 +234,7 @@ def main():
 
         end_time = time.time()
         log.debug(f"Done after {end_time - start_time:.2f} seconds.")
-        return
+        return 0
 
     # Handle auto-detect mode
     generator: DomainGenerator
@@ -243,7 +250,7 @@ def main():
             log.error(
                 f"Could not auto-detect domain. Available: {list(domains.keys())}"
             )
-            sys.exit(1)
+            return 1
         assert detected is not None  # Narrow type for type checker
         generator = detected
         log.info(f"Auto-detected domain: {generator.name}")
@@ -270,7 +277,7 @@ def main():
 
     if not selected_templates and not selected_multifile:
         log.error("No output formats specified. Use -h to see available formats.")
-        sys.exit(1)
+        return 1
 
     # Run generation using CodeGenerator
     try:
@@ -284,11 +291,12 @@ def main():
         log.error(f"Generation failed: {e}")
         if args.debug:
             raise
-        sys.exit(1)
+        return 1
 
     end_time = time.time()
     log.debug(f"Done after {end_time - start_time:.2f} seconds.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

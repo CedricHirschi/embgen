@@ -6,7 +6,7 @@ from typing import Any, cast
 from jinja2 import Template
 
 from .. import BaseConfig, DomainGenerator
-from .models import TestingConfig
+from .models import ConfigTesting
 
 
 class TestingGenerator(DomainGenerator):
@@ -38,11 +38,11 @@ class TestingGenerator(DomainGenerator):
 
     def validate(self, data: dict[str, Any]) -> BaseConfig:
         """Validate and return TestingConfig."""
-        return cast(BaseConfig, TestingConfig.model_validate(data))
+        return cast(BaseConfig, ConfigTesting.model_validate(data))
 
     def render(self, config: Any, template: Template) -> str:
         """Render a template with the testing config."""
-        cfg: TestingConfig = config
+        cfg: ConfigTesting = config
         return template.render(
             # Basic config
             name=cfg.name,
