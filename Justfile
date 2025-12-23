@@ -24,3 +24,8 @@ check:
 [group("lint")]
 typecheck:
     uv run ty check --exclude docs
+
+# Build documentation using mkdocs
+[group("docs")]
+docs:
+    uv run mkdocs build
