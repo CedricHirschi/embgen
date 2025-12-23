@@ -1,0 +1,39 @@
+{# Multi-file template: Data file part 1 (.dat) #}
+{# Part of dat_multi group - generates .dat.1, .dat.2, .dat.3 files #}
+# {{ name }} - Data File Part 1: Header and Summary
+# Generated: {{ generated_on }}
+# Version: {{ version }}
+#
+# This file contains the header and summary information.
+# Part 1 of 3 in the dat_multi group.
+
+[HEADER]
+name={{ name }}
+version={{ version }}
+output_filename={{ output_filename }}
+{% if description %}
+description={{ description }}
+{% endif %}
+
+[SUMMARY]
+item_count={{ item_count }}
+enabled_count={{ enabled_items | length }}
+global_tag_count={{ global_tags | length }}
+{% for type_name, type_items in items_by_type.items() %}
+{{ type_name }}_count={{ type_items | length }}
+{% endfor %}
+
+[GLOBAL_TAGS]
+{% for tag in global_tags %}
+tag.{{ loop.index0 }}.name={{ tag.name }}
+{% if tag.value is not none %}
+tag.{{ loop.index0 }}.value={{ tag.value }}
+{% endif %}
+{% endfor %}
+
+[SETTINGS]
+{% for key, val in settings.items() %}
+{{ key }}={{ val }}
+{% endfor %}
+
+# End of Part 1

@@ -1,0 +1,6 @@
+# Testing Helper File
+# This file is copied by the post_generate hook when .txt output is generated.
+# It demonstrates the post-generation file copy feature.
+
+This helper file contains utility information for the testing domain.
+It is automatically copied when text output is requested.

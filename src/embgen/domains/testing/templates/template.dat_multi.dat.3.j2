@@ -1,0 +1,55 @@
+{# Multi-file template: Data file part 3 (.dat) #}
+{# Part of dat_multi group - generates .dat.1, .dat.2, .dat.3 files #}
+# {{ name }} - Data File Part 3: Nested Children
+# Generated: {{ generated_on }}
+# Version: {{ version }}
+#
+# This file contains all nested children definitions.
+# Part 3 of 3 in the dat_multi group.
+
+[CHILDREN]
+{% set total_children = namespace(count=0) %}
+{% for item in items %}
+{% set total_children.count = total_children.count + item.children | length %}
+{% endfor %}
+total_count={{ total_children.count }}
+
+{% for item in items %}
+{% if item.children %}
+# Children of item: {{ item.name }}
+{% for child in item.children %}
+[CHILD.{{ item.name }}.{{ loop.index0 }}]
+parent={{ item.name }}
+id={{ child.id }}
+label={{ child.label }}
+tag_count={{ child.tags | length }}
+{% for tag in child.tags %}
+tag.{{ loop.index0 }}.name={{ tag.name }}
+{% if tag.value is not none %}
+tag.{{ loop.index0 }}.value={{ tag.value }}
+{% endif %}
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+[STATISTICS]
+# Computed statistics across all data
+total_items={{ item_count }}
+total_children={{ total_children.count }}
+total_global_tags={{ global_tags | length }}
+{% set all_tags = namespace(count=0) %}
+{% for item in items %}
+{% set all_tags.count = all_tags.count + item.tag_count %}
+{% endfor %}
+total_all_tags={{ all_tags.count }}
+
+# Items by type breakdown
+{% for type_name, type_items in items_by_type.items() %}
+type.{{ type_name }}.count={{ type_items | length }}
+type.{{ type_name }}.items={% for item in type_items %}{{ item.name }}{% if not loop.last %},{% endif %}{% endfor %}
+
+{% endfor %}
+
+# End of Part 3

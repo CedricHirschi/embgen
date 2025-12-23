@@ -1,0 +1,34 @@
+{# Single-file JSON template - tests structured output #}
+{
+  "name": "{{ name }}",
+  "version": "{{ version }}",
+{% if description %}
+  "description": "{{ description }}",
+{% endif %}
+  "summary": {
+    "item_count": {{ item_count }},
+    "enabled_count": {{ enabled_items | length }},
+    "global_tag_count": {{ global_tags | length }}
+  },
+  "items": [
+{%- for item in items %}
+    {
+      "name": "{{ item.name }}",
+      "name_upper": "{{ item.name_upper }}",
+      "type": "{{ item.item_type }}",
+      "value": {{ item.value }},
+      "enabled": {{ item.enabled | tojson }},
+      "tag_count": {{ item.tag_count }}{% if item.description %},
+      "description": "{{ item.description }}"{% endif %}
+
+    }{% if not loop.last %},{% endif %}
+
+{%- endfor %}
+  ],
+  "global_tags": [
+{%- for tag in global_tags %}
+    {"name": "{{ tag.name }}"{% if tag.value is not none %}, "value": {{ tag.value }}{% endif %}}{% if not loop.last %},{% endif %}
+
+{%- endfor %}
+  ]
+}

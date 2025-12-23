@@ -1,0 +1,45 @@
+{# Multi-file template: Data file part 2 (.dat) #}
+{# Part of dat_multi group - generates .dat.1, .dat.2, .dat.3 files #}
+# {{ name }} - Data File Part 2: Item Definitions
+# Generated: {{ generated_on }}
+# Version: {{ version }}
+#
+# This file contains all item definitions.
+# Part 2 of 3 in the dat_multi group.
+
+[ITEMS]
+count={{ item_count }}
+
+{% for item in items %}
+[ITEM.{{ loop.index0 }}]
+name={{ item.name }}
+name_upper={{ item.name_upper }}
+type={{ item.item_type }}
+value={{ item.value }}
+enabled={{ item.enabled }}
+{% if item.description %}
+description={{ item.description }}
+{% endif %}
+tag_count={{ item.tag_count }}
+child_count={{ item.children | length }}
+
+{% if item.tags %}
+# Item tags
+{% for tag in item.tags %}
+tag.{{ loop.index0 }}.name={{ tag.name }}
+{% if tag.value is not none %}
+tag.{{ loop.index0 }}.value={{ tag.value }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if item.metadata %}
+# Item metadata
+{% for key, val in item.metadata.items() %}
+meta.{{ key }}={{ val }}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+
+# End of Part 2

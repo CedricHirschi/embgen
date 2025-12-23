@@ -1,0 +1,111 @@
+{# Single-file TXT template - tests basic Jinja2 features #}
+{# ======================================================= #}
+{# This template exercises:
+   - Variables and expressions
+   - Loops (for)
+   - Conditionals (if/elif/else)
+   - Filters (upper, lower, default, length, join)
+   - Whitespace control
+   - Comments
+   - Macros
+   - Set statements
+#}
+
+{#- Macro definitions -#}
+{% macro render_tag(tag) -%}
+  - {{ tag.name }}{% if tag.value is not none %}: {{ tag.value }}{% endif %}{% if tag.description %} ({{ tag.description }}){% endif %}
+{%- endmacro %}
+
+{% macro render_item_summary(item) -%}
+  [{{ item.name_upper }}] type={{ item.item_type }} enabled={{ item.enabled }} tags={{ item.tag_count }}
+{%- endmacro %}
+
+{# ===================== #}
+{# DOCUMENT START        #}
+{# ===================== #}
+================================================================================
+TESTING DOMAIN OUTPUT: {{ name | upper }}
+================================================================================
+Generated: {{ generated_on }}
+Version: {{ version | default("unknown") }}
+{% if description %}
+Description: {{ description }}
+{% endif %}
+
+--------------------------------------------------------------------------------
+CONFIGURATION SUMMARY
+--------------------------------------------------------------------------------
+Total Items: {{ item_count }}
+Enabled Items: {{ enabled_items | length }}
+Global Tags: {{ global_tags | length }}
+
+{% if global_tags %}
+Global Tags:
+{% for tag in global_tags %}
+{{ render_tag(tag) }}
+{% endfor %}
+{% endif %}
+
+--------------------------------------------------------------------------------
+ITEMS BY TYPE
+--------------------------------------------------------------------------------
+{% for type_name, type_items in items_by_type.items() %}
+{{ type_name | upper }} ({{ type_items | length }} items):
+{% for item in type_items %}
+  {{ loop.index }}. {{ render_item_summary(item) }}
+{% endfor %}
+
+{% endfor %}
+
+--------------------------------------------------------------------------------
+DETAILED ITEM LIST
+--------------------------------------------------------------------------------
+{% for item in items %}
+{% set item_num = loop.index %}
+ITEM #{{ item_num }}: {{ item.name }}
+  Type: {{ item.item_type }}
+  Value: {{ item.value }}
+  Enabled: {{ "YES" if item.enabled else "NO" }}
+{% if item.description %}
+  Description: {{ item.description }}
+{% endif %}
+{% if item.tags %}
+  Tags ({{ item.tags | length }}):
+{% for tag in item.tags %}
+    {{ render_tag(tag) }}
+{% endfor %}
+{% endif %}
+{% if item.children %}
+  Children ({{ item.children | length }}):
+{% for child in item.children %}
+    - [{{ child.id }}] {{ child.label }}
+{% if child.tags %}
+{% for tag in child.tags %}
+      {{ render_tag(tag) }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if item.metadata %}
+  Metadata:
+{% for key, val in item.metadata.items() %}
+    {{ key }}: {{ val }}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+
+--------------------------------------------------------------------------------
+SETTINGS
+--------------------------------------------------------------------------------
+{% if settings %}
+{% for key, val in settings.items() %}
+{{ key }}: {{ val }}
+{% endfor %}
+{% else %}
+No settings defined.
+{% endif %}
+
+================================================================================
+END OF OUTPUT
+================================================================================

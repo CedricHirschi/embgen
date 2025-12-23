@@ -1,0 +1,101 @@
+# Comprehensive test configuration for the testing domain
+# This exercises all features of the testing domain models
+
+name: TestConfig
+version: "2.0"
+description: "A comprehensive test configuration for embgen testing"
+
+# Global tags applied to the entire config
+global_tags:
+  - name: author
+    value: 1
+    description: "Test author ID"
+  - name: priority
+    description: "High priority test"
+  - name: category
+    value: 42
+
+# Global settings dictionary
+settings:
+  debug: true
+  max_retries: 3
+  timeout_ms: 1000
+  output_format: "verbose"
+
+# List of test items with various configurations
+items:
+  # Simple item with minimal config
+  - name: simple_item
+    item_type: simple
+    value: 100
+    enabled: true
+    description: "A simple test item"
+
+  # Complex item with tags
+  - name: complex_item
+    item_type: complex
+    value: 200
+    enabled: true
+    description: "A complex item with tags and metadata"
+    tags:
+      - name: version
+        value: 1
+      - name: stable
+        description: "Marked as stable"
+      - name: priority
+        value: 5
+    metadata:
+      created: "2024-01-01"
+      modified: "2024-12-23"
+      revision: 42
+
+  # Nested item with children
+  - name: nested_item
+    item_type: nested
+    value: 300
+    enabled: true
+    description: "An item with nested children"
+    tags:
+      - name: parent
+        value: 0
+    children:
+      - id: 1
+        label: "First Child"
+        tags:
+          - name: order
+            value: 1
+      - id: 2
+        label: "Second Child"
+        tags:
+          - name: order
+            value: 2
+          - name: special
+      - id: 3
+        label: "Third Child"
+
+  # Disabled item
+  - name: disabled_item
+    item_type: simple
+    value: 0
+    enabled: false
+    description: "This item is disabled"
+
+  # Item with no optional fields
+  - name: minimal_item
+    item_type: simple
+
+  # Another complex item
+  - name: another_complex
+    item_type: complex
+    value: 999
+    enabled: true
+    tags:
+      - name: test
+        value: 123
+    children:
+      - id: 100
+        label: "Nested in complex"
+    metadata:
+      key1: "value1"
+      key2: 42
+      nested_enabled: true

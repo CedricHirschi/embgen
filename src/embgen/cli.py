@@ -60,7 +60,6 @@ def add_template_flags(
         ):
             short = group_name[i]
             i += 1
-        added_shorts.append(short)
 
         # Build help text listing output files
         output_files = []
@@ -71,13 +70,24 @@ def add_template_flags(
                 output_files.append(f".{t.output_ext}")
         outputs_str = ", ".join(output_files)
 
-        group.add_argument(
-            f"-{short}",
-            f"--{group_name}-multi",
-            action="store_true",
-            dest=f"{group_name}_multi",
-            help=f"Generate {desc} outputs ({outputs_str})",
-        )
+        # Only add short flag if we found a unique one
+        if short not in added_shorts and short not in ("o", "d", "h", "i"):
+            added_shorts.append(short)
+            group.add_argument(
+                f"-{short}",
+                f"--{group_name}-multi",
+                action="store_true",
+                dest=f"{group_name}_multi",
+                help=f"Generate {desc} outputs ({outputs_str})",
+            )
+        else:
+            # No unique short flag available, use long-form only
+            group.add_argument(
+                f"--{group_name}-multi",
+                action="store_true",
+                dest=f"{group_name}_multi",
+                help=f"Generate {desc} outputs ({outputs_str})",
+            )
 
     return list(single_templates.keys()), list(multifile_groups.keys())
 
