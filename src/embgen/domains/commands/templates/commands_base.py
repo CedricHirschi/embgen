@@ -41,8 +41,50 @@ class Command:
         args = [getattr(self, arg.name) for arg in args]
         args = [arg.value if isinstance(arg, Enum) else arg for arg in args]
 
+        # Build a dynamic struct format string so plain 's' becomes a
+        # sized bytes field using the actual length of the provided bytes
+        fmt = self._format
+        out_parts: list[str] = []
+        arg_idx = 0
+        i = 0
+        while i < len(fmt):
+            # collect optional numeric repeat count
+            num = ""
+            while i < len(fmt) and fmt[i].isdigit():
+                num += fmt[i]
+                i += 1
+            if i >= len(fmt):
+                break
+            code = fmt[i]
+            i += 1
+            if code == "s":
+                # if no explicit count was provided, use the actual length
+                if num == "":
+                    try:
+                        length = len(args[arg_idx])
+                    except Exception:
+                        length = 0
+                    out_parts.append(f"{length}s")
+                    arg_idx += 1
+                else:
+                    out_parts.append(num + "s")
+                    arg_idx += 1
+            else:
+                if num:
+                    out_parts.append(num + code)
+                    # consume that many args if numeric prefix provided
+                    try:
+                        arg_idx += int(num)
+                    except Exception:
+                        arg_idx += 1
+                else:
+                    out_parts.append(code)
+                    arg_idx += 1
+
+        dynamic_format = "".join(out_parts)
+
         # Get size of the arguments
-        args_size = struct.calcsize(ENDIANNESS + self._format)
+        args_size = struct.calcsize(ENDIANNESS + dynamic_format)
         return struct.pack(
-            ENDIANNESS + HEADER + self._format, self._id, args_size, *args
+            ENDIANNESS + HEADER + dynamic_format, self._id, args_size, *args
         )
