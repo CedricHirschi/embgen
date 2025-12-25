@@ -103,9 +103,15 @@ typedef struct {{ name | lower | replace(' ', '_') }}_{{ command.name | lower | 
 /* ============================================================================
  * Command Argument Counts
  * ========================================================================== */
-{% for command in commands %}
+{# {% for command in commands %}
 #define {{ name | upper | replace(' ', '_') }}_{{ command.name | upper | replace(' ', '_') }}_ARG_COUNT {{ command.args|length }}
+{% endfor %} #}
+static const uint16_t {{ name | upper | replace(' ', '_') }}_ARG_COUNTS[{{ name | upper | replace(' ', '_') }}_SIZE] = {
+{% for command in commands %}
+    [{{ name | upper | replace(' ', '_') }}_CMD_{{ command.name | upper | replace(' ', '_') }}] = {{ command.args|length }},
 {% endfor %}
+};
+
 
 /* ============================================================================
  * Command Descriptions
