@@ -90,6 +90,30 @@ typedef struct {{ name | lower | replace(' ', '_') }}_{{ command.name | lower | 
 {% endfor %}
 
 /* ============================================================================
+ * Command Structure Definitions
+ * ========================================================================== */
+
+/**
+ * @brief Union of all command argument structures
+ */
+typedef union {{ name | lower | replace(' ', '_') }}_command_args {
+{% for command in commands %}
+    {{ name | lower | replace(' ', '_') }}_{{ command.name | lower | replace(' ', '_') }}_args_t {{ command.name | lower | replace(' ', '_') }}; /**< Arguments for {{ command.name|upper }} command */
+{% endfor %}
+} {{ name | lower | replace(' ', '_') }}_command_args_t;
+
+/**
+ * @brief Structure representing a command
+ */
+typedef struct {{ name | lower | replace(' ', '_') }}_command {
+    {{ name | lower | replace(' ', '_') }}_command_id_t id; /**< Command ID */
+    uint16_t arg_count; /**< Number of arguments */
+    {{ name | lower | replace(' ', '_') }}_command_args_t *args; /**< Command arguments */
+    const char *name; /**< Command name */
+    const char *description; /**< Command description */
+} {{ name | lower | replace(' ', '_') }}_command_t;
+
+/* ============================================================================
  * Command Default Values
  * ========================================================================== */
 {% for command in commands %}
@@ -103,9 +127,7 @@ typedef struct {{ name | lower | replace(' ', '_') }}_{{ command.name | lower | 
 /* ============================================================================
  * Command Argument Counts
  * ========================================================================== */
-{# {% for command in commands %}
-#define {{ name | upper | replace(' ', '_') }}_{{ command.name | upper | replace(' ', '_') }}_ARG_COUNT {{ command.args|length }}
-{% endfor %} #}
+
 static const uint16_t {{ name | upper | replace(' ', '_') }}_ARG_COUNTS[{{ name | upper | replace(' ', '_') }}_SIZE] = {
 {% for command in commands %}
     [{{ name | upper | replace(' ', '_') }}_CMD_{{ command.name | upper | replace(' ', '_') }}] = {{ command.args|length }},
