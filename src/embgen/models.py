@@ -1,8 +1,8 @@
 """Base models shared across all domains.
 
 This module contains:
-- Pydantic models for configuration validation (BaseConfig, Enum)
-- Dataclasses for internal data structures (TemplateInfo, MultifileGroup)
+    - Pydantic models for configuration validation (BaseConfig, Enum)
+    - Dataclasses for internal data structures (TemplateInfo, MultifileGroup)
 """
 
 from dataclasses import dataclass, field
@@ -19,8 +19,8 @@ class BaseConfig(BaseModel):
     """Base configuration that all domain configs must extend.
 
     This provides the common fields that every domain needs:
-    - name: The human-readable name for the generated code
-    - file: Optional override for the output filename
+        - name: The human-readable name for the generated code
+        - file: Optional override for the output filename
     """
 
     name: str

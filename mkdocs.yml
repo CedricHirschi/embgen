@@ -10,6 +10,7 @@ nav:
   - Usage:
       - CLI Reference: usage/cli.md
       - Python API: usage/python-api.md
+      - Full Python API Reference: usage/full-api.md
   - Built-in Domains:
       - Overview: domains/index.md
       - Commands: domains/commands.md
@@ -79,6 +80,16 @@ theme:
 plugins:
   - search
   - social
+  - mkdocstrings:
+      handlers:
+        python:
+          docstring_style: google   # or numpy / sphinx
+          options:
+            show_root_heading: false
+            show_root_toc_entry: false
+            heading_level: 3
+          selection:
+            members: true
 
 markdown_extensions:
   - admonition

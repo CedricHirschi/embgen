@@ -1,4 +1,40 @@
-"""Template utilities and discovery."""
+"""Template utilities, environment setup, and helper functions.
+
+This module provides the infrastructure for working with Jinja2 templates in embgen.
+It includes:
+
+- Template discovery and validation
+- Jinja2 environment configuration with custom filters
+- Helper functions for file type detection
+- Multifile template group parsing
+
+The module sets up a standardized Jinja2 environment with useful filters and
+functions that are automatically available to all templates, such as:
+
+- `file_type()`: Convert file extensions to human-readable names
+- `to_screaming_snake()`: Convert strings to SCREAMING_SNAKE_CASE
+- And more custom filters for common formatting tasks
+
+Key Functions:
+
+- `get_env()`: Get a configured Jinja2 environment for a templates directory
+- `discover_templates()`: Find all template files in a directory
+- `parse_multifile_groups()`: Parse template filenames for multifile generation
+
+Example:
+    ```python
+    from embgen.templates import get_env, discover_templates
+    from pathlib import Path
+
+    # Set up Jinja2 environment
+    env = get_env(Path('my_domain/templates'))
+
+    # Discover available templates
+    templates = discover_templates(Path('my_domain/templates'))
+    for template_info in templates:
+        print(f"{template_info.name}: {template_info.extension}")
+    ```
+"""
 
 import re
 from pathlib import Path
@@ -45,16 +81,16 @@ def parse_template_name(filename: str) -> tuple[str | None, str, str | None]:
     """Parse a template filename to extract multifile group, extension, and suffix.
 
     Template naming conventions:
-    - Single file: template.{ext}.j2 -> (None, ext, None)
-    - Multifile different exts: template.{group}_multi.{ext}.j2 -> (group, ext, None)
-    - Multifile same ext: template.{group}_multi.{ext}.{suffix}.j2 -> (group, ext, suffix)
+        - Single file: `template.{ext}.j2` -> `(None, ext, None)`
+        - Multifile different exts: `template.{group}_multi.{ext}.j2` -> `(group, ext, None)`
+        - Multifile same ext: `template.{group}_multi.{ext}.{suffix}.j2` -> `(group, ext, suffix)`
 
     Examples:
-    - template.h.j2 -> (None, "h", None)
-    - template.c_multi.h.j2 -> ("c", "h", None)
-    - template.c_multi.c.j2 -> ("c", "c", None)
-    - template.sv_multi.sv.1.j2 -> ("sv", "sv", "1")
-    - template.sv_multi.sv.2.j2 -> ("sv", "sv", "2")
+        - `template.h.j2` -> `(None, "h", None)`
+        - `template.c_multi.h.j2` -> `("c", "h", None)`
+        - `template.c_multi.c.j2` -> `("c", "c", None)`
+        - `template.sv_multi.sv.1.j2` -> `("sv", "sv", "1")`
+        - `template.sv_multi.sv.2.j2` -> `("sv", "sv", "2")`
 
     Args:
         filename: The template filename.

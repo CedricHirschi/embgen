@@ -1,4 +1,30 @@
-"""Domain scaffolding for creating new domains."""
+"""Domain scaffolding for creating new custom domains.
+
+This module provides utilities to create the boilerplate structure for new embgen
+domains. It generates all the necessary files and folders to get started with a
+custom domain implementation:
+
+- `__init__.py`: Domain package initialization
+- `models.py`: Pydantic models for configuration validation
+- `generator.py`: Domain-specific generator implementation
+- `templates/`: Directory for Jinja2 templates
+
+The generated scaffold follows embgen's conventions and best practices, providing
+a working starting point that can be customized for your specific use case.
+
+Example:
+    ```python
+    from pathlib import Path
+    from embgen.scaffold import scaffold_domain
+
+    # Create a new domain called 'protocols'
+    created_files = scaffold_domain('protocols', Path('./my_domains'))
+    print(f"Created {len(created_files)} files")
+    ```
+
+See Also:
+    The CLI provides a convenient wrapper: `embgen scaffold <domain_name>`
+"""
 
 from pathlib import Path
 
@@ -43,9 +69,11 @@ class {name.capitalize()}Config(BaseConfig):
 
     Customize this model with fields specific to your domain.
     Example YAML:
+        ```yaml
         name: My{name.capitalize()}
         file: my{name}  # optional output filename
         # Add your domain-specific fields here
+        ```
     """
 
     # Add your domain-specific fields here

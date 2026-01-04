@@ -1,4 +1,36 @@
-"""Domain discovery and auto-detection logic."""
+"""Domain discovery and auto-detection logic.
+
+This module provides the functionality to automatically detect which domain a YAML
+configuration file belongs to, and to discover all available domain generators.
+It handles both built-in domains (shipped with embgen) and user-defined domains
+(loaded from a custom directory).
+
+The discovery process works by:
+
+1. Looking for domain packages in the built-in domains directory
+2. Optionally searching user-defined domains from EMBGEN_DOMAINS_DIR environment variable
+3. Attempting to auto-detect the correct domain from YAML content using each domain's detector
+
+Key Functions:
+
+- `detect_domain`: Auto-detect which domain a YAML file belongs to
+- `discover_domains`: Find all available domain generators
+
+Example:
+    ```python
+    from embgen.discovery import detect_domain, discover_domains
+
+    # Discover all available domains
+    domains = discover_domains()
+    print(f"Available domains: {list(domains.keys())}")
+
+    # Auto-detect domain from YAML content
+    with open("config.yml") as f:
+        data = yaml.safe_load(f)
+    domain_name, generator = detect_domain(data)
+    print(f"Detected domain: {domain_name}")
+    ```
+"""
 
 from __future__ import annotations
 
@@ -76,7 +108,7 @@ def discover_domains(
 
     Args:
         extra_domains_dir: Optional path to additional user domains directory.
-            Can also be set via EMBGEN_DOMAINS_DIR environment variable.
+            Can also be set via `EMBGEN_DOMAINS_DIR` environment variable.
 
     Returns:
         Dict mapping domain name to generator instance.

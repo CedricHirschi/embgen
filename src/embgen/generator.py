@@ -1,4 +1,32 @@
-"""Code generation orchestration."""
+"""Code generation orchestration.
+
+This module contains the core `CodeGenerator` class that orchestrates the entire
+code generation process in embgen. It handles:
+
+- Parsing and validating YAML configuration files
+- Setting up the Jinja2 template environment
+- Rendering templates with the parsed configuration
+- Writing output files (single or multi-file groups)
+- Managing output directories and file paths
+
+The `CodeGenerator` is the main programmatic entry point for using embgen in
+Python scripts, providing a high-level API that abstracts away the details of
+template rendering and file I/O.
+
+Example:
+    ```python
+    from embgen.generator import CodeGenerator
+    from embgen.discovery import discover_domains
+
+    # Get the commands domain generator
+    domains = discover_domains()
+    commands_gen = domains['commands']
+
+    # Create generator and process YAML
+    gen = CodeGenerator(commands_gen)
+    gen.generate_from_file('my_commands.yml', output_dir='generated')
+    ```
+"""
 
 from __future__ import annotations
 
@@ -21,21 +49,24 @@ class CodeGenerator:
     """Orchestrates code generation from YAML to output files.
 
     This class encapsulates the entire generation workflow:
-    1. Parse and validate YAML input
-    2. Set up Jinja2 environment
-    3. Render templates to output files
-    4. Run post-generation hooks
+        1. Parse and validate YAML input
+        2. Set up Jinja2 environment
+        3. Render templates to output files
+        4. Run post-generation hooks
 
     Example:
-        >>> from embgen.generator import CodeGenerator
-        >>> from embgen.discovery import discover_domains
-        >>>
-        >>> generator = discover_domains()["commands"]
-        >>> code_gen = CodeGenerator(generator, Path("output"))
-        >>> filenames = code_gen.generate_from_file(
-        ...     Path("config.yml"),
-        ...     templates={"h": "template.h.j2", "py": "template.py.j2"}
-        ... )
+        ```python
+        from pathlib import Path
+        from embgen.generator import CodeGenerator
+        from embgen.discovery import discover_domains
+
+        generator = discover_domains()["commands"]
+        code_gen = CodeGenerator(generator, Path("output"))
+        filenames = code_gen.generate_from_file(
+            Path("config.yml"),
+            templates={"h": "template.h.j2", "py": "template.py.j2"}
+        )
+        ```
     """
 
     def __init__(self, generator: DomainGenerator, output_path: Path):
