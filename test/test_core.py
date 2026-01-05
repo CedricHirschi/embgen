@@ -178,7 +178,7 @@ class TestCodeGenerator:
 
     @pytest.fixture
     def commands_config(self) -> Path:
-        return Path(__file__).parent / "configs" / "commands" / "tinyprobe.yml"
+        return Path(__file__).parent / "configs" / "commands" / "simple.yml"
 
     @pytest.fixture
     def registers_config(self) -> Path:

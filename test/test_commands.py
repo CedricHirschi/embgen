@@ -304,7 +304,7 @@ class TestCommandsGeneration:
 
     @pytest.fixture
     def commands_config(self) -> Path:
-        return Path(__file__).parent / "configs" / "commands" / "tinyprobe.yml"
+        return Path(__file__).parent / "configs" / "commands" / "simple.yml"
 
     @pytest.fixture
     def generator(self) -> CommandsGenerator:
@@ -313,7 +313,7 @@ class TestCommandsGeneration:
     def test_parse_yaml(self, commands_config: Path, generator: CommandsGenerator):
         code_gen = CodeGenerator(generator, Path.cwd())
         data = code_gen.parse_yaml(commands_config)
-        assert data["name"] == "TinyProbeCommands"
+        assert data["name"] == "Simple"
         assert len(data["commands"]) == 11
 
     def test_validate_full_config(
@@ -322,7 +322,7 @@ class TestCommandsGeneration:
         code_gen = CodeGenerator(generator, Path.cwd())
         data = code_gen.parse_yaml(commands_config)
         config = generator.validate(data)
-        assert config.name == "TinyProbeCommands"
+        assert config.name == "Simple"
 
     def test_generate_header(self, commands_config: Path, generator: CommandsGenerator):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -337,7 +337,7 @@ class TestCommandsGeneration:
             assert header_file.exists()
 
             content = header_file.read_text()
-            assert "TINYPROBECOMMANDS" in content  # Guard macro
+            assert "SIMPLE" in content  # Guard macro
             assert "ping" in content.lower()
 
     def test_generate_python(self, commands_config: Path, generator: CommandsGenerator):
@@ -371,7 +371,7 @@ class TestCommandsGeneration:
             assert md_file.exists()
 
             content = md_file.read_text()
-            assert "TinyProbeCommands" in content
+            assert "Simple" in content
 
     def test_generate_all_formats(
         self, commands_config: Path, generator: CommandsGenerator

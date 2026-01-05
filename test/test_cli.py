@@ -256,7 +256,7 @@ class TestCLIGeneration:
 
     @pytest.fixture
     def commands_config(self) -> Path:
-        return Path(__file__).parent / "configs" / "commands" / "tinyprobe.yml"
+        return Path(__file__).parent / "configs" / "commands" / "simple.yml"
 
     @pytest.fixture
     def registers_config(self) -> Path:
@@ -377,7 +377,7 @@ class TestCLIErrorHandling:
 
     def test_no_output_format_specified(self):
         """Test error when no output format is specified."""
-        config = Path(__file__).parent / "configs" / "commands" / "tinyprobe.yml"
+        config = Path(__file__).parent / "configs" / "commands" / "simple.yml"
         with tempfile.TemporaryDirectory() as tmpdir:
             exit_code, stdout, stderr = run_cli(
                 "commands",
@@ -571,7 +571,7 @@ class TestCLISubprocess:
 
     def test_entry_point_generates(self):
         """Test that python -m embgen can generate output."""
-        config = Path(__file__).parent / "configs" / "commands" / "tinyprobe.yml"
+        config = Path(__file__).parent / "configs" / "commands" / "simple.yml"
         with tempfile.TemporaryDirectory() as tmpdir:
             result = subprocess.run(
                 [

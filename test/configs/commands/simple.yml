@@ -1,4 +1,4 @@
-name: TinyProbeCommands
+name: Simple
 file: commands
 commands:
   - name: ping

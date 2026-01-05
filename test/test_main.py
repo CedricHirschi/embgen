@@ -44,7 +44,7 @@ class TestCommandsGeneration:
 
     @pytest.fixture
     def commands_config(self) -> Path:
-        return Path(__file__).parent / "configs" / "commands" / "tinyprobe.yml"
+        return Path(__file__).parent / "configs" / "commands" / "simple.yml"
 
     def test_parse_commands_yaml(self, commands_config: Path):
         """Test parsing commands YAML."""
@@ -54,7 +54,7 @@ class TestCommandsGeneration:
         data = code_gen.parse_yaml(commands_config)
         assert "name" in data
         assert "commands" in data
-        assert data["name"] == "TinyProbeCommands"
+        assert data["name"] == "Simple"
 
     def test_validate_commands(self, commands_config: Path):
         """Test validating commands config."""
@@ -66,7 +66,7 @@ class TestCommandsGeneration:
         data = code_gen.parse_yaml(commands_config)
         config = generator.validate(data)
         assert isinstance(config, CommandsConfig)
-        assert config.name == "TinyProbeCommands"
+        assert config.name == "Simple"
         assert len(config.commands) == 11
 
     def test_generate_commands(self, commands_config: Path):
