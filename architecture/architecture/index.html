@@ -12,25 +12,31 @@
         <meta name="author" content="Cedric Hirschi">
       
       
+        <link rel="canonical" href="https://CedricHirschi.github.io/embgen/architecture/architecture/">
       
+      
+        <link rel="prev" href="../../extending/multifile/">
+      
+      
+        <link rel="next" href="../full-api/">
       
       
         
       
       
-      <link rel="icon" href="/embgen/assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
-        <title>EmbGen</title>
+        <title>Architecture Overview - EmbGen</title>
       
     
     
-      <link rel="stylesheet" href="/embgen/assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="/embgen/assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -49,15 +55,28 @@
       
     
     
-      <link rel="stylesheet" href="/embgen/assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("/embgen/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
-  </head>
+  
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Architecture Overview - EmbGen" />
+<meta property="og:description" content="EmbGen - Code generator used for embedded systems development" />
+<meta property="og:image" content="https://CedricHirschi.github.io/embgen/assets/images/social/architecture/architecture.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://CedricHirschi.github.io/embgen/architecture/architecture/" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="Architecture Overview - EmbGen" />
+<meta property="twitter:description" content="EmbGen - Code generator used for embedded systems development" />
+<meta property="twitter:image" content="https://CedricHirschi.github.io/embgen/assets/images/social/architecture/architecture.png" />
+</head>
   
   
     
@@ -75,6 +94,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#embgen-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -87,7 +111,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/embgen/." title="EmbGen" class="md-header__button md-logo" aria-label="EmbGen" data-md-component="logo">
+    <a href="../.." title="EmbGen" class="md-header__button md-logo" aria-label="EmbGen" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -107,7 +131,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              Architecture Overview
             
           </span>
         </div>
@@ -231,7 +255,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/embgen/." class="md-tabs__link">
+        <a href="../.." class="md-tabs__link">
           
   
   
@@ -251,7 +275,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/embgen/usage/cli/" class="md-tabs__link">
+        <a href="../../usage/cli/" class="md-tabs__link">
           
   
   
@@ -271,7 +295,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/embgen/domains/" class="md-tabs__link">
+        <a href="../../domains/" class="md-tabs__link">
           
   
   
@@ -291,7 +315,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/embgen/extending/" class="md-tabs__link">
+        <a href="../../extending/" class="md-tabs__link">
           
   
   
@@ -307,11 +331,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="/embgen/architecture/architecture/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -351,7 +377,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/embgen/." title="EmbGen" class="md-nav__button md-logo" aria-label="EmbGen" data-md-component="logo">
+    <a href="../.." title="EmbGen" class="md-nav__button md-logo" aria-label="EmbGen" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -399,7 +425,7 @@
   
   
   
-    <a href="/embgen/." class="md-nav__link">
+    <a href="../.." class="md-nav__link">
       
   
   
@@ -450,7 +476,7 @@
   
   
   
-    <a href="/embgen/usage/cli/" class="md-nav__link">
+    <a href="../../usage/cli/" class="md-nav__link">
       
   
   
@@ -501,7 +527,7 @@
   
   
   
-    <a href="/embgen/domains/" class="md-nav__link">
+    <a href="../../domains/" class="md-nav__link">
       
   
   
@@ -552,7 +578,7 @@
   
   
   
-    <a href="/embgen/extending/" class="md-nav__link">
+    <a href="../../extending/" class="md-nav__link">
       
   
   
@@ -582,29 +608,32 @@
       
   
   
+    
   
   
+  
     
     
-    
-    
-      
-      
     
     
       
         
         
       
+      
     
-    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
-  
-  
-  
-    <a href="/embgen/architecture/architecture/" class="md-nav__link">
-      
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
   
   
   <span class="md-ellipsis">
@@ -618,12 +647,191 @@
   
   
 
-      
-        <span class="md-nav__icon md-icon"></span>
-      
-    </a>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
   
 
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#package-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-responsibilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Responsibilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generation-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generation Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domain-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domain Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multifile-template-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multifile Template Support
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-design-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Design Patterns
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../full-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Python API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
       
     </li>
   
@@ -646,6 +854,82 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#package-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-responsibilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Responsibilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generation-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generation Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domain-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domain Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multifile-template-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multifile Template Support
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-design-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Design Patterns
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -664,8 +948,251 @@
               
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
 
+
+  
+  
+
+
+<h1 id="embgen-architecture">embgen Architecture<a class="headerlink" href="#embgen-architecture" title="Permanent link">&para;</a></h1>
+<p>This document describes the architecture and module structure of the embgen package.</p>
+<h2 id="package-overview">Package Overview<a class="headerlink" href="#package-overview" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TB
+    subgraph User["User Interaction"]
+        CLI["CLI&lt;br/&gt;(cli.py)"]
+        YAML["YAML Config&lt;br/&gt;(*.yml)"]
+    end
+
+    subgraph Core["Core Generation"]
+        CG["CodeGenerator&lt;br/&gt;(generator.py)"]
+        Templates["Template Utilities&lt;br/&gt;(templates.py)"]
+    end
+
+    subgraph Discovery["Discovery System"]
+        Disc["discover_domains()&lt;br/&gt;(discovery.py)"]
+        Detect["detect_domain()&lt;br/&gt;(discovery.py)"]
+    end
+
+    subgraph Models["Data Models"]
+        BaseConfig["BaseConfig&lt;br/&gt;(Pydantic)"]
+        Enum["Enum&lt;br/&gt;(Pydantic)"]
+        TI["TemplateInfo&lt;br/&gt;(dataclass)"]
+        MG["MultifileGroup&lt;br/&gt;(dataclass)"]
+    end
+
+    subgraph Domains["Domain Generators"]
+        DG["DomainGenerator ABC&lt;br/&gt;(domains/__init__.py)"]
+        CMD["CommandsGenerator&lt;br/&gt;(domains/commands/)"]
+        REG["RegistersGenerator&lt;br/&gt;(domains/registers/)"]
+        User_Domain["User Domains&lt;br/&gt;(EMBGEN_DOMAINS_DIR)"]
+    end
+
+    subgraph Output["Generated Files"]
+        Header["*.h"]
+        Python["*.py"]
+        Markdown["*.md"]
+        Other["Other formats"]
+    end
+
+    CLI --&gt; |"1. Parse args"| Disc
+    CLI --&gt; |"2. Load YAML"| YAML
+    Disc --&gt; |"Find domains"| DG
+    DG --&gt; CMD
+    DG --&gt; REG
+    DG --&gt; User_Domain
+    CLI --&gt; |"3. Create"| CG
+    CG --&gt; |"4. Parse YAML"| YAML
+    CG --&gt; |"5. Validate"| DG
+    CG --&gt; |"6. Render"| Templates
+    Templates --&gt; |"Jinja2"| Output
+    CG --&gt; |"7. Post-generate"| DG</code></pre>
+<h2 id="module-responsibilities">Module Responsibilities<a class="headerlink" href="#module-responsibilities" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>classDiagram
+    class cli {
+        +main()
+        +add_template_flags()
+        +build_parser()
+    }
+
+    class discovery {
+        +BUILTIN_DOMAINS_PATH
+        +EMBGEN_DOMAINS_DIR_ENV
+        +discover_domains()
+        +detect_domain()
+    }
+
+    class generator {
+        +CodeGenerator
+    }
+
+    class templates {
+        +FILE_TYPES
+        +file_type()
+        +get_env()
+        +parse_template_name()
+        +discover_templates()
+    }
+
+    class models {
+        +BaseConfig
+        +Enum
+        +TemplateInfo
+        +MultifileGroup
+    }
+
+    class scaffold {
+        +scaffold_domain()
+    }
+
+    class DomainGenerator {
+        &lt;&lt;abstract&gt;&gt;
+        +name: str
+        +description: str
+        +templates_path: Path
+        +detect(data) bool
+        +validate(data) BaseConfig
+        +render(config, template) str
+        +post_generate()
+    }
+
+    class CodeGenerator {
+        +generator: DomainGenerator
+        +output_path: Path
+        +env: Environment
+        +parse_yaml(path) dict
+        +validate(data) BaseConfig
+        +ensure_output_dir() Path
+        +render_to_file()
+        +render_multifile_group()
+        +generate()
+        +generate_from_file()
+    }
+
+    cli --&gt; discovery : imports
+    cli --&gt; generator : uses
+    cli --&gt; templates : uses
+    cli --&gt; scaffold : uses
+    generator --&gt; DomainGenerator : uses
+    generator --&gt; templates : uses
+    generator --&gt; models : uses
+    DomainGenerator --&gt; models : extends BaseConfig</code></pre>
+<h2 id="generation-flow">Generation Flow<a class="headerlink" href="#generation-flow" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>sequenceDiagram
+    participant User
+    participant CLI as cli.py
+    participant Disc as discovery.py
+    participant Gen as CodeGenerator
+    participant Domain as DomainGenerator
+    participant Tmpl as templates.py
+    participant FS as File System
+
+    User-&gt;&gt;CLI: embgen commands config.yml -h -p
+    CLI-&gt;&gt;Disc: discover_domains()
+    Disc--&gt;&gt;CLI: {commands: CommandsGen, registers: RegistersGen}
+    CLI-&gt;&gt;Disc: detect_domain(yaml_data) [if auto-detect]
+    CLI-&gt;&gt;Gen: new CodeGenerator(domain, output_path)
+    CLI-&gt;&gt;Gen: generate_from_file(config.yml, templates)
+    Gen-&gt;&gt;FS: parse YAML file
+    Gen-&gt;&gt;Domain: validate(data)
+    Domain--&gt;&gt;Gen: CommandsConfig
+    Gen-&gt;&gt;Gen: ensure_output_dir()
+
+    loop For each template
+        Gen-&gt;&gt;Domain: render(config, template)
+        Domain-&gt;&gt;Tmpl: Jinja2 rendering
+        Tmpl--&gt;&gt;Domain: rendered content
+        Domain--&gt;&gt;Gen: content string
+        Gen-&gt;&gt;FS: write output file
+    end
+
+    Gen-&gt;&gt;Domain: post_generate(output_path, generated_exts)
+    Domain-&gt;&gt;FS: copy extra files (e.g., commands_base.py)
+    Gen--&gt;&gt;CLI: list of generated filenames
+    CLI--&gt;&gt;User: Success message</code></pre>
+<h2 id="domain-structure">Domain Structure<a class="headerlink" href="#domain-structure" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>graph LR
+    subgraph BuiltIn["Built-in Domains"]
+        subgraph Commands["domains/commands/"]
+            CMD_Init["__init__.py"]
+            CMD_Gen["generator.py"]
+            CMD_Mod["models.py"]
+            CMD_Tmpl["templates/"]
+        end
+
+        subgraph Registers["domains/registers/"]
+            REG_Init["__init__.py"]
+            REG_Gen["generator.py"]
+            REG_Mod["models.py"]
+            REG_Tmpl["templates/"]
+        end
+    end
+
+    subgraph UserDomains["User Domains (optional)"]
+        USR_Dir["EMBGEN_DOMAINS_DIR/"]
+        USR_Custom["custom_domain/"]
+    end
+
+    Discovery["discovery.py"]
+
+    Discovery --&gt;|"scan"| BuiltIn
+    Discovery --&gt;|"scan (override)"| UserDomains</code></pre>
+<h2 id="multifile-template-support">Multifile Template Support<a class="headerlink" href="#multifile-template-support" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    subgraph Templates["Template Files"]
+        Single["template.h.j2&lt;br/&gt;template.py.j2"]
+        Multi["template.c_multi.h.j2&lt;br/&gt;template.c_multi.c.j2"]
+        MultiSuffix["template.sv_multi.sv.1.j2&lt;br/&gt;template.sv_multi.sv.2.j2"]
+    end
+
+    subgraph Parsing["parse_template_name()"]
+        Parse1["(None, 'h', None)"]
+        Parse2["('c', 'h', None)&lt;br/&gt;('c', 'c', None)"]
+        Parse3["('sv', 'sv', '1')&lt;br/&gt;('sv', 'sv', '2')"]
+    end
+
+    subgraph Output["Generated Files"]
+        Out1["config.h"]
+        Out2["config.h&lt;br/&gt;config.c"]
+        Out3["config_1.sv&lt;br/&gt;config_2.sv"]
+    end
+
+    Single --&gt; Parse1 --&gt; Out1
+    Multi --&gt; Parse2 --&gt; Out2
+    MultiSuffix --&gt; Parse3 --&gt; Out3</code></pre>
+<h2 id="key-design-patterns">Key Design Patterns<a class="headerlink" href="#key-design-patterns" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>Abstract Factory</strong>: <code>DomainGenerator</code> ABC defines the interface, concrete implementations (CommandsGenerator, RegistersGenerator) are discovered dynamically.</p>
+</li>
+<li>
+<p><strong>Strategy Pattern</strong>: Each domain implements its own validation and rendering strategy.</p>
+</li>
+<li>
+<p><strong>Plugin Architecture</strong>: User domains can be added via <code>EMBGEN_DOMAINS_DIR</code> environment variable without modifying core code.</p>
+</li>
+<li>
+<p><strong>Separation of Concerns</strong>:</p>
+</li>
+<li><code>discovery.py</code>: Finding and loading domains</li>
+<li><code>generator.py</code>: Orchestrating the generation workflow</li>
+<li><code>templates.py</code>: Template utilities and parsing</li>
+<li><code>models.py</code>: Shared data structures</li>
+<li><code>cli.py</code>: Command-line interface only</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
               </article>
             </div>
           
@@ -685,6 +1212,44 @@
       
         <footer class="md-footer">
   
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../../extending/multifile/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Multifile Templates">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Multifile Templates
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../full-api/" class="md-footer__link md-footer__link--next" aria-label="Next: Full Python API Reference">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Full Python API Reference
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
     
   
   <div class="md-footer-meta md-typeset">
@@ -718,10 +1283,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/embgen/", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.prune", "toc.follow", "navigation.top", "search.suggest", "search.highlight", "search.share", "header.autohide", "navigation.footer", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.tooltips"], "search": "/embgen/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.prune", "toc.follow", "navigation.top", "search.suggest", "search.highlight", "search.share", "header.autohide", "navigation.footer", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="/embgen/assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
