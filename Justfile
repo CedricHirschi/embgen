@@ -34,3 +34,8 @@ docs:
 [group("docs")]
 serve:
     uv run mkdocs serve
+
+# Deploy documentation to GitHub Pages
+[group("docs")]
+deploy:
+    uv run mkdocs gh-deploy

@@ -33,6 +33,10 @@ def on_pre_build(config: MkDocsConfig, **kwargs):
             content = src_file.read()
 
         content = content.replace("docs/", "")
+        content = content.replace(
+            "[![Run Tests](https://github.com/CedricHirschi/embgen/actions/workflows/test.yml/badge.svg)](https://github.com/CedricHirschi/embgen/actions/workflows/test.yml)",
+            "",
+        )
 
         with open(docs_readme, "w", encoding="utf-8") as dest_file:
             dest_file.write(content)
