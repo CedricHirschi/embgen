@@ -6,11 +6,10 @@ repo_name: embgen
 repo_url: https://github.com/CedricHirschi/embgen
 
 nav:
-  - Home: index.md
+  - Home: README.md
   - Usage:
       - CLI Reference: usage/cli.md
       - Python API: usage/python-api.md
-      - Full Python API Reference: usage/full-api.md
   - Built-in Domains:
       - Overview: domains/index.md
       - Commands: domains/commands.md
@@ -21,7 +20,9 @@ nav:
       - Writing Generators: extending/generators.md
       - Writing Templates: extending/templates.md
       - Multifile Templates: extending/multifile.md
-  - Architecture: architecture.md
+  - Architecture:
+      - Architecture Overview: architecture/architecture.md
+      - Full Python API Reference: architecture/full-api.md
 
 copyright: Copyright &copy; 2025 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
 
@@ -137,7 +138,6 @@ markdown_extensions:
           case: lower
 
 extra_javascript:
-  - javascripts/mathjax.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 
 # Include static files by adding them to nav or using hooks

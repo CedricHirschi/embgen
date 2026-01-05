@@ -1,7 +1,7 @@
 <h1 align=center><code>embgen</code></h1>
 
 <div align="center">
-  <image src="docs/banner_simple.svg" alt="embgen banner" width="400px"/>
+  <image src="banner_simple.svg" alt="embgen banner" width="400px"/>
 </div>
 
 [![Run Tests](https://github.com/CedricHirschi/embgen/actions/workflows/test.yml/badge.svg)](https://github.com/CedricHirschi/embgen/actions/workflows/test.yml)

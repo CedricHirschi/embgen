@@ -29,3 +29,8 @@ typecheck:
 [group("docs")]
 docs:
     uv run mkdocs build
+
+# Serve documentation locally using mkdocs
+[group("docs")]
+serve:
+    uv run mkdocs serve
