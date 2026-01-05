@@ -87,11 +87,11 @@ embgen ships with two built-in domains:
 
 You can view the full documentation on [github.io](https://cedrichirschi.github.io/embgen/). The documentation includes:
 
-- [CLI Usage](usage/cli.md): Complete command-line reference
-- [Python API](usage/python-api.md): Using embgen as a library
-- [Built-in Domains](domains/index.md): Commands and Registers documentation
-- [Creating Domains](extending/index.md): How to create custom domains
-- [Architecture](architecture/architecture.md): Internal design and module structure
+- [CLI Usage](docs/usage/cli.md): Complete command-line reference
+- [Python API](docs/usage/python-api.md): Using embgen as a library
+- [Built-in Domains](docs/domains/index.md): Commands and Registers documentation
+- [Creating Domains](docs/extending/index.md): How to create custom domains
+- [Architecture](docs/architecture/architecture.md): Internal design and module structure
 
 ## License
 
