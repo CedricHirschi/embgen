@@ -8,6 +8,9 @@
 
 ---
 
+> [!WARNING]
+> This project is currently in an early development stage. While the core functionality is implemented and usable, expect breaking changes and incomplete features as we continue to develop and refine embgen.
+
 ## Overview
 
 **embgen** is a unified code generator for embedded systems that generates code from YAML definitions.

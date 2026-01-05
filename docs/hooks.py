@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 from mkdocs.config.defaults import MkDocsConfig
 
@@ -23,6 +24,35 @@ def copy_file_safe(config: MkDocsConfig, dir: str, filename: str):
         log.warning(f"{source_file} not found")
 
 
+def convert_github_alerts_to_admonitions(content: str) -> str:
+    """Convert GitHub alerts to mkdocs-material admonitions."""
+    # Match GitHub alert format: > [!TYPE] followed by indented content lines
+    pattern = r"> \[!(NOTE|WARNING|TIP|IMPORTANT|CAUTION)\]\n((?:> .*\n?)*)"
+
+    def replacement(match):
+        alert_type = match.group(1).lower()
+        alert_content = match.group(2)
+
+        # Remove the "> " prefix from each line and preserve the content
+        lines = alert_content.split("\n")
+        cleaned_lines = []
+        for line in lines:
+            if line.startswith("> "):
+                cleaned_lines.append(line[2:])
+            elif line == ">":
+                cleaned_lines.append("")
+            elif line:
+                cleaned_lines.append(line)
+
+        # Join and strip, then indent properly
+        content_text = "\n".join(cleaned_lines).strip()
+        indented_content = "\n    ".join(content_text.split("\n"))
+
+        return f"!!! {alert_type}\n\n    {indented_content}\n"
+
+    return re.sub(pattern, replacement, content)
+
+
 def on_pre_build(config: MkDocsConfig, **kwargs):
     """Copy root README.md to docs/README.md before building."""
     root_readme = os.path.join(config["config_file_path"], "..", "README.md")
@@ -37,6 +67,7 @@ def on_pre_build(config: MkDocsConfig, **kwargs):
             "[![Run Tests](https://github.com/CedricHirschi/embgen/actions/workflows/test.yml/badge.svg)](https://github.com/CedricHirschi/embgen/actions/workflows/test.yml)",
             "",
         )
+        content = convert_github_alerts_to_admonitions(content)
 
         with open(docs_readme, "w", encoding="utf-8") as dest_file:
             dest_file.write(content)
