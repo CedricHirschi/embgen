@@ -41,14 +41,14 @@ def on_pre_build(config: MkDocsConfig, **kwargs):
     else:
         log.warning(f"Root README.md not found at {root_readme}")
 
-    root_license = os.path.join(config["config_file_path"], "..", "LICENSE")
-    docs_license = os.path.join(config["docs_dir"], "LICENSE")
+    root_license = os.path.join(config["config_file_path"], "..", "LICENSE.md")
+    docs_license = os.path.join(config["docs_dir"], "LICENSE.md")
 
     if os.path.exists(root_license):
         shutil.copy2(root_license, docs_license)
-        log.info("Copied root LICENSE to docs/LICENSE")
+        log.info("Copied root LICENSE.md to docs/LICENSE.md")
     else:
-        log.warning(f"Root LICENSE not found at {root_license}")
+        log.warning(f"Root LICENSE.md not found at {root_license}")
 
 
 def on_post_build(config: MkDocsConfig, **kwargs):

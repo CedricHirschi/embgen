@@ -92,4 +92,4 @@ You can view the full documentation on [github.io](https://cedrichirschi.github.
 
 ## License
 
-This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License - see [LICENSE](LICENSE.md) for details.

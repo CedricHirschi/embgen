@@ -6,7 +6,9 @@ repo_name: embgen
 repo_url: https://github.com/CedricHirschi/embgen
 
 nav:
-  - Home: README.md
+  - Home:
+      - README.md
+      - License: LICENSE.md
   - Usage:
       - CLI Reference: usage/cli.md
       - Python API: usage/python-api.md
