@@ -9,7 +9,7 @@ from typing import Dict, Optional, Tuple
 
 from mako import exceptions  # type: ignore
 from mako.template import Template  # type: ignore
-from pkg_resources import resource_filename
+from importlib.resources import files
 
 from .ip_block import IpBlock
 from .multi_register import MultiRegister
@@ -90,8 +90,8 @@ def get_reg_tx_type(block: IpBlock, reg: RegBase, hw2reg: bool) -> str:
 
 def gen_rtl(block: IpBlock, outdir: str) -> int:
     # Read Register templates
-    reg_top_tpl = Template(filename=resource_filename("reggen", "reg_top.sv.tpl"))
-    reg_pkg_tpl = Template(filename=resource_filename("reggen", "reg_pkg.sv.tpl"))
+    reg_top_tpl = Template(filename=str(files("reggen").joinpath("reg_top.sv.tpl")))
+    reg_pkg_tpl = Template(filename=str(files("reggen").joinpath("reg_pkg.sv.tpl")))
 
     # Generate <block>_reg_pkg.sv
     #

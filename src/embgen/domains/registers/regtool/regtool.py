@@ -11,7 +11,6 @@ import sys
 from pathlib import PurePath
 
 from reggen import (
-    gen_cfg_md,
     gen_cheader,
     gen_dv,
     gen_fpv,

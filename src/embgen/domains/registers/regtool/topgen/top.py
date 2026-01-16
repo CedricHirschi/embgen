@@ -4,7 +4,7 @@
 
 """Code representing the entire chip for reggen"""
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 from reggen.ip_block import IpBlock
 from reggen.params import ReggenParams

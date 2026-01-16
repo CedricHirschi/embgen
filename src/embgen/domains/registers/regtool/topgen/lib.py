@@ -18,7 +18,7 @@ from reggen.ip_block import IpBlock
 # disable isort formating, as conflicting with flake8
 from .intermodule import find_otherside_modules  # noqa : F401 # isort:skip
 from .intermodule import im_portname, im_defname, im_netname  # noqa : F401 # isort:skip
-from .intermodule import get_dangling_im_def # noqa : F401 # isort:skip
+from .intermodule import get_dangling_im_def  # noqa : F401 # isort:skip
 
 
 class Name:
@@ -37,11 +37,12 @@ class Name:
     ["example", "name"] internally, and ex.as_camel_case() reassembles this
     internal representation into "ExampleName".
     """
+
     def __add__(self, other):
         return Name(self.parts + other.parts)
 
     @staticmethod
-    def from_snake_case(input: str) -> 'Name':
+    def from_snake_case(input: str) -> "Name":
         return Name(input.split("_"))
 
     def __init__(self, parts: List[str]):
@@ -90,7 +91,7 @@ def is_ipcfg(ip: Path) -> bool:  # return bool
 
 def search_ips(ip_path):  # return list of config files
     # list the every Hjson file
-    p = ip_path.glob('*/data/*.hjson')
+    p = ip_path.glob("*/data/*.hjson")
 
     # filter only ip_name/data/ip_name{_reg|''}.hjson
     ips = [x for x in p if is_ipcfg(x)]
@@ -107,18 +108,17 @@ def is_xbarcfg(xbar_obj):
 
 
 def get_hjsonobj_xbars(xbar_path):
-    """ Search crossbars Hjson files from given path.
+    """Search crossbars Hjson files from given path.
 
     Search every Hjson in the directory and check Hjson type.
     It could be type: "top" or type: "xbar"
     returns [(name, obj), ... ]
     """
-    p = xbar_path.glob('*.hjson')
+    p = xbar_path.glob("*.hjson")
     try:
         xbar_objs = [
-            hjson.load(x.open('r'),
-                       use_decimal=True,
-                       object_pairs_hook=OrderedDict) for x in p
+            hjson.load(x.open("r"), use_decimal=True, object_pairs_hook=OrderedDict)
+            for x in p
         ]
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
@@ -129,8 +129,7 @@ def get_hjsonobj_xbars(xbar_path):
 
 
 def get_module_by_name(top, name):
-    """Search in top["module"] by name
-    """
+    """Search in top["module"] by name"""
     module = None
     for m in top["module"]:
         if m["name"] == name:
@@ -141,7 +140,6 @@ def get_module_by_name(top, name):
 
 
 def intersignal_to_signalname(top, m_name, s_name) -> str:
-
     # TODO: Find the signal in the `inter_module_list` and get the correct signal name
 
     return "{m_name}_{s_name}".format(m_name=m_name, s_name=s_name)
@@ -166,11 +164,13 @@ def get_package_name_by_intermodule_signal(top, struct) -> str:
 
 
 def get_signal_by_name(module, name):
-    """Return the signal struct with the type input/output/inout
-    """
+    """Return the signal struct with the type input/output/inout"""
     result = None
-    for s in module["available_input_list"] + module[
-            "available_output_list"] + module["available_inout_list"]:
+    for s in (
+        module["available_input_list"]
+        + module["available_output_list"]
+        + module["available_inout_list"]
+    ):
         if s["name"] == name:
             result = s
             break
@@ -179,8 +179,7 @@ def get_signal_by_name(module, name):
 
 
 def add_module_prefix_to_signal(signal, module):
-    """Add module prefix to module signal format { name: "sig_name", width: NN }
-    """
+    """Add module prefix to module signal format { name: "sig_name", width: NN }"""
     result = deepcopy(signal)
 
     if "name" not in signal:
@@ -193,10 +192,9 @@ def add_module_prefix_to_signal(signal, module):
 
 
 def get_ms_name(name):
-    """Split module_name.signal_name to module_name , signal_name
-    """
+    """Split module_name.signal_name to module_name , signal_name"""
 
-    tokens = name.split('.')
+    tokens = name.split(".")
 
     if len(tokens) == 0:
         raise SystemExit("This to be catched in validate.py")
@@ -210,9 +208,8 @@ def get_ms_name(name):
 
 
 def parse_pad_field(padstr):
-    """Parse PadName[NN...NN] or PadName[NN] or just PadName
-    """
-    match = re.match(r'^([A-Za-z0-9_]+)(\[([0-9]+)(\.\.([0-9]+))?\]|)', padstr)
+    """Parse PadName[NN...NN] or PadName[NN] or just PadName"""
+    match = re.match(r"^([A-Za-z0-9_]+)(\[([0-9]+)(\.\.([0-9]+))?\]|)", padstr)
     return match.group(1), match.group(3), match.group(5)
 
 
@@ -267,46 +264,42 @@ def bitarray(d, width):
 
 
 def parameterize(text):
-    """Return the value wrapping with quote if not integer nor bits
-    """
-    if re.match(r'(\d+\'[hdb]\s*[0-9a-f_A-F]+|[0-9]+)', text) is None:
-        return "\"{}\"".format(text)
+    """Return the value wrapping with quote if not integer nor bits"""
+    if re.match(r"(\d+\'[hdb]\s*[0-9a-f_A-F]+|[0-9]+)", text) is None:
+        return '"{}"'.format(text)
 
     return text
 
 
 def index(i: int) -> str:
-    """Return index if it is not -1
-    """
+    """Return index if it is not -1"""
     return "[{}]".format(i) if i != -1 else ""
 
 
 def get_clk_name(clk):
-    """Return the appropriate clk name
-    """
-    if clk == 'main':
-        return 'clk_i'
+    """Return the appropriate clk name"""
+    if clk == "main":
+        return "clk_i"
     else:
         return "clk_{}_i".format(clk)
 
 
 def get_reset_path(reset, domain, reset_cfg):
-    """Return the appropriate reset path given name
-    """
+    """Return the appropriate reset path given name"""
     # find matching node for reset
-    node_match = [node for node in reset_cfg['nodes'] if node['name'] == reset]
+    node_match = [node for node in reset_cfg["nodes"] if node["name"] == reset]
     assert len(node_match) == 1
-    reset_type = node_match[0]['type']
+    reset_type = node_match[0]["type"]
 
     # find matching path
     hier_path = ""
     if reset_type == "int":
         log.debug("{} used as internal reset".format(reset["name"]))
     else:
-        hier_path = reset_cfg['hier_paths'][reset_type]
+        hier_path = reset_cfg["hier_paths"][reset_type]
 
     # find domain selection
-    domain_sel = ''
+    domain_sel = ""
     if reset_type not in ["ext", "int"]:
         domain_sel = "[rstmgr_pkg::Domain{}Sel]".format(domain)
 
@@ -320,14 +313,13 @@ def get_reset_path(reset, domain, reset_cfg):
 
 
 def get_unused_resets(top):
-    """Return dict of unused resets and associated domain
-    """
+    """Return dict of unused resets and associated domain"""
     unused_resets = OrderedDict()
     unused_resets = {
-        reset['name']: domain
-        for reset in top['resets']['nodes']
-        for domain in top['power']['domains']
-        if reset['type'] == 'top' and domain not in reset['domains']
+        reset["name"]: domain
+        for reset in top["resets"]["nodes"]
+        for domain in top["power"]["domains"]
+        if reset["type"] == "top" and domain not in reset["domains"]
     }
 
     log.debug("Unused resets are {}".format(unused_resets))
@@ -335,8 +327,7 @@ def get_unused_resets(top):
 
 
 def is_templated(module):
-    """Returns an indication where a particular module is templated
-    """
+    """Returns an indication where a particular module is templated"""
     if "attr" not in module:
         return False
     elif module["attr"] in ["templated"]:
@@ -347,7 +338,7 @@ def is_templated(module):
 
 def is_top_reggen(module):
     """Returns an indication where a particular module is NOT templated
-       and requires top level specific reggen
+    and requires top level specific reggen
     """
     if "attr" not in module:
         return False
@@ -359,7 +350,7 @@ def is_top_reggen(module):
 
 def is_inst(module):
     """Returns an indication where a particular module should be instantiated
-       in the top level
+    in the top level
     """
     top_level_module = False
     top_level_mem = False
@@ -371,45 +362,50 @@ def is_inst(module):
     elif module["attr"] in ["reggen_only"]:
         top_level_module = False
     else:
-        raise ValueError('Attribute {} in {} is not valid'
-                         .format(module['attr'], module['name']))
+        raise ValueError(
+            "Attribute {} in {} is not valid".format(module["attr"], module["name"])
+        )
 
-    if module['type'] in ['rom', 'ram_1p_scr', 'eflash']:
+    if module["type"] in ["rom", "ram_1p_scr", "eflash"]:
         top_level_mem = True
 
     return top_level_mem or top_level_module
 
 
-def get_base_and_size(name_to_block: Dict[str, IpBlock],
-                      inst: Dict[str, object],
-                      ifname: Optional[str]) -> Tuple[int, int]:
+def get_base_and_size(
+    name_to_block: Dict[str, IpBlock], inst: Dict[str, object], ifname: Optional[str]
+) -> Tuple[int, int]:
     min_device_spacing = 0x1000
 
-    block = name_to_block.get(inst['type'])
+    block = name_to_block.get(inst["type"])
     if block is None:
         # If inst isn't the instantiation of a block, it came from some memory.
         # Memories have their sizes defined, so we can just look it up there.
-        bytes_used = int(inst['size'], 0)
+        bytes_used = int(inst["size"], 0)
 
         # Memories don't have multiple or named interfaces, so this will only
         # work if ifname is None.
         assert ifname is None
-        base_addr = inst['base_addr']
+        base_addr = inst["base_addr"]
 
     else:
         # If inst is the instantiation of some block, find the register block
         # that corresponds to ifname
         rb = block.reg_blocks.get(ifname)
         if rb is None:
-            log.error('Cannot connect to non-existent {} device interface '
-                      'on {!r} (an instance of the {!r} block)'
-                      .format('default' if ifname is None else repr(ifname),
-                              inst['name'], block.name))
+            log.error(
+                "Cannot connect to non-existent {} device interface "
+                "on {!r} (an instance of the {!r} block)".format(
+                    "default" if ifname is None else repr(ifname),
+                    inst["name"],
+                    block.name,
+                )
+            )
             bytes_used = 0
         else:
             bytes_used = 1 << rb.get_addr_width()
 
-        base_addr = inst['base_addrs'][ifname]
+        base_addr = inst["base_addrs"][ifname]
 
     # Round up to min_device_spacing if necessary
     size_byte = max(bytes_used, min_device_spacing)
@@ -428,15 +424,13 @@ def get_io_enum_literal(sig: Dict, prefix: str) -> str:
     # In this case, the signal is a multibit signal, and hence
     # we have to make the signal index part of the parameter
     # name to uniquify it.
-    if sig['width'] > 1:
-        name += Name([str(sig['idx'])])
+    if sig["width"] > 1:
+        name += Name([str(sig["idx"])])
     return name.as_camel_case()
 
 
-def make_bit_concatenation(sig_name: str,
-                           indices: List[int],
-                           end_indent: int) -> str:
-    '''Return SV code for concatenating certain indices from a signal
+def make_bit_concatenation(sig_name: str, indices: List[int], end_indent: int) -> str:
+    """Return SV code for concatenating certain indices from a signal
 
     sig_name is the name of the signal and indices is a non-empty list of the
     indices to use, MSB first. So
@@ -459,7 +453,7 @@ def make_bit_concatenation(sig_name: str,
     gives the indentation of the closing brace and the range selects in between
     get indented to end_indent + 2.
 
-    '''
+    """
     assert 0 <= end_indent
 
     ranges = []
@@ -482,16 +476,16 @@ def make_bit_concatenation(sig_name: str,
         if range_start == range_end:
             select = str(range_start)
         else:
-            select = '{}:{}'.format(range_start, range_end)
-        items.append('{}[{}]'.format(sig_name, select))
+            select = "{}:{}".format(range_start, range_end)
+        items.append("{}[{}]".format(sig_name, select))
 
     if len(items) == 1:
         return items[0]
 
-    item_indent = '\n' + (' ' * (end_indent + 2))
+    item_indent = "\n" + (" " * (end_indent + 2))
 
-    acc = ['{', item_indent, items[0]]
+    acc = ["{", item_indent, items[0]]
     for item in items[1:]:
-        acc += [',', item_indent, item]
-    acc += ['\n', ' ' * end_indent, '}']
-    return ''.join(acc)
+        acc += [",", item_indent, item]
+    acc += ["\n", " " * end_indent, "}"]
+    return "".join(acc)

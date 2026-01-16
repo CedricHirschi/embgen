@@ -410,7 +410,7 @@ def amend_xbar(
     - size: from top["module"]
     """
     xbar_list = [x["name"] for x in top["xbar"]]
-    if not xbar["name"] in xbar_list:
+    if xbar["name"] not in xbar_list:
         log.info(
             "Xbar %s doesn't belong to the top %s. Check if the xbar doesn't need"
             % (xbar["name"], top["name"])
@@ -499,7 +499,7 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
     devices = host_xbar["connections"][device_xbar["name"]]
 
     for node in host_xbar["nodes"]:
-        if not node["name"] in devices:
+        if node["name"] not in devices:
             continue
         if "xbar" in node and node["xbar"] is True:
             if "addr_range" not in node:

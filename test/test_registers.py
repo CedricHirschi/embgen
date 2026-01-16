@@ -698,7 +698,9 @@ class TestRegisterGroupGeneration:
         """Test that validation creates RegisterGroup objects."""
         code_gen = CodeGenerator(generator, Path.cwd())
         data = code_gen.parse_yaml(numbers_config)
-        config = generator.validate(data)
+        config = generator.validate(data)  # type: ignore
+
+        config: RegistersConfig = config  # type: ignore
 
         # Should have one register group
         assert len(config.register_groups) == 1
