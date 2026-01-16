@@ -6,7 +6,7 @@ from typing import Any, cast
 from jinja2 import Template
 
 from .. import DomainGenerator, BaseConfig
-from .models import RegistersConfig
+from .models import RegistersConfig, RegisterGroup
 
 
 class RegistersGenerator(DomainGenerator):
@@ -22,7 +22,40 @@ class RegistersGenerator(DomainGenerator):
         return "regmap" in data
 
     def validate(self, data: dict[str, Any]) -> BaseConfig:
-        return cast(BaseConfig, RegistersConfig.model_validate(data))
+        config = RegistersConfig.model_validate(data)
+        expanded_registers = []
+        register_groups = []
+
+        for register in config.regmap:
+            if register.numbers:
+                # Create a RegisterGroup for this numbered register
+                group = RegisterGroup(
+                    name=register.name,
+                    description=register.description,
+                    base_address=register.address,
+                    access=register.access,
+                    bitfields=register.bitfields,
+                    numbers=register.numbers,
+                )
+                register_groups.append(group)
+
+                # Also expand individual registers for backward compatibility
+                base_address = register.address
+                for i, number in enumerate(register.numbers):
+                    new_register = register.model_copy()
+                    new_register.name = f"{register.name}{number}"
+                    new_register.address = base_address + i
+                    new_register.numbers = None  # Clear numbers on expanded register
+                    expanded_registers.append(new_register)
+            else:
+                expanded_registers.append(register)
+
+        # Clear the original regmap and extend it with the new registers
+        config.regmap.clear()
+        config.regmap.extend(expanded_registers)
+        config.register_groups = register_groups
+
+        return cast(BaseConfig, config)
 
     def render(self, config: Any, template: Template) -> str:
         config: RegistersConfig = config  # type: narrow
@@ -33,12 +66,17 @@ class RegistersGenerator(DomainGenerator):
         for reg in registers:
             reg.bitfields = sorted(reg.bitfields, key=lambda bf: bf.offset)
 
+        # Sort bitfields in register groups too
+        for group in config.register_groups:
+            group.bitfields = sorted(group.bitfields, key=lambda bf: bf.offset)
+
         # Collect all bitfields for templates that need flat access
         bitfields = [bf for reg in registers for bf in reg.bitfields]
 
         return template.render(
             name=config.name,
             regmap=registers,
+            register_groups=config.register_groups,
             bitfields=bitfields,
             generated_on=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )

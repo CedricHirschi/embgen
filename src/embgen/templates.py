@@ -68,13 +68,21 @@ def file_type(extension: str) -> str:
     return FILE_TYPES.get(extension, "Unknown")
 
 
+def regex_replace(value: str, pattern: str, replacement: str) -> str:
+    """Replace pattern in string using regex."""
+    return re.sub(pattern, replacement, value)
+
+
 def get_env(templates_path: Path) -> Environment:
     """Create a Jinja2 environment for a given templates directory."""
-    return Environment(
+    env = Environment(
         loader=FileSystemLoader(templates_path),
         trim_blocks=True,
         lstrip_blocks=True,
     )
+    # Add custom filters
+    env.filters["regex_replace"] = regex_replace
+    return env
 
 
 def parse_template_name(filename: str) -> tuple[str | None, str, str | None]:

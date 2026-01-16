@@ -45,6 +45,26 @@ class Register(BaseModel):
     access: Access = Access.RW
     bitfields: list[BitField]
 
+    # Meta field: Which numbers to generate for this register
+    # Example: Register 'data' has numbers 0 to 15
+    # This would generate registers data0, data1, ..., data15
+    numbers: Optional[list[int]] = None
+
+
+class RegisterGroup(BaseModel):
+    """A group of identical registers with different indices (from 'numbers' expansion).
+
+    This represents the original register definition before expansion,
+    allowing templates to generate a single base class/struct with array access.
+    """
+
+    name: str  # Base name (e.g., "DATA")
+    description: Optional[str] = None
+    base_address: int  # Starting address
+    access: Access = Access.RW
+    bitfields: list[BitField]
+    numbers: list[int]  # The indices (e.g., [0, 1, 2, ..., 15])
+
 
 class RegistersConfig(BaseModel):
     """Top-level register map configuration."""
@@ -52,6 +72,7 @@ class RegistersConfig(BaseModel):
     name: str
     file: Optional[str] = None
     regmap: list[Register]
+    register_groups: list[RegisterGroup] = []  # Groups of numbered registers
 
     @property
     def output_filename(self) -> str:

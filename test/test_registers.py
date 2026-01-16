@@ -645,3 +645,240 @@ class TestGeneratedPythonInterface:
 
         # ERROR has reset=0
         assert rm.status.error.value == 0
+
+
+class TestRegisterGroupModel:
+    """Test RegisterGroup model for numbered registers."""
+
+    def test_basic_register_group(self):
+        from embgen.domains.registers.models import RegisterGroup, BitField, Access
+
+        group = RegisterGroup(
+            name="DATA",
+            description="Data register",
+            base_address=0,
+            access=Access.RW,
+            bitfields=[BitField(name="VALUE", reset=0, width=16, offset=0)],
+            numbers=[0, 1, 2, 3],
+        )
+        assert group.name == "DATA"
+        assert group.base_address == 0
+        assert len(group.numbers) == 4
+        assert len(group.bitfields) == 1
+
+    def test_register_group_with_gaps(self):
+        """Test register group with non-contiguous numbers."""
+        from embgen.domains.registers.models import RegisterGroup, BitField, Access
+
+        group = RegisterGroup(
+            name="CHANNEL",
+            description="Channel register",
+            base_address=0x10,
+            access=Access.RW,
+            bitfields=[BitField(name="CTRL", reset=0, width=8, offset=0)],
+            numbers=[0, 2, 4, 6],  # non-contiguous
+        )
+        assert group.numbers == [0, 2, 4, 6]
+
+
+class TestRegisterGroupGeneration:
+    """Test generation of register groups (numbered registers) using numbers.yml."""
+
+    @pytest.fixture
+    def numbers_config(self) -> Path:
+        return Path(__file__).parent / "configs" / "registers" / "numbers.yml"
+
+    @pytest.fixture
+    def generator(self) -> RegistersGenerator:
+        return RegistersGenerator()
+
+    def test_validate_creates_register_groups(
+        self, numbers_config: Path, generator: RegistersGenerator
+    ):
+        """Test that validation creates RegisterGroup objects."""
+        code_gen = CodeGenerator(generator, Path.cwd())
+        data = code_gen.parse_yaml(numbers_config)
+        config = generator.validate(data)
+
+        # Should have one register group
+        assert len(config.register_groups) == 1
+        group = config.register_groups[0]
+        assert group.name == "DATA"
+        assert group.base_address == 0
+        assert group.numbers == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+
+        # Expanded registers should still exist for backward compatibility
+        assert len(config.regmap) == 16
+
+    def test_generate_python_with_register_groups(
+        self, numbers_config: Path, generator: RegistersGenerator
+    ):
+        """Test that Python generation creates a single base class for grouped registers."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"py": "template.py.j2"}
+
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(numbers_config, templates)
+
+            assert "numbers.py" in filenames
+            py_file = output_path / "numbers.py"
+            content = py_file.read_text()
+
+            # Should have a single RegisterDATA class (not RegisterDATA0, RegisterDATA1, etc.)
+            assert "class RegisterDATA(Register):" in content
+            assert "class RegisterDATA0" not in content
+            assert "class RegisterDATA15" not in content
+
+            # Should use dictionary comprehension for the register map
+            assert "self.data: dict[int, RegisterDATA]" in content
+
+    def test_generate_header_with_register_groups(
+        self, numbers_config: Path, generator: RegistersGenerator
+    ):
+        """Test that C header generation creates a single union for grouped registers."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"h": "template.h.j2"}
+
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(numbers_config, templates)
+
+            assert "numbers.h" in filenames
+            header_file = output_path / "numbers.h"
+            content = header_file.read_text()
+
+            # Should have a single numbers_data union (not numbers_data0, numbers_data1, etc.)
+            assert "typedef union numbers_data_u" in content
+            assert "typedef union numbers_data0_u" not in content
+
+            # Should use array in the struct
+            assert "data[16]" in content
+
+            # Should have COUNT macro
+            assert "#define NUMBERS_DATA_COUNT 16" in content
+
+            # Should have address macro
+            assert "#define NUMBERS_ADDR_DATA(index)" in content
+
+
+class TestGeneratedPythonRegisterGroups:
+    """Test the generated Python register interface for register groups."""
+
+    @pytest.fixture
+    def numbers_config(self) -> Path:
+        return Path(__file__).parent / "configs" / "registers" / "numbers.yml"
+
+    @pytest.fixture
+    def generator(self) -> RegistersGenerator:
+        return RegistersGenerator()
+
+    @pytest.fixture
+    def generated_module(self, numbers_config: Path, generator: RegistersGenerator):
+        """Generate the Python module and import it."""
+        import sys
+        import importlib.util
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"py": "template.py.j2"}
+
+            code_gen = CodeGenerator(generator, output_path)
+            code_gen.generate_from_file(numbers_config, templates)
+
+            py_file = output_path / "numbers.py"
+            spec = importlib.util.spec_from_file_location(
+                "numbers_test_module", py_file
+            )
+            assert spec is not None, "Failed to create module spec"
+            assert spec.loader is not None, "Module spec has no loader"
+            module = importlib.util.module_from_spec(spec)
+            sys.modules["numbers_test_module"] = module
+            spec.loader.exec_module(module)
+            yield module
+            del sys.modules["numbers_test_module"]
+
+    def test_register_group_dict_access(self, generated_module):
+        """Test accessing registers through dictionary-like interface."""
+        import logging
+
+        Interface = generated_module.Interface
+        Numbers = generated_module.Numbers
+
+        rm = Numbers(Interface(logging.getLogger()))
+
+        # Access registers via dictionary key
+        assert 0 in rm.data
+        assert 15 in rm.data
+        assert 16 not in rm.data
+
+        # Each register should be accessible
+        for i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]:
+            assert i in rm.data
+            # Each register should have the value bitfield
+            assert hasattr(rm.data[i], "value")
+
+    def test_register_group_reset_values(self, generated_module):
+        """Test that all registers in a group have correct reset values."""
+        import logging
+
+        Interface = generated_module.Interface
+        Numbers = generated_module.Numbers
+
+        rm = Numbers(Interface(logging.getLogger()))
+
+        # All DATA registers should have reset value 0xCAFE (51966)
+        for i in range(16):
+            assert rm.data[i].value.value == 0xCAFE
+
+    def test_register_group_independent_values(self, generated_module):
+        """Test that registers in a group have independent values."""
+        import logging
+
+        Interface = generated_module.Interface
+        Numbers = generated_module.Numbers
+
+        rm = Numbers(Interface(logging.getLogger()))
+
+        # Write different values to different registers
+        rm.data[0].value.value = 0x1111
+        rm.data[5].value.value = 0x5555
+        rm.data[15].value.value = 0xFFFF
+
+        # Verify values are independent
+        assert rm.data[0].value.value == 0x1111
+        assert rm.data[5].value.value == 0x5555
+        assert rm.data[15].value.value == 0xFFFF
+
+        # Other registers should still have reset value
+        assert rm.data[1].value.value == 0xCAFE
+        assert rm.data[10].value.value == 0xCAFE
+
+    def test_register_group_addresses(self, generated_module):
+        """Test that each register in a group has the correct address."""
+        import logging
+
+        Interface = generated_module.Interface
+        Numbers = generated_module.Numbers
+
+        rm = Numbers(Interface(logging.getLogger()))
+
+        # Each register should have sequential addresses starting from base_address
+        for i in range(16):
+            assert rm.data[i]._address == i
+
+    def test_register_group_iteration(self, generated_module):
+        """Test iterating over registers in a group."""
+        import logging
+
+        Interface = generated_module.Interface
+        Numbers = generated_module.Numbers
+
+        rm = Numbers(Interface(logging.getLogger()))
+
+        # Should be able to iterate over all registers
+        count = 0
+        for idx, reg in rm.data.items():
+            assert reg._address == idx
+            count += 1
+        assert count == 16
