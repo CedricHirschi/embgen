@@ -3,7 +3,11 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
+import subprocess
+import sys
+
 from jinja2 import Template
+import hjson
 
 from .. import DomainGenerator, BaseConfig
 from .models import RegistersConfig, RegisterGroup
@@ -58,25 +62,84 @@ class RegistersGenerator(DomainGenerator):
         return cast(BaseConfig, config)
 
     def render(self, config: Any, template: Template) -> str:
-        config: RegistersConfig = config  # type: narrow
+        cfg: RegistersConfig = config  # type: narrow
         # Sort registers by address
-        registers = sorted(config.regmap, key=lambda r: r.address)
+        registers = sorted(cfg.regmap, key=lambda r: r.address)
 
         # Sort bitfields within each register
         for reg in registers:
             reg.bitfields = sorted(reg.bitfields, key=lambda bf: bf.offset)
 
         # Sort bitfields in register groups too
-        for group in config.register_groups:
+        for group in cfg.register_groups:
             group.bitfields = sorted(group.bitfields, key=lambda bf: bf.offset)
+
+        assert template.name is not None
+
+        if template.name.endswith(".hjson.j2"):
+            data_hjson = {}
+
+            data_hjson["name"] = cfg.name
+
+            data_hjson["clock_primary"] = "clk_i"
+            data_hjson["reset_primary"] = "rst_ni"
+
+            data_hjson["bus_interfaces"] = [
+                {
+                    "protocol": "reg_iface",
+                    "direction": "device",
+                }
+            ]
+
+            data_hjson["regwidth"] = cfg.width
+
+            data_hjson["registers"] = []
+            for reg in registers:
+                reg_dict: dict[str, Any] = {
+                    "name": reg.name,
+                    "desc": reg.description or "",
+                    "swaccess": str(reg.access).lower(),
+                }
+
+                if cfg.access_separate:
+                    reg_dict["hwaccess"] = str(reg.access_hw).lower()
+
+                if reg.hwqe:
+                    reg_dict["hwqe"] = reg.hwqe
+
+                if reg.hwext:
+                    reg_dict["hwext"] = True
+
+                reg_dict["fields"] = []
+                for bf in reg.bitfields:
+                    bf_dict: dict[str, Any] = {
+                        "bits": f"{bf.offset + bf.width - 1}:{bf.offset}",
+                        "name": bf.name,
+                        "desc": bf.description or "",
+                        "resval": bf.reset,
+                    }
+
+                    if bf.enums:
+                        bf_dict["enum"] = [
+                            {
+                                "name": enum.name,
+                                "value": enum.value,
+                                "desc": enum.description,
+                            }
+                            for enum in bf.enums
+                        ]
+                    reg_dict["fields"].append(bf_dict)
+                data_hjson["registers"].append(reg_dict)
+
+            return hjson.dumps(data_hjson, indent=2)
 
         # Collect all bitfields for templates that need flat access
         bitfields = [bf for reg in registers for bf in reg.bitfields]
 
         return template.render(
-            name=config.name,
+            name=cfg.name,
             regmap=registers,
-            register_groups=config.register_groups,
+            register_groups=cfg.register_groups,
             bitfields=bitfields,
             generated_on=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )
@@ -85,7 +148,25 @@ class RegistersGenerator(DomainGenerator):
         self, config: BaseConfig, output: Path, generated_extensions: set[str]
     ) -> list[str]:
         # Only copy reg_common.h/.c when C header output is generated
-        if "h" not in generated_extensions:
+        if "hjson" in generated_extensions:
+            hjson_file = output / (config.file or config.name.lower() + ".hjson")
+            subprocess.run(
+                [
+                    sys.executable,
+                    "regtool.py",
+                    "-r",
+                    "-t",
+                    output.as_posix(),
+                    hjson_file.as_posix(),
+                ],
+                cwd=Path(__file__).parent / "regtool",
+            )
+            return [
+                (config.file or config.name.lower() + "_reg_pkg.hjson"),
+                (config.file or config.name.lower() + "_reg_top.hjson"),
+            ]
+
+        elif "h" not in generated_extensions:
             return []
 
         header = self.templates_path / "reg_common.h"
