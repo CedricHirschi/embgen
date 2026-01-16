@@ -7,7 +7,6 @@ import subprocess
 import sys
 
 from jinja2 import Template
-import hjson
 
 from .. import DomainGenerator, BaseConfig
 from .models import RegistersConfig, RegisterGroup
@@ -74,73 +73,16 @@ class RegistersGenerator(DomainGenerator):
         for group in cfg.register_groups:
             group.bitfields = sorted(group.bitfields, key=lambda bf: bf.offset)
 
-        assert template.name is not None
-
-        if template.name.endswith(".hjson.j2"):
-            data_hjson = {}
-
-            data_hjson["name"] = cfg.name
-
-            data_hjson["clock_primary"] = "clk_i"
-            data_hjson["reset_primary"] = "rst_ni"
-
-            data_hjson["bus_interfaces"] = [
-                {
-                    "protocol": "reg_iface",
-                    "direction": "device",
-                }
-            ]
-
-            data_hjson["regwidth"] = cfg.width
-
-            data_hjson["registers"] = []
-            for reg in registers:
-                reg_dict: dict[str, Any] = {
-                    "name": reg.name,
-                    "desc": reg.description or "",
-                    "swaccess": str(reg.access).lower(),
-                }
-
-                if cfg.access_separate:
-                    reg_dict["hwaccess"] = str(reg.access_hw).lower()
-
-                if reg.hwqe:
-                    reg_dict["hwqe"] = reg.hwqe
-
-                if reg.hwext:
-                    reg_dict["hwext"] = True
-
-                reg_dict["fields"] = []
-                for bf in reg.bitfields:
-                    bf_dict: dict[str, Any] = {
-                        "bits": f"{bf.offset + bf.width - 1}:{bf.offset}",
-                        "name": bf.name,
-                        "desc": bf.description or "",
-                        "resval": bf.reset,
-                    }
-
-                    if bf.enums:
-                        bf_dict["enum"] = [
-                            {
-                                "name": enum.name,
-                                "value": enum.value,
-                                "desc": enum.description,
-                            }
-                            for enum in bf.enums
-                        ]
-                    reg_dict["fields"].append(bf_dict)
-                data_hjson["registers"].append(reg_dict)
-
-            return hjson.dumps(data_hjson, indent=2)
-
         # Collect all bitfields for templates that need flat access
         bitfields = [bf for reg in registers for bf in reg.bitfields]
 
         return template.render(
             name=cfg.name,
+            width=cfg.width,
             regmap=registers,
             register_groups=cfg.register_groups,
             bitfields=bitfields,
+            access_separate=cfg.access_separate,
             generated_on=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         )
 
