@@ -118,6 +118,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     ap.add_argument("-d", "--debug", action="store_true", help="Enable debug logging")
     ap.add_argument(
+        "-s",
+        "--silent",
+        action="store_true",
+        help="Suppress all but warning and error messages",
+    )
+    ap.add_argument(
         "--domains-dir",
         type=Path,
         default=None,
@@ -191,7 +197,13 @@ def main(argv: list[str] | None = None) -> int:
 
     # Setup logging
     log = logging.getLogger("embgen")
-    log_level = logging.DEBUG if args.debug else logging.INFO
+    log_level = (
+        logging.DEBUG
+        if args.debug
+        else logging.WARNING
+        if args.silent
+        else logging.INFO
+    )
     log.handlers = [RichHandler(rich_tracebacks=True, show_path=False, show_time=False)]
     log.setLevel(log_level)
 
