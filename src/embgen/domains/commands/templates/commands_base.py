@@ -1,8 +1,9 @@
 """
 Copyright (C) 2025 ETH Zurich. All rights reserved.
 
-Author: Cedric Hirschi, ETH Zurich
-        Sergei Vostrikov, ETH Zurich
+Author:
+    - Sergei Vostrikov, ETH Zurich
+    - Cedric Hirschi, ETH Zurich
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,17 +26,30 @@ from typing import ClassVar
 from enum import Enum
 
 
-ENDIANNESS = "<"  # Little-endian
-HEADER = "BH"  # Command ID (1 byte) + Size (2 bytes)
+ENDIANNESS = "<"
+"""Endianness for command packing/unpacking ('<' = little-endian, '>' = big-endian)"""
+HEADER = "BH"
+"""Command header structure: Command ID (1 byte) + Size (2 bytes)"""
 
 
 @dataclass
 class Command:
+    """Base class for all commands"""
+
     _id: ClassVar[int]
+    """ID of the command"""
     _description: ClassVar[str] = ""
+    """Description of the command"""
     _format: ClassVar[str]
+    """Struct format string for command arguments"""
 
     def pack(self) -> bytes:
+        """Pack the command into bytes
+
+        Returns:
+            packed_command (bytes): Packed command
+        """
+
         args = fields(self)
         args = filter(lambda arg: not arg.name.startswith("_"), args)
         args = [getattr(self, arg.name) for arg in args]
