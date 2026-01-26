@@ -21,10 +21,11 @@ class CommandsGenerator(DomainGenerator):
     def validate(self, data: dict[str, Any]) -> BaseConfig:
         return cast(BaseConfig, CommandsConfig.model_validate(data))
 
-    def render(self, config: Any, template: Template) -> str:
+    def render(self, config: Any, template: Template) -> str:  # type: ignore
         config: CommandsConfig = config  # type: narrow
         return template.render(
             name=config.name,
+            file=config.file,
             endianness=config.endianness,
             commands=sorted(config.commands, key=lambda c: c.id),
             generated_on=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -34,7 +35,7 @@ class CommandsGenerator(DomainGenerator):
         self, config: BaseConfig, output: Path, generated_extensions: set[str]
     ) -> list[str]:
         # Only copy commands_base.py when Python output is generated
-        if "py" not in generated_extensions:
+        if "py" not in generated_extensions or not config.copy_support_files:
             return []
 
         src = self.templates_path / "commands_base.py"

@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from enum import Enum as BaseEnum
 from typing import ClassVar
 
-from .commands_base import Command
+from .{{ file }}_base import Command
 
 {% for command in commands %}
 
@@ -18,16 +18,6 @@ class Command{{ command.name|capitalize }}(Command):
     """Command {{ command.name|upper }}
 
     {{ command.description or '' }}
-
-    Args:
-{% for arg in command.args %}
-{% if arg.enums %}
-        {{ arg.name }} (Enum{{ arg.name|capitalize }}): {{ arg.description }}{% if arg.default != None %} (default: Enum{{ arg.name|capitalize }}.{{ arg.default.name if arg.default is defined and arg.default.name is defined else arg.default }}){% endif %}
-{% else %}
-        {{ arg.name }} ({{ arg.type_python }}): {{ arg.description }}{% if arg.default != None %} (default: {{ arg.default }}){% endif %}
-{% endif %}
-
-{% endfor %}
     """
 {% for arg in command.args %}
 {% if arg.enums %}
@@ -48,9 +38,11 @@ class Command{{ command.name|capitalize }}(Command):
 {% if arg.enums %}
     {{ arg.name|lower }}: Enum{{ arg.name|capitalize }}{% if arg.default != None %} = Enum{{ arg.name|capitalize }}.{{ arg.default.name if arg.default is defined and arg.default.name is defined else arg.default }}{% endif %}
 
+    """{{ arg.description }}"""
 {% else %}
     {{ arg.name|lower }}: {{ arg.type_python }}{% if arg.default != None %} = {{ arg.default }}{% endif %}
 
+    """{{ arg.description }}"""
 {% endif %}
 {% endfor %}
 {% endfor %}

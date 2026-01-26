@@ -3,6 +3,8 @@ from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator, ValidationInfo, computed_field
 
+from ...models import BaseConfig
+
 
 class ArgumentType(StrEnum):
     UINT8 = "B"
@@ -78,12 +80,6 @@ class Command(BaseModel):
     returns: Optional[list[Argument]] = Field(default_factory=list)
 
 
-class CommandsConfig(BaseModel):
-    name: str
-    file: Optional[str] = None
+class CommandsConfig(BaseConfig):
     endianness: Endianness = Endianness.LITTLE
     commands: list[Command]
-
-    @property
-    def output_filename(self) -> str:
-        return self.file or self.name.lower()

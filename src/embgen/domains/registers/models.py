@@ -5,7 +5,7 @@ from typing import Optional
 
 from pydantic import BaseModel, model_validator
 
-from ...models import Enum
+from ...models import Enum, BaseConfig
 
 
 class Access(BaseEnum):
@@ -80,19 +80,13 @@ class RegisterGroup(BaseModel):
     numbers: list[int]  # The indices (e.g., [0, 1, 2, ..., 15])
 
 
-class RegistersConfig(BaseModel):
+class RegistersConfig(BaseConfig):
     """Top-level register map configuration."""
 
-    name: str
-    file: Optional[str] = None
     width: int = 32
     regmap: list[Register]
     register_groups: list[RegisterGroup] = []  # Groups of numbered registers
     access_separate: bool = False  # Separate hardware access methods
-
-    @property
-    def output_filename(self) -> str:
-        return self.file or self.name.lower()
 
     @model_validator(mode="after")
     def check_access_separate(self) -> "RegistersConfig":

@@ -25,6 +25,7 @@ class BaseConfig(BaseModel):
 
     name: str
     file: str | None = None
+    copy_support_files: bool = True
 
     @property
     def output_filename(self) -> str:
