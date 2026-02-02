@@ -78,6 +78,7 @@ class RegistersGenerator(DomainGenerator):
 
         return template.render(
             name=cfg.name,
+            file=config.file,
             width=cfg.width,
             regmap=registers,
             register_groups=cfg.register_groups,
@@ -89,9 +90,11 @@ class RegistersGenerator(DomainGenerator):
     def post_generate(
         self, config: BaseConfig, output: Path, generated_extensions: set[str]
     ) -> list[str]:
-        # Only copy reg_common.h/.c when C header output is generated
+        config = cast(RegistersConfig, config)
+        result: list[str] = []
+
         if "hjson" in generated_extensions:
-            hjson_file = output / (config.file or config.name.lower() + ".hjson")
+            hjson_file = output / (config.output_filename + ".hjson")
             subprocess.run(
                 [
                     sys.executable,
@@ -103,25 +106,36 @@ class RegistersGenerator(DomainGenerator):
                 ],
                 cwd=Path(__file__).parent / "regtool",
             )
-            return [
-                (config.file or config.name.lower() + "_reg_pkg.hjson"),
-                (config.file or config.name.lower() + "_reg_top.hjson"),
-            ]
+            result.extend(
+                [
+                    (config.output_filename + "_reg_pkg.hjson"),
+                    (config.output_filename + "_reg_top.hjson"),
+                ]
+            )
 
-        elif "h" not in generated_extensions:
-            return []
+        if config.copy_support_files:
+            if "h" in generated_extensions:
+                header = self.templates_path / "reg_common.h"
+                source = self.templates_path / "reg_common.c"
 
-        header = self.templates_path / "reg_common.h"
-        source = self.templates_path / "reg_common.c"
+                files_copied = []
+                if header.exists():
+                    dst = output / f"{config.output_filename}_base.h"
+                    dst.write_text(header.read_text())
+                    files_copied.append(f"{config.output_filename}_base.h")
+                if source.exists():
+                    dst = output / f"{config.output_filename}_base.c"
+                    dst.write_text(source.read_text())
+                    files_copied.append(f"{config.output_filename}_base.c")
 
-        files_copied = []
-        if header.exists():
-            dst = output / "reg_common.h"
-            dst.write_text(header.read_text())
-            files_copied.append("reg_common.h")
-        if source.exists():
-            dst = output / "reg_common.c"
-            dst.write_text(source.read_text())
-            files_copied.append("reg_common.c")
+                result.extend(files_copied)
 
-        return files_copied
+            if "py" in generated_extensions:
+                # Copy the register base classes
+                base_template = self.templates_path / "registers_base.py"
+                if base_template.exists():
+                    dst = output / f"{config.output_filename}_base.py"
+                    dst.write_text(base_template.read_text())
+                    result.append(f"{config.output_filename}_base.py")
+
+        return result

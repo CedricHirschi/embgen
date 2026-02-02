@@ -34,13 +34,16 @@ class CommandsGenerator(DomainGenerator):
     def post_generate(
         self, config: BaseConfig, output: Path, generated_extensions: set[str]
     ) -> list[str]:
-        # Only copy commands_base.py when Python output is generated
-        if "py" not in generated_extensions or not config.copy_support_files:
-            return []
+        config = cast(CommandsConfig, config)
+        result: list[str] = []
 
-        src = self.templates_path / "commands_base.py"
-        if src.exists():
-            dst = output / (config.output_filename + "_base.py")
-            dst.write_text(src.read_text())
-            return [config.output_filename + "_base.py"]
-        return []
+        # Only copy commands_base.py when Python output is generated
+        if config.copy_support_files:
+            if "py" in generated_extensions:
+                src = self.templates_path / "commands_base.py"
+                if src.exists():
+                    dst = output / (config.output_filename + "_base.py")
+                    dst.write_text(src.read_text())
+                    result.append(config.output_filename + "_base.py")
+
+        return result

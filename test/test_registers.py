@@ -323,8 +323,15 @@ class TestRegistersGeneration:
             filenames = code_gen.generate_from_file(registers_config, templates)
 
             assert "simple.h" in filenames
+            assert "simple_base.h" in filenames
+            assert "simple_base.c" in filenames
+
             header_file = output_path / "simple.h"
+            base_header_file = output_path / "simple_base.h"
+            base_source_file = output_path / "simple_base.c"
             assert header_file.exists()
+            assert base_header_file.exists()
+            assert base_source_file.exists()
 
             content = header_file.read_text()
             assert "SIMPLE" in content.upper()  # Guard macro or defines
@@ -340,8 +347,12 @@ class TestRegistersGeneration:
             filenames = code_gen.generate_from_file(registers_config, templates)
 
             assert "simple.py" in filenames
+            assert "simple_base.py" in filenames
+
             py_file = output_path / "simple.py"
+            base_py_file = output_path / "simple_base.py"
             assert py_file.exists()
+            assert base_py_file.exists()
 
     def test_generate_markdown(
         self, registers_config: Path, generator: RegistersGenerator
@@ -478,6 +489,7 @@ class TestGeneratedPythonInterface:
         """Generate the Python module and import it."""
         import sys
         import importlib.util
+        import types
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir)
@@ -486,15 +498,46 @@ class TestGeneratedPythonInterface:
             code_gen = CodeGenerator(generator, output_path)
             code_gen.generate_from_file(registers_config, templates)
 
+            # Add temp directory to sys.path
+            sys.path.insert(0, str(output_path))
+
+            # Create a fake package for relative imports to work
+            pkg_name = "simple_pkg"
+            pkg = types.ModuleType(pkg_name)
+            pkg.__path__ = [str(output_path)]
+            pkg.__package__ = pkg_name
+            sys.modules[pkg_name] = pkg
+
+            # Load the base module first
+            base_file = output_path / "simple_base.py"
+            base_spec = importlib.util.spec_from_file_location(
+                f"{pkg_name}.simple_base", base_file,
+                submodule_search_locations=[str(output_path)]
+            )
+            assert base_spec is not None and base_spec.loader is not None
+            base_module = importlib.util.module_from_spec(base_spec)
+            base_module.__package__ = pkg_name
+            sys.modules[f"{pkg_name}.simple_base"] = base_module
+            base_spec.loader.exec_module(base_module)
+
+            # Load the main module
             py_file = output_path / "simple.py"
-            spec = importlib.util.spec_from_file_location("simple_test_module", py_file)
+            spec = importlib.util.spec_from_file_location(
+                f"{pkg_name}.simple", py_file,
+                submodule_search_locations=[str(output_path)]
+            )
             assert spec is not None, "Failed to create module spec"
             assert spec.loader is not None, "Module spec has no loader"
             module = importlib.util.module_from_spec(spec)
-            sys.modules["simple_test_module"] = module
+            module.__package__ = pkg_name
+            sys.modules[f"{pkg_name}.simple"] = module
             spec.loader.exec_module(module)
             yield module
-            del sys.modules["simple_test_module"]
+            # Cleanup
+            del sys.modules[f"{pkg_name}.simple"]
+            del sys.modules[f"{pkg_name}.simple_base"]
+            del sys.modules[pkg_name]
+            sys.path.remove(str(output_path))
 
     def test_nonzero_reset_integer_bitfield(self, generated_module):
         """Test that integer bitfields with non-zero reset values are read correctly."""
@@ -780,6 +823,7 @@ class TestGeneratedPythonRegisterGroups:
         """Generate the Python module and import it."""
         import sys
         import importlib.util
+        import types
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir)
@@ -788,17 +832,46 @@ class TestGeneratedPythonRegisterGroups:
             code_gen = CodeGenerator(generator, output_path)
             code_gen.generate_from_file(numbers_config, templates)
 
+            # Add temp directory to sys.path
+            sys.path.insert(0, str(output_path))
+
+            # Create a fake package for relative imports to work
+            pkg_name = "numbers_pkg"
+            pkg = types.ModuleType(pkg_name)
+            pkg.__path__ = [str(output_path)]
+            pkg.__package__ = pkg_name
+            sys.modules[pkg_name] = pkg
+
+            # Load the base module first
+            base_file = output_path / "numbers_base.py"
+            base_spec = importlib.util.spec_from_file_location(
+                f"{pkg_name}.numbers_base", base_file,
+                submodule_search_locations=[str(output_path)]
+            )
+            assert base_spec is not None and base_spec.loader is not None
+            base_module = importlib.util.module_from_spec(base_spec)
+            base_module.__package__ = pkg_name
+            sys.modules[f"{pkg_name}.numbers_base"] = base_module
+            base_spec.loader.exec_module(base_module)
+
+            # Load the main module
             py_file = output_path / "numbers.py"
             spec = importlib.util.spec_from_file_location(
-                "numbers_test_module", py_file
+                f"{pkg_name}.numbers", py_file,
+                submodule_search_locations=[str(output_path)]
             )
             assert spec is not None, "Failed to create module spec"
             assert spec.loader is not None, "Module spec has no loader"
             module = importlib.util.module_from_spec(spec)
-            sys.modules["numbers_test_module"] = module
+            module.__package__ = pkg_name
+            sys.modules[f"{pkg_name}.numbers"] = module
             spec.loader.exec_module(module)
             yield module
-            del sys.modules["numbers_test_module"]
+            # Cleanup
+            del sys.modules[f"{pkg_name}.numbers"]
+            del sys.modules[f"{pkg_name}.numbers_base"]
+            del sys.modules[pkg_name]
+            sys.path.remove(str(output_path))
 
     def test_register_group_dict_access(self, generated_module):
         """Test accessing registers through dictionary-like interface."""
