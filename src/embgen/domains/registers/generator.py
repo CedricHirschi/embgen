@@ -79,6 +79,7 @@ class RegistersGenerator(DomainGenerator):
         return template.render(
             name=cfg.name,
             file=config.file,
+            support_file=config.support_output_filename,
             width=cfg.width,
             regmap=registers,
             register_groups=cfg.register_groups,
@@ -120,13 +121,13 @@ class RegistersGenerator(DomainGenerator):
 
                 files_copied = []
                 if header.exists():
-                    dst = output / f"{config.output_filename}_base.h"
+                    dst = output / f"{config.support_output_filename}.h"
                     dst.write_text(header.read_text())
-                    files_copied.append(f"{config.output_filename}_base.h")
+                    files_copied.append(f"{config.support_output_filename}.h")
                 if source.exists():
-                    dst = output / f"{config.output_filename}_base.c"
+                    dst = output / f"{config.support_output_filename}.c"
                     dst.write_text(source.read_text())
-                    files_copied.append(f"{config.output_filename}_base.c")
+                    files_copied.append(f"{config.support_output_filename}.c")
 
                 result.extend(files_copied)
 
@@ -134,8 +135,8 @@ class RegistersGenerator(DomainGenerator):
                 # Copy the register base classes
                 base_template = self.templates_path / "registers_base.py"
                 if base_template.exists():
-                    dst = output / f"{config.output_filename}_base.py"
+                    dst = output / f"{config.support_output_filename}.py"
                     dst.write_text(base_template.read_text())
-                    result.append(f"{config.output_filename}_base.py")
+                    result.append(f"{config.support_output_filename}.py")
 
         return result

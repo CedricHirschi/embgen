@@ -490,6 +490,7 @@ class TestGeneratedPythonInterface:
         import sys
         import importlib.util
         import types
+        import warnings
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir)
@@ -511,8 +512,9 @@ class TestGeneratedPythonInterface:
             # Load the base module first
             base_file = output_path / "simple_base.py"
             base_spec = importlib.util.spec_from_file_location(
-                f"{pkg_name}.simple_base", base_file,
-                submodule_search_locations=[str(output_path)]
+                f"{pkg_name}.simple_base",
+                base_file,
+                submodule_search_locations=[str(output_path)],
             )
             assert base_spec is not None and base_spec.loader is not None
             base_module = importlib.util.module_from_spec(base_spec)
@@ -520,18 +522,21 @@ class TestGeneratedPythonInterface:
             sys.modules[f"{pkg_name}.simple_base"] = base_module
             base_spec.loader.exec_module(base_module)
 
-            # Load the main module
+            # Load the main module (suppress deprecation warning from dynamic loading)
             py_file = output_path / "simple.py"
             spec = importlib.util.spec_from_file_location(
-                f"{pkg_name}.simple", py_file,
-                submodule_search_locations=[str(output_path)]
+                f"{pkg_name}.simple",
+                py_file,
+                submodule_search_locations=[str(output_path)],
             )
             assert spec is not None, "Failed to create module spec"
             assert spec.loader is not None, "Module spec has no loader"
             module = importlib.util.module_from_spec(spec)
             module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.simple"] = module
-            spec.loader.exec_module(module)
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", "__package__ != __spec__.parent")
+                spec.loader.exec_module(module)
             yield module
             # Cleanup
             del sys.modules[f"{pkg_name}.simple"]
@@ -824,6 +829,7 @@ class TestGeneratedPythonRegisterGroups:
         import sys
         import importlib.util
         import types
+        import warnings
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir)
@@ -845,8 +851,9 @@ class TestGeneratedPythonRegisterGroups:
             # Load the base module first
             base_file = output_path / "numbers_base.py"
             base_spec = importlib.util.spec_from_file_location(
-                f"{pkg_name}.numbers_base", base_file,
-                submodule_search_locations=[str(output_path)]
+                f"{pkg_name}.numbers_base",
+                base_file,
+                submodule_search_locations=[str(output_path)],
             )
             assert base_spec is not None and base_spec.loader is not None
             base_module = importlib.util.module_from_spec(base_spec)
@@ -854,18 +861,21 @@ class TestGeneratedPythonRegisterGroups:
             sys.modules[f"{pkg_name}.numbers_base"] = base_module
             base_spec.loader.exec_module(base_module)
 
-            # Load the main module
+            # Load the main module (suppress deprecation warning from dynamic loading)
             py_file = output_path / "numbers.py"
             spec = importlib.util.spec_from_file_location(
-                f"{pkg_name}.numbers", py_file,
-                submodule_search_locations=[str(output_path)]
+                f"{pkg_name}.numbers",
+                py_file,
+                submodule_search_locations=[str(output_path)],
             )
             assert spec is not None, "Failed to create module spec"
             assert spec.loader is not None, "Module spec has no loader"
             module = importlib.util.module_from_spec(spec)
             module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.numbers"] = module
-            spec.loader.exec_module(module)
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", "__package__ != __spec__.parent")
+                spec.loader.exec_module(module)
             yield module
             # Cleanup
             del sys.modules[f"{pkg_name}.numbers"]

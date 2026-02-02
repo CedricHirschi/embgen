@@ -15,7 +15,7 @@
 #endif
 
 #if !{{ name | upper | replace(' ', '_') }}_STANDALONE
-#include "reg_common.h"
+#include "{{ support_file }}.h"
 #else
 #include <stdint.h>
 

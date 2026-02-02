@@ -26,6 +26,7 @@ class CommandsGenerator(DomainGenerator):
         return template.render(
             name=config.name,
             file=config.file,
+            support_file=config.support_output_filename,
             endianness=config.endianness,
             commands=sorted(config.commands, key=lambda c: c.id),
             generated_on=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -42,8 +43,8 @@ class CommandsGenerator(DomainGenerator):
             if "py" in generated_extensions:
                 src = self.templates_path / "commands_base.py"
                 if src.exists():
-                    dst = output / (config.output_filename + "_base.py")
+                    dst = output / (config.support_output_filename + ".py")
                     dst.write_text(src.read_text())
-                    result.append(config.output_filename + "_base.py")
+                    result.append(config.support_output_filename + ".py")
 
         return result

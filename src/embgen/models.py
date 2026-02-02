@@ -26,11 +26,21 @@ class BaseConfig(BaseModel):
     name: str
     file: str | None = None
     copy_support_files: bool = True
+    support_file: str | None = None
 
     @property
     def output_filename(self) -> str:
         """Get the output filename (defaults to lowercase name)."""
         return self.file or self.name.lower()
+
+    @property
+    def support_output_filename(self) -> str:
+        """Get the support output filename, if specified."""
+        return (
+            self.output_filename + "_base"
+            if self.support_file is None
+            else self.support_file
+        )
 
 
 class Enum(BaseModel):
