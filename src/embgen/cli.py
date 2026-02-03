@@ -153,6 +153,9 @@ def main(argv: list[str] | None = None) -> int:
             default=Path.cwd() / "generated",
             help="Output directory (relative to invocation directory)",
         )
+        sub.add_argument(
+            "--json-schema", action="store_true", help="Output JSON Schema"
+        )
         add_template_flags(sub, single_templates, multifile_groups)
 
     # Auto-detect mode
@@ -165,6 +168,9 @@ def main(argv: list[str] | None = None) -> int:
         "--output",
         default=Path.cwd() / "generated",
         help="Output directory (relative to invocation directory)",
+    )
+    auto_sub.add_argument(
+        "--json-schema", action="store_true", help="Output JSON Schema"
     )
 
     # For auto mode, we need to add all possible template flags
@@ -293,7 +299,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Run generation using CodeGenerator
     try:
-        code_gen = CodeGenerator(generator, args.output)
+        code_gen = CodeGenerator(generator, args.output, args.json_schema)
         code_gen.generate_from_file(
             args.input,
             templates=selected_templates,

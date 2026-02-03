@@ -34,6 +34,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
+import json
 
 import yaml
 from jinja2 import Environment
@@ -69,15 +70,19 @@ class CodeGenerator:
         ```
     """
 
-    def __init__(self, generator: DomainGenerator, output_path: Path):
+    def __init__(
+        self, generator: DomainGenerator, output_path: Path, json_schema: bool = False
+    ) -> None:
         """Initialize the code generator.
 
         Args:
             generator: The domain generator to use for validation and rendering.
             output_path: Path to the output directory.
+            json_schema: Whether to output JSON Schema files.
         """
         self.generator = generator
         self.output_path = Path(output_path).resolve()
+        self.json_schema = json_schema
         self._env: Environment | None = None
         self._log = logging.getLogger("embgen")
 
@@ -138,7 +143,17 @@ class CodeGenerator:
         self._log.debug(f"Validating {self.generator.name} configuration")
 
         try:
-            return self.generator.validate(data)
+            validated = self.generator.validate(data)
+
+            if self.json_schema:
+                schema = validated.model_json_schema()
+                schema_filename = f"{self.generator.name}_schema.json"
+                schema_path = self.output_path / schema_filename
+                self._log.debug(f"Writing JSON Schema to '{schema_filename}'")
+                with open(schema_path, "w") as f:
+                    json.dump(schema, f, indent=4)
+
+            return validated
         except Exception as e:
             self._log.error(f"Failed to validate {self.generator.name}: {e}")
             raise RuntimeError(f"Failed to validate {self.generator.name}") from e
