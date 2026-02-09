@@ -19,7 +19,15 @@
 #else
 #include <stdint.h>
 
+{% if width == 8 %}
+#define REG_FIELD_SIZE 1
+{% elif width == 16 %}
 #define REG_FIELD_SIZE 2
+{% elif width == 32 %}
+#define REG_FIELD_SIZE 4
+{% else %}
+#error "Unsupported register width"
+{% endif %}
 
 #if REG_FIELD_SIZE == 1
 typedef uint8_t reg_field_t;

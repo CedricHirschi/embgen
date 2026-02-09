@@ -9,7 +9,9 @@
 
 #include <stdint.h>
 
-#define REG_FIELD_SIZE 2
+#ifndef REG_FIELD_SIZE
+#define REG_FIELD_SIZE 4 // Default to 32-bit registers if not defined
+#endif
 
 #if REG_FIELD_SIZE == 1
 typedef uint8_t reg_field_t;
