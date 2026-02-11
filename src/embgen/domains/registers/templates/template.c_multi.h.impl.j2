@@ -9,26 +9,8 @@
 #define {{ name | upper | replace(' ', '_') }}_H
 
 #include <assert.h>
-#include <stdint.h>
 
-{% if width == 8 %}
-#define REG_FIELD_SIZE 1
-typedef uint8_t reg_field_t;
-{% elif width == 16 %}
-#define REG_FIELD_SIZE 2
-typedef uint16_t reg_field_t;
-{% elif width == 32 %}
-#define REG_FIELD_SIZE 4
-typedef uint32_t reg_field_t;
-{% else %}
-#error "Unsupported register width ({{ width }} bits)"
-{% endif %}
-
-typedef enum {
-  REG_ATTR_NONE = 0,
-  REG_ATTR_READONLY = (1 << 0),
-  REG_ATTR_WRITEONLY = (1 << 1),
-} reg_attr_t;
+#include "{{ support_file }}.h"
 
 /* ============================================================================
  * Register Map Configuration

@@ -44,7 +44,7 @@ def add_template_flags(
 
         group.add_argument(
             f"-{short}",
-            f"--{ext}",
+            f"--{ext}" if ext else f"--{desc.lower().replace(' ', '-')}",
             action="store_true",
             help=f"Generate {desc} output",
         )
