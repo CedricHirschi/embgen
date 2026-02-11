@@ -1,7 +1,7 @@
 """Register map domain models."""
 
 from enum import Enum as BaseEnum
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import BaseModel, model_validator
 
@@ -33,10 +33,27 @@ class BitField(BaseModel):
 
     name: str
     description: Optional[str] = None
-    reset: int
+    reset: Union[int, bool, Enum, str]
     width: int
     offset: int
     enums: Optional[list[Enum]] = None
+
+    @model_validator(mode="after")
+    def validate_reset(self) -> "BitField":
+        if self.enums is not None:
+            if isinstance(self.reset, str):
+                found = False
+                for enum in self.enums:
+                    if enum.name == self.reset:
+                        self.reset = enum.value
+                        found = True
+                        break
+
+                if not found:
+                    raise ValueError(
+                        f"BitField {self.name} has invalid reset enum value: {self.reset}. Available enums: {[e.name for e in self.enums]}"
+                    )
+        return self
 
 
 class Register(BaseModel):

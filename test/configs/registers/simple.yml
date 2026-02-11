@@ -14,7 +14,7 @@ regmap:
         description: Operating mode
         width: 3
         offset: 1
-        reset: 1
+        reset: NORMAL
         enums:
           - { name: POWER_OFF, value: 0, description: "Device is off" }
           - { name: NORMAL, value: 1, description: "Device is on" }

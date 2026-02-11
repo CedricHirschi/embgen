@@ -30,7 +30,7 @@
 
 {% set reset_val = namespace(value=0) %}
 {% for field in register.bitfields %}
-{% set reset_val.value = reset_val.value + (field.reset * (2 ** field.offset)) %}
+{% set reset_val.value = reset_val.value + (field.reset|int * (2 ** field.offset)) %}
 {% endfor %}
 | Property | Value |
 |----------|-------|
@@ -62,7 +62,7 @@
 
        +{% for i in range(reg_width) %}---+{% endfor %}
 
-Reset: |{% for i in range(reg_width - 1, -1, -1) %}{% set ns = namespace(bit_val=0) %}{% for field in register.bitfields %}{% if i >= field.offset and i < field.offset + field.width %}{% set bit_pos = i - field.offset %}{% set ns.bit_val = (field.reset // (2 ** bit_pos)) % 2 %}{% endif %}{% endfor %}{{ '  %d' % ns.bit_val }}|{% endfor %}
+Reset: |{% for i in range(reg_width - 1, -1, -1) %}{% set ns = namespace(bit_val=0) %}{% for field in register.bitfields %}{% if i >= field.offset and i < field.offset + field.width %}{% set bit_pos = i - field.offset %}{% set ns.bit_val = (field.reset|int // (2 ** bit_pos)) % 2 %}{% endif %}{% endfor %}{{ '  %d' % ns.bit_val }}|{% endfor %}
 
 ```
 
@@ -74,7 +74,7 @@ Reset: |{% for i in range(reg_width - 1, -1, -1) %}{% set ns = namespace(bit_val
 | Bitfield | Bits | Width | Reset | Reset (Hex) | Description |
 |----------|------|-------|-------|-------------|-------------|
 {% for bitfield in register.bitfields | sort(attribute='offset') %}
-| `{{ bitfield.name }}` | [{{ bitfield.offset + bitfield.width - 1 }}:{{ bitfield.offset }}] | {{ bitfield.width }} | {{ bitfield.reset }} | `0x{{ '%0*X' % ((bitfield.width + 3) // 4, bitfield.reset) }}` | {{ bitfield.description or '-' }} |
+| `{{ bitfield.name }}` | [{{ bitfield.offset + bitfield.width - 1 }}:{{ bitfield.offset }}] | {{ bitfield.width }} | {{ bitfield.reset|int }} | `0x{{ '%0*X' % ((bitfield.width + 3) // 4, bitfield.reset|int) }}` | {{ bitfield.description or '-' }} |
 {% endfor %}
 
 {% for bitfield in register.bitfields %}
@@ -111,7 +111,7 @@ Reset: |{% for i in range(reg_width - 1, -1, -1) %}{% set ns = namespace(bit_val
 {% for register in regmap %}
 {% set reset_val = namespace(value=0) %}
 {% for field in register.bitfields %}
-{% set reset_val.value = reset_val.value + (field.reset * (2 ** field.offset)) %}
+{% set reset_val.value = reset_val.value + (field.reset|int * (2 ** field.offset)) %}
 {% endfor %}
 | {{ register.name }} | `0x{{ '%04X' % reset_val.value }}` |
 {% endfor %}

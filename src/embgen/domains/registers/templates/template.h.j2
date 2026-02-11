@@ -220,7 +220,7 @@ typedef enum {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | r
 
 /* {{ group.name }} Register Reset Values (grouped register) */
 {% for field in group.bitfields %}
-#define {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_{{ field.name | upper | replace(' ', '_') }}_RESET {{ field.reset }}
+#define {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_{{ field.name | upper | replace(' ', '_') }}_RESET {{ field.reset|int }}
 {% endfor %}
 {% endfor %}
 {# Reset values for non-grouped registers #}
@@ -231,7 +231,7 @@ typedef enum {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | r
 
 /* {{ register.name }} Register Reset Values */
 {% for field in register.bitfields %}
-#define {{ name | upper | replace(' ', '_') }}_{{ register.name | upper | replace(' ', '_') }}_{{ field.name | upper | replace(' ', '_') }}_RESET {{ field.reset }}
+#define {{ name | upper | replace(' ', '_') }}_{{ register.name | upper | replace(' ', '_') }}_{{ field.name | upper | replace(' ', '_') }}_RESET {{ field.reset|int }}
 {% endfor %}
 {% endif %}
 {% endfor %}
@@ -239,7 +239,7 @@ typedef enum {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | r
 {# Full register reset values for groups #}
 {% for group in register_groups %}
 /** @brief Reset value for {{ group.name }} register (grouped) */
-#define {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_RESET ({% for field in group.bitfields %}({{ field.reset }}U << {{ field.offset }}){% if not loop.last %} | {% endif %}{% endfor %})
+#define {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_RESET ({% for field in group.bitfields %}({{ field.reset|int }}U << {{ field.offset }}){% if not loop.last %} | {% endif %}{% endfor %})
 {% endfor %}
 {# Full register reset values for non-grouped registers #}
 {% set grouped_names = register_groups | map(attribute='name') | list %}
@@ -247,7 +247,7 @@ typedef enum {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | r
 {% set base_name = register.name | regex_replace('[0-9]+$', '') %}
 {% if base_name not in grouped_names %}
 /** @brief Reset value for entire {{ register.name }} register */
-#define {{ name | upper | replace(' ', '_') }}_{{ register.name | upper | replace(' ', '_') }}_RESET ({% for field in register.bitfields %}({{ field.reset }}U << {{ field.offset }}){% if not loop.last %} | {% endif %}{% endfor %})
+#define {{ name | upper | replace(' ', '_') }}_{{ register.name | upper | replace(' ', '_') }}_RESET ({% for field in register.bitfields %}({{ field.reset|int }}U << {{ field.offset }}){% if not loop.last %} | {% endif %}{% endfor %})
 {% endif %}
 {% endfor %}
 

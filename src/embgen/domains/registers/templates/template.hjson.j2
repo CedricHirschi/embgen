@@ -34,7 +34,7 @@
           bits: "{{ bf.offset + bf.width - 1 }}:{{ bf.offset }}"
           name: "{{ bf.name }}"
           desc: "{{ bf.description or '' }}"
-          resval: {{ bf.reset }}
+          resval: {{ bf.reset|int }}
 {% if bf.enums %}
           enum: [
 {% for enum in bf.enums %}

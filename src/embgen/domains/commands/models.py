@@ -1,7 +1,7 @@
 from enum import StrEnum
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
-from pydantic import BaseModel, Field, field_validator, ValidationInfo, computed_field
+from pydantic import BaseModel, Field, model_validator, computed_field
 
 from ...models import BaseConfig
 
@@ -38,18 +38,17 @@ class Argument(BaseModel):
     description: str
     type: ArgumentType
     enums: Optional[list[Enum]] = None
-    default: Optional[Union[list[int], int, bool, Enum]] = None
+    default: Optional[Union[list[int], int, bool, Enum, str]] = None
 
-    # Convert default to Enum if enums are defined
-    @field_validator("default", mode="before")
-    @classmethod
-    def validate_default_enum(cls, v: Any, values: ValidationInfo) -> Any:
-        enums = values.data.get("enums")
-        if enums is not None and isinstance(v, str):
-            for enum in enums:
-                if enum.name == v:
-                    return enum
-        return v
+    @model_validator(mode="after")
+    def validate_default(self) -> "Argument":
+        if self.enums is not None:
+            if isinstance(self.default, str):
+                for enum in self.enums:
+                    if enum.name == self.default:
+                        self.default = enum
+                        break
+        return self
 
     @computed_field
     def type_python(self) -> str:

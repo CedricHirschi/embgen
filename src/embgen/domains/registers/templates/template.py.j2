@@ -73,7 +73,7 @@ class BitField{{ group.name }}{{ bitfield.name|capitalize }}(BitField):
 
     _name = "{{ bitfield.name }}"
     _description = "{{ bitfield.description or '' }}"
-    _reset = {{ bitfield.reset }}
+    _reset = {{ bitfield.reset|int }}
     _width = {{ bitfield.width }}
     _offset = {{ bitfield.offset }}
 {% if bitfield.enums %}
@@ -122,7 +122,7 @@ class BitField{{ register.name }}{{ bitfield.name|capitalize }}(BitField):
 
     _name = "{{ bitfield.name }}"
     _description = "{{ bitfield.description or '' }}"
-    _reset = {{ bitfield.reset }}
+    _reset = {{ bitfield.reset|int }}
     _width = {{ bitfield.width }}
     _offset = {{ bitfield.offset }}
 {% if bitfield.enums %}
