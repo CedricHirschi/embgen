@@ -288,6 +288,21 @@ class TestCLIGeneration:
             assert exit_code == 0
             assert (Path(tmpdir) / "simple.h").exists()
 
+    def test_generate_registers_multi(self, registers_config: Path):
+        """Test generating registers header via CLI."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            exit_code, stdout, stderr = run_cli(
+                "registers",
+                str(registers_config),
+                "-o",
+                tmpdir,
+                "--c-multi",
+            )
+            assert exit_code == 0
+            assert (Path(tmpdir) / "simple_impl.h").exists()
+            assert (Path(tmpdir) / "simple_base.h").exists()
+            assert (Path(tmpdir) / "simple_base.c").exists()
+
     def test_generate_multiple_formats(self, commands_config: Path):
         """Test generating multiple formats at once."""
         with tempfile.TemporaryDirectory() as tmpdir:

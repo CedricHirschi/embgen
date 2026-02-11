@@ -327,6 +327,101 @@ class TestMultifileGeneration:
                     / "templates"
                 )
 
+    def test_generate_registers_c_multifile(self):
+        """Test generating registers domain with C multifile templates."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Use the simple.yml config from the test configs
+            config_file = Path(__file__).parent / "configs" / "registers" / "simple.yml"
+            assert config_file.exists(), "Test config simple.yml not found"
+
+            # Create output directory
+            output_path = Path(tmpdir) / "output"
+            output_path.mkdir()
+
+            # Import and create RegistersGenerator
+            from embgen.domains.registers.generator import RegistersGenerator
+
+            generator = RegistersGenerator()
+
+            # Discover templates from registers domain
+            single, multifile = discover_templates(generator.templates_path)
+
+            # Verify c group was found (multifile group for C templates)
+            assert "c" in multifile, "c group not found in registers templates"
+            c_group = multifile["c"]
+            assert len(c_group.templates) == 3, "Expected 3 templates in c group"
+
+            # Verify the templates have the expected extensions and suffixes
+            template_files = [t.filename for t in c_group.templates]
+            assert "template.c_multi.h.impl.j2" in template_files
+            assert "template.c_multi.h.base.j2" in template_files
+            assert "template.c_multi.c.base.j2" in template_files
+
+            # Generate using CodeGenerator with c multifile group
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(
+                config_file,
+                {},  # No single templates
+                {"c": c_group},  # Use c multifile group
+            )
+
+            # Check that all three files were generated
+            # Expected: simple_impl.h, simple_base.h, simple_base.c
+            assert len(filenames) >= 3, (
+                f"Expected at least 3 files, got {len(filenames)}: {filenames}"
+            )
+
+            # Check for implementation header
+            assert any(f.endswith("simple_impl.h") for f in filenames), (
+                f"Implementation header simple_impl.h not found in {filenames}"
+            )
+
+            # Check for base header
+            assert any(f.endswith("simple_base.h") for f in filenames), (
+                f"Base header simple_base.h not found in {filenames}"
+            )
+
+            # Check for base source
+            assert any(f.endswith("simple_base.c") for f in filenames), (
+                f"Base source simple_base.c not found in {filenames}"
+            )
+
+            # Verify files exist and have expected content
+            impl_header = output_path / "simple_impl.h"
+            base_header = output_path / "simple_base.h"
+            base_source = output_path / "simple_base.c"
+
+            assert impl_header.exists(), "simple_impl.h was not created"
+            assert base_header.exists(), "simple_base.h was not created"
+            assert base_source.exists(), "simple_base.c was not created"
+
+            # Check content of implementation header
+            impl_content = impl_header.read_text()
+            assert "SIMPLEREGMAP_H" in impl_content, "Header guard not found"
+            assert '#include "simple_base.h"' in impl_content, (
+                "Include of base header not found"
+            )
+            assert "SIMPLEREGMAP_ADDR_CONTROL" in impl_content, (
+                "Register address enum not found"
+            )
+
+            # Check content of base header
+            base_h_content = base_header.read_text()
+            assert "reg_field_t" in base_h_content, "Register field type not found"
+            assert "REG_FIELD_SIZE" in base_h_content, "Register field size not found"
+
+            # Check content of base source
+            base_c_content = base_source.read_text()
+            assert '#include "simple_base.h"' in base_c_content, (
+                "Include not found in base source"
+            )
+            assert "reg_header_encode" in base_c_content, (
+                "Header encode function not found"
+            )
+            assert "reg_header_decode" in base_c_content, (
+                "Header decode function not found"
+            )
+
 
 class TestTemplateInfo:
     """Test TemplateInfo dataclass."""

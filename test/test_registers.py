@@ -323,15 +323,9 @@ class TestRegistersGeneration:
             filenames = code_gen.generate_from_file(registers_config, templates)
 
             assert "simple.h" in filenames
-            assert "simple_base.h" in filenames
-            assert "simple_base.c" in filenames
 
             header_file = output_path / "simple.h"
-            base_header_file = output_path / "simple_base.h"
-            base_source_file = output_path / "simple_base.c"
             assert header_file.exists()
-            assert base_header_file.exists()
-            assert base_source_file.exists()
 
             content = header_file.read_text()
             assert "SIMPLE" in content.upper()  # Guard macro or defines
