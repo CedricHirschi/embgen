@@ -21,6 +21,7 @@ typedef uint32_t reg_field_t;
 {% else %}
 #error "Unsupported register width ({{ width }} bits)"
 {% endif %}
+#define REG_HEADER_SIZE (2 * REG_FIELD_SIZE) // addr + length
 
 typedef enum
 {
