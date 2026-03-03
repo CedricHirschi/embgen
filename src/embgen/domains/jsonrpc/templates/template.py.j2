@@ -5,7 +5,7 @@ DO NOT EDIT - This file is auto-generated.
 
 
 from enum import Enum
-from typing import Any
+from typing import Any, Optional
 from inspect import isfunction
 from dataclasses import dataclass
 
@@ -15,7 +15,7 @@ class Method:
     """Base class for methods"""
 
     method: str
-    params: dict[str, Any]
+    params: Optional[dict[str, Any]] = None
 
 
 def methods() -> list[str]:
