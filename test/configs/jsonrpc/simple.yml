@@ -1,0 +1,140 @@
+name: Simple
+file: methods
+
+methods:
+  - name: ctrlpwr
+    description: "Control the state of a power domain"
+    args:
+      - name: domain
+        enums:
+          - { name: LVDS_2_5V, value: 0, description: "LVDS 2.5V" }
+          - { name: POS_HV, value: 1, description: "Positive High Voltage" }
+          - { name: NEG_HV, value: 2, description: "Negative High Voltage" }
+          - { name: NEG_5V, value: 3, description: "Negative 5V" }
+          - { name: PLL_PWD, value: 4, description: "PLL Powerdown" }
+        description: "Power domain to control"
+      - name: en
+        type: "?"
+        description: "True to enable the power domain, False to disable"
+
+  - name: delayns
+    description: "Delay for a specified number of nanoseconds"
+    args:
+      - name: ns
+        type: Q
+        description: "Number of nanoseconds to delay"
+
+  - name: enreplies
+    description: "Enable or disable replies from the device (NOT IMPLEMENTED)"
+    args:
+      - name: en
+        default: true
+        type: "?"
+        description: "True to enable replies, False to disable"
+
+  - name: ping
+    description: "Ping the device"
+    args:
+      - name: id
+        default: 1
+        type: B
+        description: "ID of the probe to ping"
+
+  - name: setpowersave
+    description: "Set the power save mode of the device (NOT IMPLEMENTED)"
+    args:
+      - name: en
+        default: true
+        type: "?"
+        description: "True to enable power save mode, False to disable"
+
+  - name: sleepms
+    description: "Sleep for a specified number of milliseconds"
+    args:
+      - name: ms
+        type: I
+        description: "Number of milliseconds to sleep"
+
+  - name: swmux
+    description: "Switch the SPI MUX"
+    args:
+      - name: code
+        enums:
+          - { name: PLL, value: 0, description: "PLL" }
+          - { name: FPGA, value: 1, description: "FPGA" }
+          - { name: AFE, value: 2, description: "AFE" }
+          - { name: TX, value: 3, description: "TX" }
+        type: B
+        description: "SPI MUX code"
+
+  - name: triggershot
+    description: "Trigger a shot"
+    args:
+      - name: n_shots
+        default: 1
+        type: H
+        description: "Number of shots to trigger"
+      - name: n_packets
+        default: 82
+        type: H
+        description: "Number of packets to expect"
+      - name: dcdc_off_delay_ns
+        default: 6100
+        type: B
+        description: TODO
+      - name: read_fifo_delay_ns
+        default: 200000
+        type: B
+        description: TODO
+      - name: cb_pack_id
+        default: 65535
+        type: H
+        description: TODO
+      - name: sw_trigger
+        default: true
+        type: "?"
+        description: TODO
+      - name: dcdc_pwd_at_rx
+        default: true
+        type: "?"
+        description: TODO
+
+  - name: writeafe
+    description: "Write to an AFE register"
+    args:
+      - name: dtgc
+        type: "?"
+        description: "True to write to DTGC AFE, False to write to standard AFE"
+      - name: addr
+        type: B
+        description: "Address of the AFE register to write"
+      - name: val
+        type: H
+        description: "Value to write to the AFE register"
+
+  - name: writefpga
+    description: "Write to a FPGA register"
+    args:
+      - name: addr
+        type: B
+        description: "Address of the FPGA register to write"
+      - name: val
+        type: I
+        description: "Value to write to the FPGA register"
+
+  - name: writespi
+    description: "Write a raw SPI packet (NOT IMPLEMENTED)"
+    args:
+      - name: data
+        type: s
+        description: "Array of bytes to send over SPI"
+
+  - name: writetx
+    description: "Write to a TX register"
+    args:
+      - name: addr
+        type: H
+        description: "Address of the TX register to write"
+      - name: val
+        type: I
+        description: "Value to write to the TX register"
