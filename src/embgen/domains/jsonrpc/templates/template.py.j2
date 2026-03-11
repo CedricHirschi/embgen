@@ -5,8 +5,7 @@ DO NOT EDIT - This file is auto-generated.
 
 
 from enum import Enum
-from typing import Any, Optional
-from inspect import isfunction
+from typing import Any, Optional, Callable
 from dataclasses import dataclass
 
 
@@ -18,26 +17,43 @@ class Method:
     params: Optional[dict[str, Any]] = None
 
 
-def methods() -> list[str]:
-    """Get a list of available methods in this module"""
-    return [
-        name
-        for name, value in globals().items()
-        if isfunction(value)
-        and value.__module__ == __name__
-        and value.__annotations__.get("return") is Method
-        and name != "custom"
-    ]
+class {{ name|capitalize }}Methods:
+    """Class containing all methods for the {{ name }} domain"""
+
+    def __init__(self, add_callback: Optional[Callable[[Method], None]] = None):
+        self._add_callback = add_callback
+
+
+    def _add(self, method: Method):
+        """Add a method to the list of methods for this domain
+
+        If an add_callback was provided, it will be called with the method as an argument. Otherwise, the method will be ignored.
+
+        Arguments:
+            method (Method): Method instance to add
+        """
+        if self._add_callback:
+            self._add_callback(method)
+
+
+    @property
+    def methods(self) -> list[str]:
+        """Get a list of available methods in this class"""
+        return [
+{% for method in methods %}
+            "{{ method.name }}",
+{% endfor %}
+        ]
 
 {% for method in methods %}
 {% for arg in method.args %}
 {% if arg.enums %}
 
-class {{ method.name|capitalize }}{{ arg.name|capitalize }}(Enum):
-    """Enum for argument {{ method.name }}.{{ arg.name }}"""
+    class {{ method.name|capitalize }}{{ arg.name|capitalize }}(Enum):
+        """Enum for argument {{ method.name }}.{{ arg.name }}"""
 
 {% for enum in arg.enums %}
-    {{ enum.name }} = {{ enum.value }}  # {{ enum.description }} ({{ enum.value }})
+        {{ enum.name }} = {{ enum.value }}  # {{ enum.description }} ({{ enum.value }})
 {% endfor %}
 {% endif %}
 {% endfor %}
@@ -45,41 +61,46 @@ class {{ method.name|capitalize }}{{ arg.name|capitalize }}(Enum):
 {% if method.args|selectattr("enums")|list %}
 
 {% endif %}
-def {{ method.name }}({% for arg in method.args %}{{ arg.name|lower }}: {{ arg.type_python }}{% if arg.default != None %} = {{ arg.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}) -> Method:
-    """Create a {{ method.name }} command instance
+    def {{ method.name }}(self, {% for arg in method.args %}{{ arg.name|lower }}: {{ arg.type_python }}{% if arg.default != None %} = {{ arg.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}) -> Method:
+        """Create a {{ method.name }} command instance
 
-    {{ method.description }}
+        {{ method.description }}
 
-    Arguments:
-{% for arg in method.args %}
-        {{ arg.name|lower }} ({{ arg.type_python }}): {{ arg.description }}{% if arg.default != None %} (default: {{ arg.default }}){% endif %}
+        Arguments:
+    {% for arg in method.args %}
+            {{ arg.name|lower }} ({{ arg.type_python }}): {{ arg.description }}{% if arg.default != None %} (default: {{ arg.default }}){% endif %}
+
+    {% endfor %}
+
+        Returns:
+            Method: Method instance with the specified arguments
+        """
+
+        result = Method(
+            method="{{ method.name }}",
+            params={
+    {% for arg in method.args %}
+                "{{ arg.name }}": {{ arg.name|lower }}{% if arg.enums %}.value{% endif %},  # {{ arg.description }}{% if arg.default != None %} (default: {{ arg.default }}){% endif %}
+
+    {% endfor %}
+            },
+        )
+        self._add(result)
+        return result
 
 {% endfor %}
 
-    Returns:
-        Method: Method instance with the specified arguments
-    """
-    return Method(
-        method="{{ method.name }}",
-        params={
-{% for arg in method.args %}
-            "{{ arg.name }}": {{ arg.name|lower }}{% if arg.enums %}.value{% endif %},  # {{ arg.description }}{% if arg.default != None %} (default: {{ arg.default }}){% endif %}
+    def custom(self, method: str, **params) -> Method:
+        """Create a custom command instance with arbitrary method name and parameters
 
-{% endfor %}
-        },
-    )
+        Arguments:
+            method (str): Name of the method for the command
+            **params: Arbitrary keyword arguments to include as parameters for the command
 
-{% endfor %}
-
-def custom(method: str, **params) -> Method:
-    """Create a custom command instance with arbitrary method name and parameters
-
-    Arguments:
-        method (str): Name of the method for the command
-        **params: Arbitrary keyword arguments to include as parameters for the command
-
-    Returns:
-        Method: Method instance with the specified arguments
-    """
-    return Method(method=method, params=params)
+        Returns:
+            Method: Method instance with the specified arguments
+        """
+        result = Method(method=method, params=params)
+        self._add(result)
+        return result
 
