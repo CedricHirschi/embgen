@@ -16,6 +16,7 @@ nav:
       - Overview: domains/index.md
       - Commands: domains/commands.md
       - Registers: domains/registers.md
+      - JSON-RPC: domains/jsonrpc.md
   - Extending embgen:
       - Overview: extending/index.md
       - Writing Models: extending/models.md

@@ -14,6 +14,7 @@ embgen [OPTIONS] COMMAND INPUT -o OUTPUT [FORMAT_FLAGS]
 | -------------------- | ------------------------------------------- |
 | `--help`, `-h`       | Show help message                           |
 | `-d`, `--debug`      | Enable debug output with timing information |
+| `-s`, `--silent`     | Suppress all but warning and error messages |
 | `--domains-dir PATH` | Load additional domains from this directory |
 
 ## Commands
@@ -58,6 +59,7 @@ All domain subcommands share these options:
 | --------------------- | ------------------------------------ |
 | `INPUT`               | Path to the YAML configuration file  |
 | `-o`, `--output PATH` | Output directory for generated files |
+| `--json-schema`       | Output a JSON Schema file for the domain's configuration model |
 
 ### Output Format Flags
 
@@ -182,5 +184,5 @@ Error: Failed to load YAML file
 
 ```bash
 $ embgen auto unknown.yml -o output/ --h
-Error: Could not auto-detect domain. Abailable: [...]
+Error: Could not auto-detect domain. Available: [...]
 ```

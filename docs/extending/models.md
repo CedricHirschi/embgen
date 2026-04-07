@@ -20,7 +20,10 @@ class MyConfig(BaseConfig):
     Inherits:
         name: str
         file: str | None (optional output filename override)
+        copy_support_files: bool (whether to copy support files, default: True)
+        support_file: str | None (optional override for support file name)
         output_filename: property (returns file or lowercase name)
+        support_output_filename: property (returns support file name)
     """
     # Add your domain-specific fields
     items: list[str] = []

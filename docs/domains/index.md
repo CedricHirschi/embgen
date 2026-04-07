@@ -1,6 +1,6 @@
 # Built-in Domains
 
-embgen includes two built-in domains for common embedded systems code generation tasks:
+embgen includes three built-in domains for common embedded systems code generation tasks:
 
 ## [Commands](commands.md)
 
@@ -32,6 +32,19 @@ Generate code from hardware register map definitions. Perfect for:
 - **Python** — Register classes with bit manipulation
 - **Markdown** — Documentation with bit-level layouts
 
+## [JSON-RPC](jsonrpc.md)
+
+Generate client-side code from JSON-RPC method definitions. Perfect for:
+
+- JSON-RPC API client libraries
+- Host-side wrappers for embedded devices
+- API documentation
+
+**Output Formats:**
+
+- **Python** — Typed method classes with enum support
+- **Markdown** — Human-readable API documentation
+
 ## Domain Detection
 
 When using `embgen auto`, the domain is detected by examining the YAML structure:
@@ -40,6 +53,7 @@ When using `embgen auto`, the domain is detected by examining the YAML structure
 | ---------- | --------------- |
 | `commands` | Commands        |
 | `regmap`   | Registers       |
+| `methods`  | JSON-RPC        |
 
 ```yaml
 # Detected as Commands domain
@@ -53,4 +67,9 @@ name: MyRegisters
 regmap:
   - name: CONTROL
     address: 0x00
+
+# Detected as JSON-RPC domain
+name: MyAPI
+methods:
+  - name: ping
 ```
