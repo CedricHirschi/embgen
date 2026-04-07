@@ -961,3 +961,434 @@ class TestGeneratedPythonRegisterGroups:
             assert reg._address == idx
             count += 1
         assert count == 16
+
+
+class TestRegisterMapMethods:
+    """Test RegisterMap methods work with instance attributes."""
+
+    @pytest.fixture
+    def simple_config(self) -> Path:
+        return Path(__file__).parent / "configs" / "registers" / "simple.yml"
+
+    @pytest.fixture
+    def numbers_config(self) -> Path:
+        return Path(__file__).parent / "configs" / "registers" / "numbers.yml"
+
+    @pytest.fixture
+    def generated_simple(self, simple_config: Path):
+        """Generate and import the simple module."""
+        import sys
+        import importlib.util
+        import types
+        import warnings
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"py": "template.py.j2"}
+
+            generator = RegistersGenerator()
+            code_gen = CodeGenerator(generator, output_path)
+            code_gen.generate_from_file(simple_config, templates)
+
+            sys.path.insert(0, str(output_path))
+
+            pkg_name = "simple_test_pkg"
+            pkg = types.ModuleType(pkg_name)
+            pkg.__path__ = [str(output_path)]
+            pkg.__package__ = pkg_name
+            sys.modules[pkg_name] = pkg
+
+            # Load the base module first
+            base_file = output_path / "simple_base.py"
+            base_spec = importlib.util.spec_from_file_location(
+                f"{pkg_name}.simple_base",
+                base_file,
+                submodule_search_locations=[str(output_path)],
+            )
+            assert base_spec is not None and base_spec.loader is not None
+            base_module = importlib.util.module_from_spec(base_spec)
+            base_module.__package__ = pkg_name
+            sys.modules[f"{pkg_name}.simple_base"] = base_module
+            base_spec.loader.exec_module(base_module)
+
+            # Load the main module
+            py_file = output_path / "simple.py"
+            spec = importlib.util.spec_from_file_location(
+                f"{pkg_name}.simple",
+                py_file,
+                submodule_search_locations=[str(output_path)],
+            )
+            assert spec is not None and spec.loader is not None
+            module = importlib.util.module_from_spec(spec)
+            module.__package__ = pkg_name
+            sys.modules[f"{pkg_name}.simple"] = module
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=SyntaxWarning)
+                spec.loader.exec_module(module)
+
+            yield module
+
+            sys.path.remove(str(output_path))
+            if f"{pkg_name}.simple" in sys.modules:
+                del sys.modules[f"{pkg_name}.simple"]
+            if f"{pkg_name}.simple_base" in sys.modules:
+                del sys.modules[f"{pkg_name}.simple_base"]
+            if pkg_name in sys.modules:
+                del sys.modules[pkg_name]
+
+    @pytest.fixture
+    def generated_numbers(self, numbers_config: Path):
+        """Generate and import the numbers module."""
+        import sys
+        import importlib.util
+        import types
+        import warnings
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"py": "template.py.j2"}
+
+            generator = RegistersGenerator()
+            code_gen = CodeGenerator(generator, output_path)
+            code_gen.generate_from_file(numbers_config, templates)
+
+            sys.path.insert(0, str(output_path))
+
+            pkg_name = "numbers_test_pkg"
+            pkg = types.ModuleType(pkg_name)
+            pkg.__path__ = [str(output_path)]
+            pkg.__package__ = pkg_name
+            sys.modules[pkg_name] = pkg
+
+            # Load the base module first
+            base_file = output_path / "numbers_base.py"
+            base_spec = importlib.util.spec_from_file_location(
+                f"{pkg_name}.numbers_base",
+                base_file,
+                submodule_search_locations=[str(output_path)],
+            )
+            assert base_spec is not None and base_spec.loader is not None
+            base_module = importlib.util.module_from_spec(base_spec)
+            base_module.__package__ = pkg_name
+            sys.modules[f"{pkg_name}.numbers_base"] = base_module
+            base_spec.loader.exec_module(base_module)
+
+            # Load the main module
+            py_file = output_path / "numbers.py"
+            spec = importlib.util.spec_from_file_location(
+                f"{pkg_name}.numbers",
+                py_file,
+                submodule_search_locations=[str(output_path)],
+            )
+            assert spec is not None and spec.loader is not None
+            module = importlib.util.module_from_spec(spec)
+            module.__package__ = pkg_name
+            sys.modules[f"{pkg_name}.numbers"] = module
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=SyntaxWarning)
+                spec.loader.exec_module(module)
+
+            yield module
+
+            sys.path.remove(str(output_path))
+            if f"{pkg_name}.numbers" in sys.modules:
+                del sys.modules[f"{pkg_name}.numbers"]
+            if f"{pkg_name}.numbers_base" in sys.modules:
+                del sys.modules[f"{pkg_name}.numbers_base"]
+            if pkg_name in sys.modules:
+                del sys.modules[pkg_name]
+
+    def test_registermap_reset_works_with_instance_attrs(self, generated_simple):
+        """Test that RegisterMap.reset() works when registers are instance attributes.
+
+        This also verifies that bitfields named 'reset' don't conflict with the reset() method.
+        """
+        import logging
+
+        Interface = generated_simple.Interface
+        SimpleRegmap = generated_simple.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        # Modify multiple register values
+        rm.data.value.value = 0x1234
+        rm.config.gain.value = 15  # Max value for 4-bit field
+        assert rm.data.value.value == 0x1234
+        assert rm.config.gain.value == 15
+
+        # Reset should restore all registers to reset values
+        rm.reset()
+        assert rm.data.value.value == 0xCAFE  # Reset value from config
+        assert rm.config.gain.value == 5  # Reset value from config
+
+    def test_registermap_raw_works_with_instance_attrs(self, generated_simple):
+        """Test that RegisterMap.raw property works when registers are instance attributes."""
+        import logging
+
+        Interface = generated_simple.Interface
+        SimpleRegmap = generated_simple.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        # raw should return a dict of register addresses to values
+        raw = rm.raw
+        assert isinstance(raw, dict)
+        assert len(raw) > 0
+        assert all(isinstance(k, int) for k in raw.keys())
+        assert all(isinstance(v, int) for v in raw.values())
+
+    def test_registermap_addresses_works_with_instance_attrs(self, generated_simple):
+        """Test that RegisterMap.addresses property works when registers are instance attributes."""
+        import logging
+
+        Interface = generated_simple.Interface
+        SimpleRegmap = generated_simple.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        # addresses should return a set of register addresses
+        addresses = rm.addresses
+        assert isinstance(addresses, set)
+        assert len(addresses) > 0
+        assert all(isinstance(addr, int) for addr in addresses)
+
+    def test_registermap_registers_works_with_instance_attrs(self, generated_simple):
+        """Test that RegisterMap.registers property works when registers are instance attributes."""
+        import logging
+
+        Interface = generated_simple.Interface
+        SimpleRegmap = generated_simple.SimpleRegmap
+
+        rm = SimpleRegmap(Interface(logging.getLogger()))
+
+        # registers should return a dict of address -> Register
+        registers = rm.registers
+        assert isinstance(registers, dict)
+        assert len(registers) > 0
+        assert all(isinstance(k, int) for k in registers.keys())
+
+    def test_registermap_reset_with_register_groups(self, generated_numbers):
+        """Test that RegisterMap.reset() works with register groups."""
+        import logging
+
+        Interface = generated_numbers.Interface
+        Numbers = generated_numbers.Numbers
+
+        rm = Numbers(Interface(logging.getLogger()))
+
+        # Modify values in register group
+        rm.data[0].value.value = 0x1111
+        rm.data[5].value.value = 0x5555
+        assert rm.data[0].value.value == 0x1111
+        assert rm.data[5].value.value == 0x5555
+
+        # Reset should restore all registers including groups
+        rm.reset()
+        assert rm.data[0].value.value == 0xCAFE  # Reset value from config
+        assert rm.data[5].value.value == 0xCAFE
+
+    def test_registermap_raw_with_register_groups(self, generated_numbers):
+        """Test that RegisterMap.raw works with register groups."""
+        import logging
+
+        Interface = generated_numbers.Interface
+        Numbers = generated_numbers.Numbers
+
+        rm = Numbers(Interface(logging.getLogger()))
+
+        raw = rm.raw
+        assert isinstance(raw, dict)
+        # Should include all 16 registers from the group
+        assert len(raw) >= 16
+
+    def test_registermap_addresses_with_register_groups(self, generated_numbers):
+        """Test that RegisterMap.addresses works with register groups."""
+        import logging
+
+        Interface = generated_numbers.Interface
+        Numbers = generated_numbers.Numbers
+
+        rm = Numbers(Interface(logging.getLogger()))
+
+        addresses = rm.addresses
+        assert isinstance(addresses, set)
+        # Should include all addresses from register groups
+        assert len(addresses) >= 16
+        # Should include sequential addresses for the group
+        for i in range(16):
+            assert i in addresses
+
+    def test_registermap_registers_with_register_groups(self, generated_numbers):
+        """Test that RegisterMap.registers works with register groups."""
+        import logging
+
+        Interface = generated_numbers.Interface
+        Numbers = generated_numbers.Numbers
+
+        rm = Numbers(Interface(logging.getLogger()))
+
+        registers = rm.registers
+        assert isinstance(registers, dict)
+        # Should include all registers from groups
+        assert len(registers) >= 16
+        # Verify we can access registers from the dict
+        for i in range(16):
+            assert i in registers
+            assert registers[i]._address == i
+
+
+class TestInterfaceWidthValidation:
+    """Test that Interface validates width parameter."""
+
+    def test_interface_write_validates_width(self):
+        """Test that Interface.write() validates value against width."""
+        import logging
+        from embgen.domains.registers.templates.registers_base import Interface
+
+        interface = Interface(logging.getLogger())
+
+        # Valid write should succeed
+        interface.write(register_address=0, offset=0, width=4, value=15)
+        assert interface.memory[0][0] == 15
+
+        # Value exceeding width should raise ValueError
+        with pytest.raises(ValueError, match="exceeds maximum"):
+            interface.write(register_address=0, offset=0, width=4, value=16)
+
+    def test_interface_write_validates_negative(self):
+        """Test that Interface.write() rejects negative values."""
+        import logging
+        from embgen.domains.registers.templates.registers_base import Interface
+
+        interface = Interface(logging.getLogger())
+
+        # Negative value should raise ValueError
+        with pytest.raises(ValueError, match="cannot be negative"):
+            interface.write(register_address=0, offset=0, width=4, value=-1)
+
+    def test_interface_write_accepts_zero(self):
+        """Test that Interface.write() accepts zero."""
+        import logging
+        from embgen.domains.registers.templates.registers_base import Interface
+
+        interface = Interface(logging.getLogger())
+
+        # Zero should always be valid
+        interface.write(register_address=0, offset=0, width=1, value=0)
+        assert interface.memory[0][0] == 0
+
+    def test_interface_write_validates_max_value(self):
+        """Test that Interface.write() accepts maximum value for width."""
+        import logging
+        from embgen.domains.registers.templates.registers_base import Interface
+
+        interface = Interface(logging.getLogger())
+
+        # Max value for width should be accepted
+        interface.write(register_address=0, offset=0, width=8, value=255)
+        assert interface.memory[0][0] == 255
+
+        # One more should fail
+        with pytest.raises(ValueError, match="exceeds maximum"):
+            interface.write(register_address=0, offset=0, width=8, value=256)
+
+
+class TestMultipleRegisterMapInstances:
+    """Test that multiple RegisterMap instances work independently."""
+
+    @pytest.fixture
+    def simple_config(self) -> Path:
+        return Path(__file__).parent / "configs" / "registers" / "simple.yml"
+
+    @pytest.fixture
+    def generated_simple(self, simple_config: Path):
+        """Generate and import the simple module."""
+        import sys
+        import importlib.util
+        import types
+        import warnings
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"py": "template.py.j2"}
+
+            generator = RegistersGenerator()
+            code_gen = CodeGenerator(generator, output_path)
+            code_gen.generate_from_file(simple_config, templates)
+
+            sys.path.insert(0, str(output_path))
+
+            pkg_name = "shared_test_pkg"
+            pkg = types.ModuleType(pkg_name)
+            pkg.__path__ = [str(output_path)]
+            pkg.__package__ = pkg_name
+            sys.modules[pkg_name] = pkg
+
+            # Load the base module first
+            base_file = output_path / "simple_base.py"
+            base_spec = importlib.util.spec_from_file_location(
+                f"{pkg_name}.simple_base",
+                base_file,
+                submodule_search_locations=[str(output_path)],
+            )
+            assert base_spec is not None and base_spec.loader is not None
+            base_module = importlib.util.module_from_spec(base_spec)
+            base_module.__package__ = pkg_name
+            sys.modules[f"{pkg_name}.simple_base"] = base_module
+            base_spec.loader.exec_module(base_module)
+
+            # Load the main module
+            py_file = output_path / "simple.py"
+            spec = importlib.util.spec_from_file_location(
+                f"{pkg_name}.simple",
+                py_file,
+                submodule_search_locations=[str(output_path)],
+            )
+            assert spec is not None and spec.loader is not None
+            module = importlib.util.module_from_spec(spec)
+            module.__package__ = pkg_name
+            sys.modules[f"{pkg_name}.simple"] = module
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=SyntaxWarning)
+                spec.loader.exec_module(module)
+
+            yield module
+
+            sys.path.remove(str(output_path))
+            if f"{pkg_name}.simple" in sys.modules:
+                del sys.modules[f"{pkg_name}.simple"]
+            if f"{pkg_name}.simple_base" in sys.modules:
+                del sys.modules[f"{pkg_name}.simple_base"]
+            if pkg_name in sys.modules:
+                del sys.modules[pkg_name]
+
+    def test_multiple_registermap_instances_work_independently(self, generated_simple):
+        """Verify that multiple RegisterMap instances work independently.
+
+        With instance-level BitFields, multiple RegisterMap instances can coexist
+        without interfering with each other.
+        """
+        import logging
+
+        Interface = generated_simple.Interface
+        SimpleRegmap = generated_simple.SimpleRegmap
+
+        # Create two RegisterMaps with different interfaces
+        rm1 = SimpleRegmap(Interface(logging.getLogger("rm1")))
+        rm2 = SimpleRegmap(Interface(logging.getLogger("rm2")))
+
+        # Write different values
+        rm1.data.value.value = 0x1111
+        rm2.data.value.value = 0x2222
+
+        # Values should be independent - each RegisterMap has its own BitField instances
+        assert rm1.data.value.value == 0x1111
+        assert rm2.data.value.value == 0x2222
+
+        # Reset one shouldn't affect the other
+        rm1.reset()
+        assert rm1.data.value.value == 0xCAFE  # Reset value
+        assert rm2.data.value.value == 0x2222  # Unchanged

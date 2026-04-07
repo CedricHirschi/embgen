@@ -157,8 +157,13 @@ class Register{{ register.name }}(Register):
     _address = {{ register.address }}
     _access = Access.{{ register.access.name }}
 
+    def __init__(self, interface: RegisterMapInterface) -> None:
+        self._interface = interface
+
+        # Create instances of bitfields for this register instance
 {% for bitfield in register.bitfields %}
-    {{ bitfield.name.lower() }}: BitField{{ register.name }}{{ bitfield.name|capitalize }} = BitField{{ register.name }}{{ bitfield.name|capitalize }}()
+        self.{{ bitfield.name.lower() }} = BitField{{ register.name }}{{ bitfield.name|capitalize }}()
+        self.{{ bitfield.name.lower() }}._set_interface(self._address, interface, self._access)
 {% endfor %}
 {% endif %}
 {% endfor %}

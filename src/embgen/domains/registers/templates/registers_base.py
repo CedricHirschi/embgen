@@ -1,3 +1,9 @@
+"""
+Register map base definitions.
+
+This file is part of embgen. Do not edit manually.
+"""
+
 from enum import Enum as BaseEnum
 from logging import Logger
 from typing import Optional, Any, Protocol
@@ -10,12 +16,15 @@ class RegisterMapInterface(Protocol):
     The default implementation `Interface` provides an in-memory simulation.
     """
 
-    def read(self, register_address: int, offset: int, reset_value: int) -> int:
+    def read(
+        self, register_address: int, offset: int, width: int, reset_value: int
+    ) -> int:
         """Read a bitfield value from a register.
 
         Args:
             register_address: The address of the register.
             offset: The bit offset within the register.
+            width: The width of the bitfield.
             reset_value: The reset value to use if not previously written.
 
         Returns:
@@ -23,12 +32,13 @@ class RegisterMapInterface(Protocol):
         """
         ...
 
-    def write(self, register_address: int, offset: int, value: int) -> None:
+    def write(self, register_address: int, offset: int, width: int, value: int) -> None:
         """Write a bitfield value to a register.
 
         Args:
             register_address: The address of the register.
             offset: The bit offset within the register.
+            width: The width of the bitfield.
             value: The value to write.
         """
         ...
@@ -41,22 +51,36 @@ class Interface(RegisterMapInterface):
         self.memory: dict[int, dict[int, int]] = {}
         self.log: Logger = log
 
-    def read(self, register_address: int, offset: int, reset_value: int) -> int:
+    def read(
+        self, register_address: int, offset: int, width: int, reset_value: int
+    ) -> int:
         if register_address not in self.memory:
             self.log.debug(f"init  {register_address=}")
             self.memory[register_address] = {}
         if offset not in self.memory[register_address]:
             self.log.debug(f"init  {register_address=}, {offset=}")
             self.memory[register_address][offset] = reset_value
-        self.log.debug(f"read  {register_address=}, {offset=}, {reset_value=}")
+        self.log.debug(
+            f"read  {register_address=}, {offset=}, {width=}, {reset_value=}"
+        )
         return self.memory[register_address][offset]
 
-    def write(self, register_address: int, offset: int, value: int) -> None:
+    def write(self, register_address: int, offset: int, width: int, value: int) -> None:
         if register_address not in self.memory:
             self.log.debug(f"init  {register_address=}")
             self.memory[register_address] = {}
+
+        # Validate value against width
+        max_value = (1 << width) - 1
+        if value < 0:
+            raise ValueError(f"Value {value} cannot be negative")
+        if value > max_value:
+            raise ValueError(
+                f"Value {value} exceeds maximum {max_value} for width {width}"
+            )
+
         self.memory[register_address][offset] = value
-        self.log.debug(f"write {register_address=}, {offset=}, {value=}")
+        self.log.debug(f"write {register_address=}, {offset=}, {width=}, {value=}")
 
     def pull(self) -> dict[int, int]:
         result = {a: sum(v << o for o, v in r.items()) for a, r in self.memory.items()}
@@ -89,20 +113,32 @@ class Access(BaseEnum):
 class BitField:
     """Base class for register bitfields."""
 
+    # Class-level metadata (for documentation/introspection)
     _name: str = "BitField"
     _description: Optional[str] = None
     _reset: int = 0
-    _value: int = _reset
     _width: int = -1
     _offset: int = -1
     _enums: Any = None
-    _register_address: int = -1
-    _interface: Optional[RegisterMapInterface] = None
-    _access: Access = Access.RW
 
     def __init__(self) -> None:
-        if hasattr(self, "_reset"):
-            self._value = self._reset
+        # Instance-level state (each instance has its own copy)
+        self._value: int = self._reset
+        self._register_address: int = -1
+        self._interface: Optional[RegisterMapInterface] = None
+        self._access: Access = Access.RW
+
+    def reset(self) -> None:
+        """Reset the bitfield to its initial state."""
+        # Skip read-only bitfields - they can't be reset by writing
+        if self._access in [Access.RO]:
+            return
+
+        # Convert reset value to enum if this bitfield has enums
+        reset_value = (
+            self._enums(self._reset) if self._enums is not None else self._reset
+        )
+        self.value = reset_value
 
     def __str__(self) -> str:
         return str(self.value)
@@ -128,7 +164,7 @@ class BitField:
             )
 
         raw_value = self._interface.read(
-            self._register_address, self._offset, self._reset
+            self._register_address, self._offset, self._width, self._reset
         )
         if self._enums is not None:
             return self._enums(raw_value)
@@ -171,7 +207,9 @@ class BitField:
                 )
             int_value = value
 
-        self._interface.write(self._register_address, self._offset, int(int_value))
+        self._interface.write(
+            self._register_address, self._offset, self._width, int(int_value)
+        )
 
     @property
     def raw(self) -> int:
@@ -185,16 +223,26 @@ class BitField:
 class Register:
     """Base class for hardware registers."""
 
+    # Class-level metadata
     _description: Optional[str] = None
     _address: int = -1
-    _access: Access = Access.RW
 
     def __init__(self, interface: RegisterMapInterface) -> None:
-        self._interface: RegisterMapInterface = interface
+        """Initialize register with interface.
 
-        for attr in self.__class__.__dict__.values():
-            if isinstance(attr, BitField):
-                attr._set_interface(self._address, interface, self._access)
+        Note: Subclasses should override this to create BitField instances.
+        """
+        # Instance-level state
+        self._interface: RegisterMapInterface = interface
+        self._access: Access = Access.RW
+
+    def reset(self) -> None:
+        """Reset the register to its initial state."""
+        # Reset instance-level BitFields
+        for attr_name, attr_value in self.__dict__.items():
+            if not attr_name.startswith("_") and isinstance(attr_value, BitField):
+                if hasattr(attr_value, "reset") and callable(attr_value.reset):
+                    attr_value.reset()
 
     def __str__(self) -> str:
         return f"Register(address={self._address}, description={self._description})"
@@ -211,7 +259,8 @@ class Register:
             )
 
         result = 0
-        for _, attr_value in self.__class__.__dict__.items():
+        # Check instance-level BitFields
+        for attr_value in self.__dict__.values():
             if isinstance(attr_value, BitField):
                 result |= attr_value.raw
 
@@ -221,9 +270,64 @@ class Register:
 class RegisterMap:
     """Base class for register maps."""
 
+    def reset(self) -> None:
+        """Reset the register map to its initial state."""
+        for attr_value in self.__dict__.values():
+            if isinstance(attr_value, Register):
+                # Call reset method from Register class to avoid conflicts with
+                # bitfields named 'reset' that shadow the method
+                Register.reset(attr_value)
+            elif isinstance(attr_value, dict):
+                # Handle register groups (dicts of Register instances)
+                for item in attr_value.values():
+                    if isinstance(item, Register):
+                        Register.reset(item)
+
     def __str__(self) -> str:
         registers = self.__class__.__dict__["__annotations__"].keys()
         return f"{self.__class__.__name__}(registers=[{', '.join(registers)}])"
 
     def __repr__(self) -> str:
         return str(self)
+
+    @property
+    def raw(self) -> dict[int, int]:
+        """Read the raw register map values."""
+        result = {}
+        for attr_value in self.__dict__.values():
+            if isinstance(attr_value, Register):
+                result[attr_value._address] = attr_value.raw
+            elif isinstance(attr_value, dict):
+                # Handle register groups (dicts of Register instances)
+                for item in attr_value.values():
+                    if isinstance(item, Register):
+                        result[item._address] = item.raw
+        return dict(sorted(result.items()))
+
+    @property
+    def addresses(self) -> set[int]:
+        """Get a list of register addresses in the map."""
+        addresses = set()
+        for attr_value in self.__dict__.values():
+            if isinstance(attr_value, Register):
+                addresses.add(attr_value._address)
+            elif isinstance(attr_value, dict):
+                # Handle register groups (dicts of Register instances)
+                for item in attr_value.values():
+                    if isinstance(item, Register):
+                        addresses.add(item._address)
+        return addresses
+
+    @property
+    def registers(self) -> dict[int, Register]:
+        """Get a mapping of register addresses to register instances."""
+        registers = {}
+        for attr_value in self.__dict__.values():
+            if isinstance(attr_value, Register):
+                registers[attr_value._address] = attr_value
+            elif isinstance(attr_value, dict):
+                # Handle register groups (dicts of Register instances)
+                for item in attr_value.values():
+                    if isinstance(item, Register):
+                        registers[item._address] = item
+        return dict(sorted(registers.items()))
