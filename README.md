@@ -76,12 +76,13 @@ embgen auto config.yml -o output/ --h
 
 ### Built-in Domains
 
-embgen ships with two built-in domains:
+embgen ships with three built-in domains:
 
 | Domain                                 | Description                  | Output Formats             |
 | -------------------------------------- | ---------------------------- | -------------------------- |
 | [Commands](docs/domains/commands.md)   | Command protocol definitions | C Header, Python, Markdown |
 | [Registers](docs/domains/registers.md) | Hardware register maps       | C Header, Python, Markdown |
+| [JSON-RPC](docs/domains/jsonrpc.md)    | JSON-RPC method definitions  | Python, Markdown           |
 
 ## Documentation
 

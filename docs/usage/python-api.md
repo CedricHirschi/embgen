@@ -39,10 +39,11 @@ code_gen = CodeGenerator(domain_generator, output_path)
 
 #### Constructor Parameters
 
-| Parameter     | Type              | Description                 |
-| ------------- | ----------------- | --------------------------- |
-| `generator`   | `DomainGenerator` | The domain generator to use |
-| `output_path` | `Path`            | Directory for output files  |
+| Parameter     | Type              | Description                                        |
+| ------------- | ----------------- | -------------------------------------------------- |
+| `generator`   | `DomainGenerator` | The domain generator to use                        |
+| `output_path` | `Path`            | Directory for output files                         |
+| `json_schema` | `bool`            | Whether to output a JSON Schema file (default: `False`) |
 
 #### Methods
 
@@ -62,7 +63,7 @@ Validate YAML data against the domain schema.
 config = code_gen.validate(data)
 ```
 
-##### `generate_from_file(input_path: Path, templates: dict) -> list[str]`
+##### `generate_from_file(input_path: Path, templates: dict | None = None, multifile_groups: dict | None = None) -> list[str]`
 
 Generate output files from a YAML input file.
 
@@ -71,7 +72,7 @@ templates = {"h": "template.h.j2", "md": "template.md.j2"}
 filenames = code_gen.generate_from_file(Path("config.yml"), templates)
 ```
 
-##### `generate(config: BaseConfig, templates: dict) -> list[str]`
+##### `generate(config: BaseConfig, templates: dict | None = None, multifile_groups: dict | None = None) -> list[str]`
 
 Generate output files from an already-validated configuration.
 
@@ -102,14 +103,18 @@ domains = discover_domains(extra_domains_dir=Path("/path/to/domains"))
 Auto-detect which domain should handle given YAML data.
 
 ```python
-from embgen.discovery import detect_domain, discover_domains
+from embgen.discovery import detect_domain
 
-domains = discover_domains()
 data = {"name": "MyCommands", "commands": [...]}
 
-domain_name = detect_domain(data, domains)
-# Returns: "commands"
+generator = detect_domain(data)
+# Returns: CommandsGenerator instance, or None if not detected
+
+# With a custom domains directory
+generator = detect_domain(data, extra_domains_dir=Path("/path/to/domains"))
 ```
+
+Returns the matching `DomainGenerator` instance, or `None` if no domain matches the YAML data.
 
 ## Template Discovery
 
