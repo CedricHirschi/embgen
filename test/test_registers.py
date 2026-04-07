@@ -485,7 +485,6 @@ class TestGeneratedPythonInterface:
         import sys
         import importlib.util
         import types
-        import warnings
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir)
@@ -501,7 +500,6 @@ class TestGeneratedPythonInterface:
             pkg_name = "simple_pkg"
             pkg = types.ModuleType(pkg_name)
             pkg.__path__ = [str(output_path)]
-            pkg.__package__ = pkg_name
             sys.modules[pkg_name] = pkg
 
             # Load the base module first
@@ -513,11 +511,10 @@ class TestGeneratedPythonInterface:
             )
             assert base_spec is not None and base_spec.loader is not None
             base_module = importlib.util.module_from_spec(base_spec)
-            base_module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.simple_base"] = base_module
             base_spec.loader.exec_module(base_module)
 
-            # Load the main module (suppress deprecation warning from dynamic loading)
+            # Load the main module
             py_file = output_path / "simple.py"
             spec = importlib.util.spec_from_file_location(
                 f"{pkg_name}.simple",
@@ -527,11 +524,8 @@ class TestGeneratedPythonInterface:
             assert spec is not None, "Failed to create module spec"
             assert spec.loader is not None, "Module spec has no loader"
             module = importlib.util.module_from_spec(spec)
-            module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.simple"] = module
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", "__package__ != __spec__.parent")
-                spec.loader.exec_module(module)
+            spec.loader.exec_module(module)
             yield module
             # Cleanup
             del sys.modules[f"{pkg_name}.simple"]
@@ -824,7 +818,6 @@ class TestGeneratedPythonRegisterGroups:
         import sys
         import importlib.util
         import types
-        import warnings
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir)
@@ -840,7 +833,6 @@ class TestGeneratedPythonRegisterGroups:
             pkg_name = "numbers_pkg"
             pkg = types.ModuleType(pkg_name)
             pkg.__path__ = [str(output_path)]
-            pkg.__package__ = pkg_name
             sys.modules[pkg_name] = pkg
 
             # Load the base module first
@@ -852,11 +844,10 @@ class TestGeneratedPythonRegisterGroups:
             )
             assert base_spec is not None and base_spec.loader is not None
             base_module = importlib.util.module_from_spec(base_spec)
-            base_module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.numbers_base"] = base_module
             base_spec.loader.exec_module(base_module)
 
-            # Load the main module (suppress deprecation warning from dynamic loading)
+            # Load the main module
             py_file = output_path / "numbers.py"
             spec = importlib.util.spec_from_file_location(
                 f"{pkg_name}.numbers",
@@ -866,11 +857,8 @@ class TestGeneratedPythonRegisterGroups:
             assert spec is not None, "Failed to create module spec"
             assert spec.loader is not None, "Module spec has no loader"
             module = importlib.util.module_from_spec(spec)
-            module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.numbers"] = module
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", "__package__ != __spec__.parent")
-                spec.loader.exec_module(module)
+            spec.loader.exec_module(module)
             yield module
             # Cleanup
             del sys.modules[f"{pkg_name}.numbers"]
@@ -996,7 +984,6 @@ class TestRegisterMapMethods:
             pkg_name = "simple_test_pkg"
             pkg = types.ModuleType(pkg_name)
             pkg.__path__ = [str(output_path)]
-            pkg.__package__ = pkg_name
             sys.modules[pkg_name] = pkg
 
             # Load the base module first
@@ -1008,7 +995,6 @@ class TestRegisterMapMethods:
             )
             assert base_spec is not None and base_spec.loader is not None
             base_module = importlib.util.module_from_spec(base_spec)
-            base_module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.simple_base"] = base_module
             base_spec.loader.exec_module(base_module)
 
@@ -1021,7 +1007,6 @@ class TestRegisterMapMethods:
             )
             assert spec is not None and spec.loader is not None
             module = importlib.util.module_from_spec(spec)
-            module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.simple"] = module
 
             with warnings.catch_warnings():
@@ -1059,7 +1044,6 @@ class TestRegisterMapMethods:
             pkg_name = "numbers_test_pkg"
             pkg = types.ModuleType(pkg_name)
             pkg.__path__ = [str(output_path)]
-            pkg.__package__ = pkg_name
             sys.modules[pkg_name] = pkg
 
             # Load the base module first
@@ -1071,7 +1055,6 @@ class TestRegisterMapMethods:
             )
             assert base_spec is not None and base_spec.loader is not None
             base_module = importlib.util.module_from_spec(base_spec)
-            base_module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.numbers_base"] = base_module
             base_spec.loader.exec_module(base_module)
 
@@ -1084,7 +1067,6 @@ class TestRegisterMapMethods:
             )
             assert spec is not None and spec.loader is not None
             module = importlib.util.module_from_spec(spec)
-            module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.numbers"] = module
 
             with warnings.catch_warnings():
@@ -1324,7 +1306,6 @@ class TestMultipleRegisterMapInstances:
             pkg_name = "shared_test_pkg"
             pkg = types.ModuleType(pkg_name)
             pkg.__path__ = [str(output_path)]
-            pkg.__package__ = pkg_name
             sys.modules[pkg_name] = pkg
 
             # Load the base module first
@@ -1336,7 +1317,6 @@ class TestMultipleRegisterMapInstances:
             )
             assert base_spec is not None and base_spec.loader is not None
             base_module = importlib.util.module_from_spec(base_spec)
-            base_module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.simple_base"] = base_module
             base_spec.loader.exec_module(base_module)
 
@@ -1349,7 +1329,6 @@ class TestMultipleRegisterMapInstances:
             )
             assert spec is not None and spec.loader is not None
             module = importlib.util.module_from_spec(spec)
-            module.__package__ = pkg_name
             sys.modules[f"{pkg_name}.simple"] = module
 
             with warnings.catch_warnings():
