@@ -153,6 +153,7 @@ class Register{{ register.name }}(Register):
     {{ register.description or '' }}
     """
 
+    _name = "{{ register.name }}"
     _description = "{{ register.description or '' }}"
     _address = {{ register.address }}
     _access = Access.{{ register.access.name }}
