@@ -140,8 +140,40 @@ class BitField:
         )
         self.value = reset_value
 
+    def is_valid(self, value: int | BaseEnum) -> bool:
+        """Check if a value is valid for this bitfield.
+
+        Args:
+            value: The value to validate.
+
+        Returns:
+            True if the value is valid, False otherwise.
+        """
+        if self._enums is not None:
+            return isinstance(value, self._enums)
+        if not isinstance(value, int):
+            return False
+        return 0 <= value < (1 << self._width)
+
+    def get_valid_range(self) -> tuple[int, int]:
+        """Get the valid range for this bitfield.
+
+        Returns:
+            Tuple of (min, max) valid integer values.
+        """
+        return (0, (1 << self._width) - 1)
+
     def __str__(self) -> str:
-        return str(self.value)
+        """Return a human-readable representation of the bitfield."""
+        try:
+            if self._interface:
+                val = self.value
+                if isinstance(val, BaseEnum):
+                    return f"{self._name}: {val.name} [bits {self._offset}:{self._offset + self._width - 1}, access={self._access}]"
+                return f"{self._name}: {val} [bits {self._offset}:{self._offset + self._width - 1}, access={self._access}]"
+        except RuntimeError:
+            pass
+        return f"{self._name} [bits {self._offset}:{self._offset + self._width - 1}, reset={self._reset}, access=unbound]"
 
     def __repr__(self) -> str:
         return f"{self._name}(value={self.value}, reset={self._reset}, width={self._width}, offset={self._offset}, access={self._access})"
@@ -244,8 +276,47 @@ class Register:
                 if hasattr(attr_value, "reset") and callable(attr_value.reset):
                     attr_value.reset()
 
+    def get_bitfield(self, name: str) -> BitField:
+        """Retrieve a bitfield by name.
+
+        Args:
+            name: The name of the bitfield.
+
+        Returns:
+            The BitField instance.
+
+        Raises:
+            KeyError: If the bitfield is not found.
+        """
+        for attr_value in self.__dict__.values():
+            if isinstance(attr_value, BitField) and attr_value._name == name:
+                return attr_value
+        raise KeyError(f"BitField '{name}' not found in register at address 0x{self._address:04x}")
+
+    def get_bitfields(self) -> dict[str, BitField]:
+        """Get all bitfields in this register.
+
+        Returns:
+            Dictionary mapping bitfield names to BitField instances.
+        """
+        return {attr_value._name: attr_value for attr_value in self.__dict__.values() if isinstance(attr_value, BitField)}
+
     def __str__(self) -> str:
-        return f"Register(address={self._address}, description={self._description})"
+        """Return a human-readable representation of the register."""
+        bitfields = self.get_bitfields()
+        if bitfields and self._interface:
+            bf_strs = []
+            for bf in bitfields.values():
+                try:
+                    val = bf.value
+                    if isinstance(val, BaseEnum):
+                        bf_strs.append(f"{bf._name}={val.name}")
+                    else:
+                        bf_strs.append(f"{bf._name}={val}")
+                except RuntimeError:
+                    bf_strs.append(f"{bf._name}=<unbound>")
+            return f"Register 0x{self._address:04x} [{self._access}]: {', '.join(bf_strs)}"
+        return f"Register 0x{self._address:04x} [{self._access}]"
 
     def __repr__(self) -> str:
         return str(self)
@@ -283,9 +354,143 @@ class RegisterMap:
                     if isinstance(item, Register):
                         Register.reset(item)
 
+    def get_register(self, address: int) -> Register:
+        """Retrieve a register by address.
+
+        Args:
+            address: The register address.
+
+        Returns:
+            The Register instance.
+
+        Raises:
+            KeyError: If the register is not found.
+        """
+        for attr_value in self.__dict__.values():
+            if isinstance(attr_value, Register) and attr_value._address == address:
+                return attr_value
+            elif isinstance(attr_value, dict):
+                for item in attr_value.values():
+                    if isinstance(item, Register) and item._address == address:
+                        return item
+        raise KeyError(f"Register at address 0x{address:04x} not found")
+
+    def get_register_by_name(self, name: str) -> Register:
+        """Find a register by attribute name.
+
+        Args:
+            name: The attribute name of the register.
+
+        Returns:
+            The Register instance.
+
+        Raises:
+            KeyError: If the register is not found.
+        """
+        attr = getattr(self, name, None)
+        if isinstance(attr, Register):
+            return attr
+        raise KeyError(f"Register '{name}' not found in {self.__class__.__name__}")
+
+    def get_bitfield(self, register_name: str, bitfield_name: str) -> BitField:
+        """Find a specific bitfield by register and bitfield names.
+
+        Args:
+            register_name: The attribute name of the register.
+            bitfield_name: The name of the bitfield within the register.
+
+        Returns:
+            The BitField instance.
+
+        Raises:
+            KeyError: If the register or bitfield is not found.
+        """
+        register = self.get_register_by_name(register_name)
+        return register.get_bitfield(bitfield_name)
+
+    def dump(self) -> str:
+        """Return a pretty-printed representation of all registers and their bitfield values.
+
+        Returns:
+            Multi-line string showing all registers and their bitfield values.
+        """
+        lines = [f"{self.__class__.__name__}:"]
+        for address, register in self.registers.items():
+            bitfields = register.get_bitfields()
+            if bitfields:
+                lines.append(f"  0x{address:04x} {register.__class__.__name__} [{register._access}]:")
+                for bf in bitfields.values():
+                    lines.append(f"    {bf}")
+            else:
+                lines.append(f"  0x{address:04x} {register.__class__.__name__} [{register._access}]")
+        return "\n".join(lines)
+
+    def restore(self, state: dict[int, int]) -> None:
+        """Restore register map state from a dict of raw values.
+
+        Args:
+            state: Dictionary of {address: raw_register_value}.
+        """
+        for address, raw_value in state.items():
+            register = self.get_register(address)
+            for bf in register.get_bitfields().values():
+                bf_value = (raw_value >> bf._offset) & ((1 << bf._width) - 1)
+                if bf._enums is not None:
+                    bf.value = bf._enums(bf_value)
+                else:
+                    bf.value = bf_value
+
+    def compare(self, other: "RegisterMap") -> dict[int, tuple[int, int]]:
+        """Compare this register map with another.
+
+        Args:
+            other: Another RegisterMap instance to compare with.
+
+        Returns:
+            Dictionary of {address: (self_raw_value, other_raw_value)} for addresses that differ.
+        """
+        self_raw = self.raw
+        other_raw = other.raw
+        diffs = {}
+        for addr in self_raw.keys() | other_raw.keys():
+            sv = self_raw.get(addr)
+            ov = other_raw.get(addr)
+            if sv != ov:
+                diffs[addr] = (sv, ov)
+        return dict(sorted(diffs.items()))
+
+    def write_raw(self, address: int, value: int) -> None:
+        """Write a raw value to a register by decomposing into bitfields.
+
+        Args:
+            address: The register address.
+            value: The raw register value.
+        """
+        register = self.get_register(address)
+        for bf in register.get_bitfields().values():
+            bf_value = (value >> bf._offset) & ((1 << bf._width) - 1)
+            if bf._enums is not None:
+                bf.value = bf._enums(bf_value)
+            else:
+                bf.value = bf_value
+
+    def read_raw(self, address: int) -> int:
+        """Read a raw value from a register.
+
+        Args:
+            address: The register address.
+
+        Returns:
+            The raw register value.
+        """
+        return self.get_register(address).raw
+
     def __str__(self) -> str:
-        registers = self.__class__.__dict__["__annotations__"].keys()
-        return f"{self.__class__.__name__}(registers=[{', '.join(registers)}])"
+        """Return a human-readable representation of the register map."""
+        if self.registers:
+            addr_list = [f"0x{addr:04x}" for addr in self.registers.keys()]
+            return f"{self.__class__.__name__}(registers=[{', '.join(addr_list)}])"
+        return f"{self.__class__.__name__}(registers=[])"
 
     def __repr__(self) -> str:
         return str(self)

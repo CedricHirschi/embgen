@@ -1,5 +1,6 @@
 """Thorough tests for the registers domain."""
 
+import logging
 import tempfile
 from pathlib import Path
 
@@ -1392,3 +1393,433 @@ class TestMultipleRegisterMapInstances:
         rm1.reset()
         assert rm1.data.value.value == 0xCAFE  # Reset value
         assert rm2.data.value.value == 0x2222  # Unchanged
+
+
+class TestBitFieldHelpers:
+    """Test BitField helper methods."""
+
+    @pytest.fixture
+    def generated_module(self):
+        """Generate and load test module."""
+        import sys
+        import importlib.util
+        import types
+
+        config_path = Path(__file__).parent / "configs" / "registers" / "simple.yml"
+        generator = RegistersGenerator()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"py": "template.py.j2"}
+
+            code_gen = CodeGenerator(generator, output_path)
+            code_gen.generate_from_file(config_path, templates)
+
+            sys.path.insert(0, str(output_path))
+
+            fake_package = types.ModuleType("test_pkg_bf")
+            sys.modules["test_pkg_bf"] = fake_package
+
+            base_path = output_path / "simple_base.py"
+            main_path = output_path / "simple.py"
+
+            base_spec = importlib.util.spec_from_file_location(
+                "test_pkg_bf.simple_base", base_path
+            )
+            base_module = importlib.util.module_from_spec(base_spec)
+            sys.modules["test_pkg_bf.simple_base"] = base_module
+            base_spec.loader.exec_module(base_module)
+
+            spec = importlib.util.spec_from_file_location("test_pkg_bf.simple", main_path)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules["test_pkg_bf.simple"] = module
+            spec.loader.exec_module(module)
+
+            yield module
+
+            sys.path.remove(str(output_path))
+            for key in list(sys.modules.keys()):
+                if key.startswith("test_pkg_bf"):
+                    del sys.modules[key]
+
+    def test_bitfield_is_valid_integer(self, generated_module):
+        """Test is_valid() for integer bitfields."""
+        interface = generated_module.Interface(logging.getLogger("test"))
+        rm = generated_module.SimpleRegmap(interface)
+        bf = rm.data.value
+
+        assert bf.is_valid(0)
+        assert bf.is_valid(100)
+        assert bf.is_valid(65535)  # 16-bit max
+        assert not bf.is_valid(-1)
+        assert not bf.is_valid(65536)  # Beyond 16-bit
+
+    def test_bitfield_is_valid_enum(self, generated_module):
+        """Test is_valid() for enum bitfields."""
+        interface = generated_module.Interface(logging.getLogger("test"))
+        rm = generated_module.SimpleRegmap(interface)
+        bf = rm.control.mode
+
+        # Valid enum values
+        assert bf.is_valid(generated_module.SimpleRegmap.EnumMode.NORMAL)
+        assert bf.is_valid(generated_module.SimpleRegmap.EnumMode.STANDBY)
+
+        # Invalid types
+        assert not bf.is_valid(0)
+        assert not bf.is_valid(1)
+
+    def test_bitfield_get_valid_range_integer(self, generated_module):
+        """Test get_valid_range() for integer bitfields."""
+        interface = generated_module.Interface(logging.getLogger("test"))
+        rm = generated_module.SimpleRegmap(interface)
+        bf = rm.data.value
+
+        min_val, max_val = bf.get_valid_range()
+        assert min_val == 0
+        assert max_val == 65535  # 16-bit
+
+    def test_bitfield_str_with_interface(self, generated_module):
+        """Test __str__() with interface bound."""
+        interface = generated_module.Interface(logging.getLogger("test"))
+        rm = generated_module.SimpleRegmap(interface)
+        bf = rm.data.value
+
+        s = str(bf)
+        assert "VALUE" in s
+        assert "bits 0:15" in s
+        assert "RW" in s
+
+    def test_bitfield_str_with_enum(self, generated_module):
+        """Test __str__() with enum bitfield."""
+        interface = generated_module.Interface(logging.getLogger("test"))
+        rm = generated_module.SimpleRegmap(interface)
+        bf = rm.control.mode
+
+        # Mode enum should show name
+        s = str(bf)
+        assert "MODE" in s
+        assert "bits" in s
+
+
+class TestRegisterHelpers:
+    """Test Register helper methods."""
+
+    @pytest.fixture
+    def generated_module(self):
+        """Generate and load test module."""
+        import sys
+        import importlib.util
+        import types
+
+        config_path = Path(__file__).parent / "configs" / "registers" / "simple.yml"
+        generator = RegistersGenerator()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"py": "template.py.j2"}
+
+            code_gen = CodeGenerator(generator, output_path)
+            code_gen.generate_from_file(config_path, templates)
+
+            sys.path.insert(0, str(output_path))
+
+            fake_package = types.ModuleType("test_pkg_rh")
+            sys.modules["test_pkg_rh"] = fake_package
+
+            base_path = output_path / "simple_base.py"
+            main_path = output_path / "simple.py"
+
+            base_spec = importlib.util.spec_from_file_location(
+                "test_pkg_rh.simple_base", base_path
+            )
+            base_module = importlib.util.module_from_spec(base_spec)
+            sys.modules["test_pkg_rh.simple_base"] = base_module
+            base_spec.loader.exec_module(base_module)
+
+            spec = importlib.util.spec_from_file_location("test_pkg_rh.simple", main_path)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules["test_pkg_rh.simple"] = module
+            spec.loader.exec_module(module)
+
+            yield module
+
+            sys.path.remove(str(output_path))
+            for key in list(sys.modules.keys()):
+                if key.startswith("test_pkg_rh"):
+                    del sys.modules[key]
+
+    def test_get_bitfield_by_name(self, generated_module):
+        """Test get_bitfield() retrieves bitfield by name."""
+        interface = generated_module.Interface(logging.getLogger("test"))
+        rm = generated_module.SimpleRegmap(interface)
+        reg = rm.control
+
+        bf = reg.get_bitfield("MODE")
+        assert bf._name == "MODE"
+
+    def test_get_bitfield_not_found(self, generated_module):
+        """Test get_bitfield() raises KeyError for missing bitfield."""
+        interface = generated_module.Interface(logging.getLogger("test"))
+        rm = generated_module.SimpleRegmap(interface)
+        reg = rm.control
+
+        with pytest.raises(KeyError):
+            reg.get_bitfield("nonexistent")
+
+    def test_get_bitfields_returns_dict(self, generated_module):
+        """Test get_bitfields() returns all bitfields."""
+        interface = generated_module.Interface(logging.getLogger("test"))
+        rm = generated_module.SimpleRegmap(interface)
+        reg = rm.control
+
+        bitfields = reg.get_bitfields()
+        assert isinstance(bitfields, dict)
+        assert "ENABLE" in bitfields
+        assert "MODE" in bitfields
+        assert len(bitfields) == 5  # ENABLE, MODE, RESET, START, STOP
+
+    def test_register_str_shows_values(self, generated_module):
+        """Test Register __str__() shows bitfield values."""
+        interface = generated_module.Interface(logging.getLogger("test"))
+        rm = generated_module.SimpleRegmap(interface)
+        reg = rm.control
+
+        rm.control.enable.value = 1
+        s = str(reg)
+        assert "0x0000" in s  # Address
+        assert "RW" in s  # Access
+        assert "ENABLE" in s
+
+
+class TestRegisterMapHelpers:
+    """Test RegisterMap helper methods."""
+
+    @pytest.fixture
+    def generated_module_simple(self):
+        """Generate and load simple module."""
+        import sys
+        import importlib.util
+        import types
+
+        config_path = Path(__file__).parent / "configs" / "registers" / "simple.yml"
+        generator = RegistersGenerator()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"py": "template.py.j2"}
+
+            code_gen = CodeGenerator(generator, output_path)
+            code_gen.generate_from_file(config_path, templates)
+
+            sys.path.insert(0, str(output_path))
+
+            fake_package = types.ModuleType("test_pkg_rms")
+            sys.modules["test_pkg_rms"] = fake_package
+
+            base_path = output_path / "simple_base.py"
+            main_path = output_path / "simple.py"
+
+            base_spec = importlib.util.spec_from_file_location(
+                "test_pkg_rms.simple_base", base_path
+            )
+            base_module = importlib.util.module_from_spec(base_spec)
+            sys.modules["test_pkg_rms.simple_base"] = base_module
+            base_spec.loader.exec_module(base_module)
+
+            spec = importlib.util.spec_from_file_location("test_pkg_rms.simple", main_path)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules["test_pkg_rms.simple"] = module
+            spec.loader.exec_module(module)
+
+            yield module
+
+            sys.path.remove(str(output_path))
+            for key in list(sys.modules.keys()):
+                if key.startswith("test_pkg_rms"):
+                    del sys.modules[key]
+
+    @pytest.fixture
+    def generated_module_groups(self):
+        """Generate and load module with register groups."""
+        import sys
+        import importlib.util
+        import types
+
+        config_path = Path(__file__).parent / "configs" / "registers" / "numbers.yml"
+        generator = RegistersGenerator()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"py": "template.py.j2"}
+
+            code_gen = CodeGenerator(generator, output_path)
+            code_gen.generate_from_file(config_path, templates)
+
+            sys.path.insert(0, str(output_path))
+
+            fake_package = types.ModuleType("test_pkg_rmg")
+            sys.modules["test_pkg_rmg"] = fake_package
+
+            base_path = output_path / "numbers_base.py"
+            main_path = output_path / "numbers.py"
+
+            base_spec = importlib.util.spec_from_file_location(
+                "test_pkg_rmg.numbers_base", base_path
+            )
+            base_module = importlib.util.module_from_spec(base_spec)
+            sys.modules["test_pkg_rmg.numbers_base"] = base_module
+            base_spec.loader.exec_module(base_module)
+
+            spec = importlib.util.spec_from_file_location(
+                "test_pkg_rmg.numbers", main_path
+            )
+            module = importlib.util.module_from_spec(spec)
+            sys.modules["test_pkg_rmg.numbers"] = module
+            spec.loader.exec_module(module)
+
+            yield module
+
+            sys.path.remove(str(output_path))
+            for key in list(sys.modules.keys()):
+                if key.startswith("test_pkg_rmg"):
+                    del sys.modules[key]
+
+    def test_get_register_by_address(self, generated_module_simple):
+        """Test get_register() retrieves by address."""
+        interface = generated_module_simple.Interface(logging.getLogger("test"))
+        rm = generated_module_simple.SimpleRegmap(interface)
+
+        reg = rm.get_register(0)
+        assert reg._address == 0
+
+    def test_get_register_not_found(self, generated_module_simple):
+        """Test get_register() raises KeyError for missing address."""
+        interface = generated_module_simple.Interface(logging.getLogger("test"))
+        rm = generated_module_simple.SimpleRegmap(interface)
+
+        with pytest.raises(KeyError):
+            rm.get_register(0x9999)
+
+    def test_get_register_by_name(self, generated_module_simple):
+        """Test get_register_by_name() retrieves by attribute name."""
+        interface = generated_module_simple.Interface(logging.getLogger("test"))
+        rm = generated_module_simple.SimpleRegmap(interface)
+
+        reg = rm.get_register_by_name("control")
+        assert reg._address == 0
+
+    def test_get_register_by_name_not_found(self, generated_module_simple):
+        """Test get_register_by_name() raises KeyError for missing name."""
+        interface = generated_module_simple.Interface(logging.getLogger("test"))
+        rm = generated_module_simple.SimpleRegmap(interface)
+
+        with pytest.raises(KeyError):
+            rm.get_register_by_name("nonexistent")
+
+    def test_get_bitfield_deep_access(self, generated_module_simple):
+        """Test get_bitfield() with register and bitfield names."""
+        interface = generated_module_simple.Interface(logging.getLogger("test"))
+        rm = generated_module_simple.SimpleRegmap(interface)
+
+        bf = rm.get_bitfield("control", "MODE")
+        assert bf._name == "MODE"
+
+    def test_dump_format(self, generated_module_simple):
+        """Test dump() produces multi-line output."""
+        interface = generated_module_simple.Interface(logging.getLogger("test"))
+        rm = generated_module_simple.SimpleRegmap(interface)
+
+        dump = rm.dump()
+        assert "SimpleRegmap:" in dump
+        assert "0x0000" in dump
+        assert "0x0002" in dump
+        assert "MODE" in dump
+        assert "VALUE" in dump
+
+    def test_dump_with_register_groups(self, generated_module_groups):
+        """Test dump() works with register groups."""
+        interface = generated_module_groups.Interface(logging.getLogger("test"))
+        rm = generated_module_groups.Numbers(interface)
+
+        dump = rm.dump()
+        assert "Numbers:" in dump
+        assert "0x0000" in dump  # First register
+        assert "RegisterDATA" in dump
+
+    def test_restore_single_register(self, generated_module_simple):
+        """Test restore() loads state from dict."""
+        interface = generated_module_simple.Interface(logging.getLogger("test"))
+        rm = generated_module_simple.SimpleRegmap(interface)
+
+        # Restore with specific values - enable=0, mode=1 (MODE_NORMAL)
+        rm.restore({0: 0x0102})
+
+        assert rm.control.enable.value == 0
+        assert rm.control.mode.value == generated_module_simple.SimpleRegmap.EnumMode.NORMAL
+
+    def test_restore_multiple_registers(self, generated_module_simple):
+        """Test restore() with multiple registers."""
+        interface = generated_module_simple.Interface(logging.getLogger("test"))
+        rm = generated_module_simple.SimpleRegmap(interface)
+
+        rm.restore({0: 0x0102, 2: 0xCAFE})
+
+        assert rm.control.mode.value == generated_module_simple.SimpleRegmap.EnumMode.NORMAL
+        assert rm.data.value.value == 0xCAFE
+
+    def test_compare_identical_maps(self, generated_module_simple):
+        """Test compare() returns empty dict for identical maps."""
+        interface1 = generated_module_simple.Interface(logging.getLogger("test1"))
+        interface2 = generated_module_simple.Interface(logging.getLogger("test2"))
+        rm1 = generated_module_simple.SimpleRegmap(interface1)
+        rm2 = generated_module_simple.SimpleRegmap(interface2)
+
+        diffs = rm1.compare(rm2)
+        assert diffs == {}
+
+    def test_compare_different_maps(self, generated_module_simple):
+        """Test compare() shows differences."""
+        interface1 = generated_module_simple.Interface(logging.getLogger("test1"))
+        interface2 = generated_module_simple.Interface(logging.getLogger("test2"))
+        rm1 = generated_module_simple.SimpleRegmap(interface1)
+        rm2 = generated_module_simple.SimpleRegmap(interface2)
+
+        rm1.data.value.value = 0x1111
+        rm2.data.value.value = 0x2222
+
+        diffs = rm1.compare(rm2)
+        assert 2 in diffs
+        assert diffs[2] == (0x1111, 0x2222)
+
+    def test_write_raw_decomposes_value(self, generated_module_simple):
+        """Test write_raw() decomposes and writes bitfields."""
+        interface = generated_module_simple.Interface(logging.getLogger("test"))
+        rm = generated_module_simple.SimpleRegmap(interface)
+
+        rm.write_raw(0, 0x0102)
+
+        assert rm.control.enable.value == 0
+        assert rm.control.mode.value == generated_module_simple.SimpleRegmap.EnumMode.NORMAL
+
+    def test_read_raw_returns_register_value(self, generated_module_simple):
+        """Test read_raw() returns full register value."""
+        interface = generated_module_simple.Interface(logging.getLogger("test"))
+        rm = generated_module_simple.SimpleRegmap(interface)
+
+        rm.control.enable.value = 1
+        rm.control.mode.value = generated_module_simple.SimpleRegmap.EnumMode.SLEEP
+
+        raw = rm.read_raw(0)
+        # ENABLE=1 at bit 0, MODE=SLEEP(3) at bits 1-3
+        # bits 1-3 = 3 << 1 = 6, so total = 1 | 6 = 7
+        assert raw == 0x0007
+
+    def test_registermap_str_shows_addresses(self, generated_module_simple):
+        """Test RegisterMap __str__() shows register addresses."""
+        interface = generated_module_simple.Interface(logging.getLogger("test"))
+        rm = generated_module_simple.SimpleRegmap(interface)
+
+        s = str(rm)
+        assert "SimpleRegmap" in s
+        assert "0x0000" in s
+        assert "0x0002" in s
