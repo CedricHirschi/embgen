@@ -1,0 +1,7 @@
+{% set package_name = output_filename|regex_replace('[^0-9A-Za-z_]', '_')|lower %}
+{% set methods_with_returns = methods | selectattr("returns") | list %}
+{{ package_name }}.request.cmd max_count:{{ max_count }}
+{{ package_name }}.response.status max_count:{{ max_count }}
+{% if methods_with_returns %}
+{{ package_name }}.response.data max_count:{{ max_count }}
+{% endif %}
