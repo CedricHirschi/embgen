@@ -5,10 +5,18 @@
       fields: [
 {% for bf in bitfields %}
         {
+{% if bf.width > 1 %}
           bits: "{{ bf.offset + bf.width - 1 }}:{{ bf.offset }}"
+{% elif bf.width == 1 %}
+          bits: "{{ bf.offset }}"
+{% else %}
+          bits: "{{ bf.offset }}:{{ bf.offset + bf.width - 1 }}"
+{% endif %}
           name: "{{ bf.name }}"
           desc: "{{ bf.description or '' }}"
+{% if bf.reset|int != 0 %}
           resval: {{ bf.reset|int }}
+{% endif %}
 {% if bf.enums %}
           enum: [
 {% for enum in bf.enums %}
@@ -26,22 +34,24 @@
 {% endmacro %}
 {
   name: "{{ name }}"
+
   clock_primary: "clk_i"
   reset_primary: "rst_ni"
   bus_interfaces: [
     {
-      protocol: "reg_iface"
+      protocol: "reg_iface",
       direction: "device"
     }
   ]
   regwidth: {{ width }}
+
   registers: [
 {% for entry in hjson_entries %}
 {% if entry.kind == "register" %}
 {% set reg = entry.reg %}
     {
       name: "{{ reg.name }}"
-      desc: "{{ reg.description or '' }}"
+      desc: "{{ reg.description or 'TODO: Add description' }}"
       swaccess: "{{ reg.access|lower }}"
 {% if access_separate %}
       hwaccess: "{{ reg.access_hw|lower }}"
@@ -56,31 +66,31 @@
     }
 {% elif entry.kind == "multireg" %}
 {% set group = entry.group %}
-    { multireg: {
-      name: "{{ group.name }}"
-      desc: "{{ group.description or '' }}"
-      count: "{{ group.count }}"
-      cname: "{{ group.cname or group.name }}"
-      swaccess: "{{ group.access|lower }}"
-{% if access_separate %}
-      hwaccess: "{{ group.access_hw|lower }}"
-{% endif %}
-{% if group.hwqe %}
-      hwqe: {{ group.hwqe|lower }}
-{% endif %}
-{% if group.hwext %}
-      hwext: true
-{% endif %}
-{% if group.compact is not none %}
-      compact: {{ group.compact|lower }}
-{% else %}
-      compact: false
-{% endif %}
-{% if group.regwen_multi %}
-      regwen_multi: true
-{% endif %}
-{{ render_fields(group.bitfields) }}
-    }}
+    {
+      multireg: {
+        name: "{{ group.name }}"
+        desc: "{{ group.description or '' }}"
+        count: "{{ group.count }}"
+        cname: "{{ group.cname or group.name }}"
+        swaccess: "{{ group.access|lower }}"
+  {% if access_separate %}
+        hwaccess: "{{ group.access_hw|lower }}"
+  {% endif %}
+  {% if group.hwqe %}
+        hwqe: {{ group.hwqe|lower }}
+  {% endif %}
+  {% if group.hwext %}
+        hwext: true
+  {% endif %}
+  {% if group.compact is not none %}
+        compact: {{ group.compact|lower }}
+  {% endif %}
+  {% if group.regwen_multi %}
+        regwen_multi: true
+  {% endif %}
+  {{ render_fields(group.bitfields) }}
+      }
+    }
 {% endif %}
 {% endfor %}
   ]
