@@ -1,0 +1,139 @@
+name: axi_dsp_timer_core
+
+access_separate: true
+width: 32
+
+regmap_shallow:
+  - name: CAPTURE_LO
+    description: "Captured counter value (Lower 32 bits)"
+    address: 0
+    access: ro
+    access_hw: hwo
+    hwqe: true
+    bitfields:
+      - name: VALUE
+        description: "Bits [31:0] of captured counter"
+        width: 32
+        offset: 0
+        reset: 0
+  - name: CAPTURE_HI
+    description: "Captured counter value (Upper 16 bits)"
+    address: 1
+    access: ro
+    access_hw: hwo
+    hwqe: true
+    bitfields:
+      - name: VALUE
+        description: "Bits [47:32] of captured counter"
+        width: 16
+        offset: 0
+        reset: 0
+  - name: REG_QUEUE_SEL
+    description: "Queue for new input selects (max 64)"
+    address: 2
+    count: 4
+    access: rw
+    access_hw: hro
+    bitfields:
+      - name: IN_SEL_0
+        description: "Input select for input 0"
+        width: 6
+        offset: 0
+        reset: 0
+      - name: IN_SEL_0_EN
+        description: "Enable input select for input 0"
+        width: 1
+        offset: 6
+        reset: 0
+      - name: IN_SEL_1
+        description: "Input select for input 0"
+        width: 6
+        offset: 7
+        reset: 0
+      - name: IN_SEL_1_EN
+        description: "Enable input select for input 0"
+        width: 1
+        offset: 13
+        reset: 0
+  - name: REG_QUEUE_VALUE_BASE
+    description: "Queue for new target values (base)"
+    address: 6
+    count: 4
+    access: rw
+    access_hw: hro
+    bitfields:
+      - name: VALUE
+        description: "Counter value for core (base)"
+        width: 32
+        offset: 0
+        reset: 0
+  - name: REG_QUEUE_VALUE_SHIFT
+    description: "Queue for new target values (shift)"
+    address: 10
+    count: 4
+    access: rw
+    access_hw: hro
+    bitfields:
+      - name: VALUE
+        description: "Counter value for core (shift)"
+        width: 4
+        offset: 0
+        reset: 0
+  - name: REG_QUEUE_OUTPUT
+    description: "Queue for new output trigger selects (max 16)"
+    address: 14
+    count: 4
+    access: rw
+    access_hw: hro
+    bitfields:
+      - name: TARGET
+        description: "Target select"
+        width: 4
+        offset: 0
+        reset: 0
+      - name: TARGET_EN
+        description: "Enable target select"
+        width: 1
+        offset: 4
+        reset: 0
+  - name: REG_QUEUE_CAPTURE
+    description: "Queue for new capture selects (max 8)"
+    address: 18
+    count: 4
+    access: rw
+    access_hw: hro
+    bitfields:
+      - name: CAPTURE
+        description: "Capture select"
+        width: 3
+        offset: 0
+        reset: 0
+      - name: CAPTURE_EN
+        description: "Enable capture select"
+        width: 1
+        offset: 3
+        reset: 0
+  - name: REG_QUEUE_LOGIC
+    description: "Queue for logic gate config"
+    address: 22
+    count: 4
+    access: rw
+    access_hw: hro
+    bitfields:
+      - name: MODE
+        description: "0: Trigger = T0 | T1 (OR). 1: Trigger = T0 & T1 (AND)."
+        width: 1
+        offset: 0
+        reset: 0
+  - name: MAX_QUEUE
+    description: "Occupied queue entries"
+    address: 26
+    access: rw
+    access_hw: hro
+    bitfields:
+      - name: VALUE
+        description: "Number of occupied entries in the queue (max 4)"
+        width: 2
+        offset: 0
+        reset: 0
+
