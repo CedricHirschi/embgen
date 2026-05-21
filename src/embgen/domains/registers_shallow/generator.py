@@ -127,11 +127,12 @@ class RegistersGenerator(DomainGenerator):
                     hjson_file.as_posix(),
                 ],
                 cwd=Path(__file__).parent / "regtool",
+                check=True,
             )
             result.extend(
                 [
-                    (config.output_filename + "_reg_pkg.hjson"),
-                    (config.output_filename + "_reg_top.hjson"),
+                    (config.output_filename + "_reg_pkg.sv"),
+                    (config.output_filename + "_reg_top.sv"),
                 ]
             )
 

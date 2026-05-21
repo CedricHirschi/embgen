@@ -88,6 +88,18 @@ def get_reg_tx_type(block: IpBlock, reg: RegBase, hw2reg: bool) -> str:
     return "_".join([block.name.lower(), x2x, r0.name.lower(), type_suff])
 
 
+def _write_sv(path: str, content: str) -> None:
+    """Write SystemVerilog output with normalized Unix line endings.
+
+    Mako templates checked out with CRLF on Windows can produce mixed line
+    endings. Writing those in text mode would expand bare \\n to \\r\\n and
+    yield spurious blank lines (\\r\\r\\n) in the generated files.
+    """
+    normalized = content.replace("\r\n", "\n").replace("\r", "\n")
+    with open(path, "w", encoding="UTF-8", newline="\n") as fout:
+        fout.write(normalized)
+
+
 def gen_rtl(block: IpBlock, outdir: str) -> int:
     # Read Register templates
     reg_top_tpl = Template(filename=str(files("reggen").joinpath("reg_top.sv.tpl")))
@@ -98,12 +110,11 @@ def gen_rtl(block: IpBlock, outdir: str) -> int:
     # This defines the various types used to interface between the *_reg_top
     # module(s) and the block itself.
     reg_pkg_path = os.path.join(outdir, block.name.lower() + "_reg_pkg.sv")
-    with open(reg_pkg_path, "w", encoding="UTF-8") as fout:
-        try:
-            fout.write(reg_pkg_tpl.render(block=block))
-        except:  # noqa F722 for template Exception handling
-            log.error(exceptions.text_error_template().render())
-            return 1
+    try:
+        _write_sv(reg_pkg_path, reg_pkg_tpl.render(block=block))
+    except:  # noqa F722 for template Exception handling
+        log.error(exceptions.text_error_template().render())
+        return 1
 
     # Generate the register block implementation(s). For a device interface
     # with no name we generate the register module "<block>_reg_top" (writing
@@ -118,19 +129,19 @@ def gen_rtl(block: IpBlock, outdir: str) -> int:
 
         mod_name = mod_base + "_reg_top"
         reg_top_path = os.path.join(outdir, mod_name + ".sv")
-        with open(reg_top_path, "w", encoding="UTF-8") as fout:
-            try:
-                fout.write(
-                    reg_top_tpl.render(
-                        block=block,
-                        mod_base=mod_base,
-                        mod_name=mod_name,
-                        if_name=if_name,
-                        rb=rb,
-                    )
-                )
-            except:  # noqa F722 for template Exception handling
-                log.error(exceptions.text_error_template().render())
-                return 1
+        try:
+            _write_sv(
+                reg_top_path,
+                reg_top_tpl.render(
+                    block=block,
+                    mod_base=mod_base,
+                    mod_name=mod_name,
+                    if_name=if_name,
+                    rb=rb,
+                ),
+            )
+        except:  # noqa F722 for template Exception handling
+            log.error(exceptions.text_error_template().render())
+            return 1
 
     return 0
