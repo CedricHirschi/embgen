@@ -46,9 +46,11 @@
   regwidth: {{ width }}
 
   registers: [
-{% for entry in hjson_entries %}
-{% if entry.kind == "register" %}
-{% set reg = entry.reg %}
+{% for item in hjson_entries %}
+{% if item.kind == "skipto" %}
+    { skipto: {{ item.offset }} }
+{% elif item.kind == "register" %}
+{% set reg = item.entry.reg %}
     {
       name: "{{ reg.name }}"
       desc: "{{ reg.description or 'TODO: Add description' }}"
@@ -64,8 +66,8 @@
 {% endif %}
 {{ render_fields(reg.bitfields) }}
     }
-{% elif entry.kind == "multireg" %}
-{% set group = entry.group %}
+{% elif item.kind == "multireg" %}
+{% set group = item.entry.group %}
     {
       multireg: {
         name: "{{ group.name }}"

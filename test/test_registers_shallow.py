@@ -801,8 +801,8 @@ class TestRegisterGroupGeneration:
         assert len(config.hjson_entries) == 1
         assert config.hjson_entries[0].kind == "multireg"
 
-        # Expanded registers should still exist for backward compatibility
-        assert len(config.regmap_shallow) == 16
+        # YAML source registers are kept; expansion happens via regtool at render time
+        assert len(config.regmap_shallow) == 1
 
     def test_generate_python_with_register_groups(
         self, numbers_config: Path, generator: RegistersGenerator
@@ -842,18 +842,16 @@ class TestRegisterGroupGeneration:
             header_file = output_path / "numbers.h"
             content = header_file.read_text()
 
-            # Should have a single numbers_data union (not numbers_data0, numbers_data1, etc.)
-            assert "typedef union numbers_data_u" in content
-            assert "typedef union numbers_data0_u" not in content
+            # Physical layout: 8 compacted registers (DATA_0..DATA_7) with packed VALUE fields
+            assert "typedef union numbers_data_0_u" in content
+            assert "VALUE_0" in content
+            assert "VALUE_1" in content
+            assert "#define NUMBERS_SIZE 8" in content
 
-            # Should use array in the struct
-            assert "data[16]" in content
-
-            # Should have COUNT macro
+            # Logical multireg count and address lookup
             assert "#define NUMBERS_DATA_COUNT 16" in content
-
-            # Should have address macro
             assert "#define NUMBERS_ADDR_DATA(index)" in content
+            assert "NUMBERS_DATA_LOGICAL_ADDRS" in content
 
     def test_generate_hjson_with_multireg(
         self, numbers_config: Path, generator: RegistersGenerator
@@ -1022,9 +1020,9 @@ class TestGeneratedPythonRegisterGroups:
 
         rm = Numbers(Interface())
 
-        # Each register should have sequential addresses starting from base_address
+        # Compact multireg: two logical instances share each physical register offset
         for i in range(16):
-            assert rm.data[i]._address == i
+            assert rm.data[i]._address == (i // 2) * 4
 
     def test_register_group_iteration(self, generated_module):
         """Test iterating over registers in a group."""
@@ -1037,7 +1035,7 @@ class TestGeneratedPythonRegisterGroups:
         # Should be able to iterate over all registers
         count = 0
         for idx, reg in rm.data.items():
-            assert reg._address == idx
+            assert reg._address == (idx // 2) * 4
             count += 1
         assert count == 16
 
@@ -1263,8 +1261,8 @@ class TestRegisterMapMethods:
 
         raw = rm.regmap_raw
         assert isinstance(raw, dict)
-        # Should include all 16 registers from the group
-        assert len(raw) >= 16
+        # Eight physical registers for compact count=16, width=16
+        assert len(raw) == 8
 
     def test_registermap_addresses_with_register_groups(self, generated_numbers):
         """Test that RegisterMap.regmap_addresses works with register groups."""
@@ -1276,11 +1274,9 @@ class TestRegisterMapMethods:
 
         addresses = rm.regmap_addresses
         assert isinstance(addresses, set)
-        # Should include all addresses from register groups
-        assert len(addresses) >= 16
-        # Should include sequential addresses for the group
-        for i in range(16):
-            assert i in addresses
+        assert len(addresses) == 8
+        for offset in range(0, 32, 4):
+            assert offset in addresses
 
     def test_registermap_registers_with_register_groups(self, generated_numbers):
         """Test that RegisterMap.regmap_registers works with register groups."""
@@ -1292,12 +1288,10 @@ class TestRegisterMapMethods:
 
         registers = rm.regmap_registers
         assert isinstance(registers, dict)
-        # Should include all registers from groups
-        assert len(registers) >= 16
-        # Verify we can access registers from the dict
-        for i in range(16):
-            assert i in registers
-            assert registers[i]._address == i
+        assert len(registers) == 8
+        for offset in range(0, 32, 4):
+            assert offset in registers
+            assert registers[offset]._address == offset
 
 
 class TestInterfaceWidthValidation:
@@ -1815,7 +1809,7 @@ class TestRegisterMapHelpers:
         dump = rm.regmap_dump
         assert "SimpleRegmap:" in dump
         assert "0x0000" in dump
-        assert "0x0002" in dump
+        assert "0x0008" in dump
         assert "MODE" in dump
         assert "VALUE" in dump
 
@@ -1845,7 +1839,7 @@ class TestRegisterMapHelpers:
         interface = generated_module_simple.Interface()
         rm = generated_module_simple.SimpleRegmap(interface)
 
-        rm.regmap_restore({0: 0x0102, 2: 0xCAFE})
+        rm.regmap_restore({0: 0x0102, 8: 0xCAFE})
 
         assert rm.control.mode == generated_module_simple.SimpleRegmap.EnumMode.NORMAL
         assert rm.data.value == 0xCAFE
@@ -1871,8 +1865,8 @@ class TestRegisterMapHelpers:
         rm2.data.value = 0x2222
 
         diffs = rm1.regmap_compare(rm2)
-        assert 2 in diffs
-        assert diffs[2] == (0x1111, 0x2222)
+        assert 8 in diffs
+        assert diffs[8] == (0x1111, 0x2222)
 
     def test_write_raw_decomposes_value(self, generated_module_simple):
         """Test write_raw() decomposes and writes bitfields."""
@@ -1905,4 +1899,4 @@ class TestRegisterMapHelpers:
         s = str(rm)
         assert "SimpleRegmap" in s
         assert "0x0000" in s
-        assert "0x0002" in s
+        assert "0x0008" in s

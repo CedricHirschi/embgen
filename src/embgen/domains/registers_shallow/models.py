@@ -105,6 +105,25 @@ class RegisterGroup(BaseModel):
     regwen_multi: bool = False
 
 
+class LogicalInstance(BaseModel):
+    """One logical multireg instance mapped to regtool physical layout."""
+
+    index: int
+    address: int
+    bitfields: list[BitField]
+
+
+class LogicalGroup(BaseModel):
+    """Logical multireg group for indexed software access."""
+
+    name: str
+    description: Optional[str] = None
+    access: Access = Access.RW
+    count: int = Field(gt=0)
+    template_bitfields: list[BitField]
+    instances: list[LogicalInstance]
+
+
 class HjsonEntry(BaseModel):
     """An ordered entry in the hjson register list."""
 
@@ -120,12 +139,19 @@ class RegistersConfig(BaseConfig):
     regmap_shallow: list[Register]
     register_groups: list[RegisterGroup] = []  # Groups of numbered registers
     hjson_entries: list[HjsonEntry] = []
+    logical_groups: list[LogicalGroup] = []
     access_separate: bool = False  # Separate hardware access methods
 
     @model_validator(mode="after")
     def check_access_separate(self) -> "RegistersConfig":
         if self.access_separate:
-            for reg in self.regmap_shallow:
+            for entry in self.hjson_entries:
+                if entry.kind == "register" and entry.reg is not None:
+                    reg = entry.reg
+                elif entry.kind == "multireg" and entry.group is not None:
+                    reg = entry.group
+                else:
+                    continue
                 if reg.access_hw is None:
                     raise ValueError(
                         f"Register {reg.name} missing access_hw with access_separate=True"

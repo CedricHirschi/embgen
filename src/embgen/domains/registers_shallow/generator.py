@@ -6,10 +6,11 @@ from typing import Any, cast
 import subprocess
 import sys
 
-from jinja2 import Template
+from jinja2 import Environment, Template
 
 from .. import DomainGenerator, BaseConfig
 from .models import HjsonEntry, RegistersConfig, RegisterGroup
+from .regtool_layout import build_hjson_render_entries, build_layout
 
 
 class RegistersGenerator(DomainGenerator):
@@ -26,7 +27,6 @@ class RegistersGenerator(DomainGenerator):
 
     def validate(self, data: dict[str, Any]) -> BaseConfig:
         config = RegistersConfig.model_validate(data)
-        expanded_registers = []
         register_groups = []
         hjson_entries = []
 
@@ -48,40 +48,39 @@ class RegistersGenerator(DomainGenerator):
                 )
                 register_groups.append(group)
                 hjson_entries.append(HjsonEntry(kind="multireg", group=group))
-
-                base_address = register.address
-                for i in range(register.count):
-                    new_register = register.model_copy()
-                    new_register.name = f"{register.name}{i}"
-                    new_register.address = base_address + i
-                    new_register.count = None
-                    new_register.cname = None
-                    new_register.compact = None
-                    new_register.regwen_multi = False
-                    expanded_registers.append(new_register)
             else:
                 hjson_entries.append(HjsonEntry(kind="register", reg=register))
-                expanded_registers.append(register)
 
-        config.regmap_shallow.clear()
-        config.regmap_shallow.extend(expanded_registers)
         config.register_groups = register_groups
         config.hjson_entries = hjson_entries
 
         return cast(BaseConfig, config)
 
-    def render(self, config: Any, template: Template) -> str:
-        cfg: RegistersConfig = config  # type: narrow
-        # Sort registers by address
-        registers = sorted(cfg.regmap_shallow, key=lambda r: r.address)
+    def _prepare_template_context(
+        self, cfg: RegistersConfig, env: Environment
+    ) -> dict[str, Any]:
+        layout = build_layout(cfg, env)
 
-        # Sort bitfields within each register
+        registers = layout.physical_registers
+        logical_groups = layout.logical_groups
+
+        standalone_registers = [
+            reg
+            for reg in registers
+            if not (
+                reg.name in {group.name for group in logical_groups}
+                or any(reg.name.startswith(f"{g.name}_") for g in logical_groups)
+            )
+        ]
+
         for reg in registers:
             reg.bitfields = sorted(reg.bitfields, key=lambda bf: bf.offset)
-
-        # Sort bitfields in register groups too
-        for group in cfg.register_groups:
-            group.bitfields = sorted(group.bitfields, key=lambda bf: bf.offset)
+        for group in logical_groups:
+            group.template_bitfields = sorted(
+                group.template_bitfields, key=lambda bf: bf.offset
+            )
+            for inst in group.instances:
+                inst.bitfields = sorted(inst.bitfields, key=lambda bf: bf.offset)
 
         for entry in cfg.hjson_entries:
             if entry.kind == "register" and entry.reg is not None:
@@ -93,21 +92,33 @@ class RegistersGenerator(DomainGenerator):
                     entry.group.bitfields, key=lambda bf: bf.offset
                 )
 
-        # Collect all bitfields for templates that need flat access
         bitfields = [bf for reg in registers for bf in reg.bitfields]
 
-        return template.render(
-            name=cfg.name,
-            file=config.file,
-            support_file=config.support_output_filename,
-            width=cfg.width,
-            regmap=registers,
-            register_groups=cfg.register_groups,
-            hjson_entries=cfg.hjson_entries,
-            bitfields=bitfields,
-            access_separate=cfg.access_separate,
-            generated_on=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        )
+        return {
+            "name": cfg.name,
+            "file": cfg.file,
+            "support_file": cfg.support_output_filename,
+            "width": cfg.width,
+            "regmap": registers,
+            "standalone_registers": standalone_registers,
+            "logical_groups": logical_groups,
+            "register_groups": logical_groups,
+            "hjson_entries": build_hjson_render_entries(cfg),
+            "bitfields": bitfields,
+            "access_separate": cfg.access_separate,
+            "generated_on": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "_layout": layout,
+        }
+
+    def render(self, config: Any, template: Template) -> str:
+        cfg: RegistersConfig = config  # type: narrow
+        env = template.environment
+        context = self._prepare_template_context(cfg, env)
+
+        if template.name.endswith("template.md.j2"):
+            return context["_layout"].markdown
+
+        return template.render(**{k: v for k, v in context.items() if k != "_layout"})
 
     def post_generate(
         self, config: BaseConfig, output: Path, generated_extensions: set[str]
@@ -154,7 +165,6 @@ class RegistersGenerator(DomainGenerator):
                 result.extend(files_copied)
 
             if "py" in generated_extensions:
-                # Copy the register base classes
                 base_template = self.templates_path / "registers_base.py"
                 if base_template.exists():
                     dst = output / f"{config.support_output_filename}.py"
