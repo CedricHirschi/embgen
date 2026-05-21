@@ -12,23 +12,22 @@
 #include <stdint.h>
 
 {% if width == 8 %}
-#define REG_FIELD_SIZE 1
-typedef uint8_t reg_field_t;
+#define {{ name | upper | replace(' ', '_') }}_REG_FIELD_SIZE 1
+typedef uint8_t {{ name | lower | replace(' ', '_') }}_reg_field_t;
 {% elif width == 16 %}
-#define REG_FIELD_SIZE 2
-typedef uint16_t reg_field_t;
+#define {{ name | upper | replace(' ', '_') }}_REG_FIELD_SIZE 2
+typedef uint16_t {{ name | lower | replace(' ', '_') }}_reg_field_t;
 {% elif width == 32 %}
-#define REG_FIELD_SIZE 4
-typedef uint32_t reg_field_t;
+#define {{ name | upper | replace(' ', '_') }}_REG_FIELD_SIZE 4
+typedef uint32_t {{ name | lower | replace(' ', '_') }}_reg_field_t;
 {% else %}
 #error "Unsupported register width ({{ width }} bits)"
 {% endif %}
 
-typedef enum {
-  REG_ATTR_NONE = 0,
-  REG_ATTR_READONLY = (1 << 0),
-  REG_ATTR_WRITEONLY = (1 << 1),
-} reg_attr_t;
+#define {{ name | upper | replace(' ', '_') }}_REG_ATTR_READ (1 << 0)
+#define {{ name | upper | replace(' ', '_') }}_REG_ATTR_WRITE (1 << 1)
+#define {{ name | upper | replace(' ', '_') }}_REG_ATTR_READWRITE ({{ name | upper | replace(' ', '_') }}_REG_ATTR_READ | {{ name | upper | replace(' ', '_') }}_REG_ATTR_WRITE)
+
 
 /* ============================================================================
  * Register Map Configuration
@@ -74,11 +73,11 @@ static const uint8_t {{ name | upper | replace(' ', '_') }}_ATTRS[{{ name | uppe
 {% set ns.has_write = true %}
 {% endif %}
 {% if ns.has_read and not ns.has_write %}
-    [{{ name | upper | replace(' ', '_') }}_ADDR_{{ register.name | upper | replace(' ', '_') }}] = REG_ATTR_READONLY,
+    [{{ name | upper | replace(' ', '_') }}_ADDR_{{ register.name | upper | replace(' ', '_') }}] = {{ name | upper | replace(' ', '_') }}_REG_ATTR_READ,
 {% elif ns.has_write and not ns.has_read %}
-    [{{ name | upper | replace(' ', '_') }}_ADDR_{{ register.name | upper | replace(' ', '_') }}] = REG_ATTR_WRITEONLY,
+    [{{ name | upper | replace(' ', '_') }}_ADDR_{{ register.name | upper | replace(' ', '_') }}] = {{ name | upper | replace(' ', '_') }}_REG_ATTR_WRITE,
 {% else %}
-    [{{ name | upper | replace(' ', '_') }}_ADDR_{{ register.name | upper | replace(' ', '_') }}] = REG_ATTR_NONE,
+    [{{ name | upper | replace(' ', '_') }}_ADDR_{{ register.name | upper | replace(' ', '_') }}] = {{ name | upper | replace(' ', '_') }}_REG_ATTR_READWRITE,
 {% endif %}
 {% endfor  %}
 };
@@ -284,20 +283,20 @@ typedef enum {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | r
 {% endif %}
  * Access: {{ group.access.value | upper }}
  */
-struct __attribute__((aligned(REG_FIELD_SIZE))) {{ name | lower | replace(' ', '_') }}_{{ group.name | lower | replace(' ', '_') }} {
+struct __attribute__((aligned({{ name | upper | replace(' ', '_') }}_REG_FIELD_SIZE))) {{ name | lower | replace(' ', '_') }}_{{ group.name | lower | replace(' ', '_') }} {
 {% set prev_end = namespace(value=0) %}
 {% set reserved_count = namespace(value=0) %}
 {% for field in sorted_fields %}
 {% if field.offset > prev_end.value %}
 {% set padding = field.offset - prev_end.value %}
-    reg_field_t _reserved{{ reserved_count.value }} : {{ padding }}; /**< Reserved bits [{{ prev_end.value }}:{{ field.offset - 1 }}] */
+    {{ name | lower | replace(' ', '_') }}_reg_field_t _reserved{{ reserved_count.value }} : {{ padding }}; /**< Reserved bits [{{ prev_end.value }}:{{ field.offset - 1 }}] */
 {% set reserved_count.value = reserved_count.value + 1 %}
 {% endif %}
-    reg_field_t {{ field.name | lower | replace(' ', '_') }} : {{ field.width }}; /**< {% if field.description %}{{ field.description }} {% endif %}[{{ field.offset }}:{{ field.offset + field.width - 1 }}] */
+    {{ name | lower | replace(' ', '_') }}_reg_field_t {{ field.name | lower | replace(' ', '_') }} : {{ field.width }}; /**< {% if field.description %}{{ field.description }} {% endif %}[{{ field.offset }}:{{ field.offset + field.width - 1 }}] */
 {% set prev_end.value = field.offset + field.width %}
 {% endfor %}
 };
-static_assert(sizeof(struct {{ name | lower | replace(' ', '_') }}_{{ group.name | lower | replace(' ', '_') }}) == REG_FIELD_SIZE, "{{ name | lower | replace(' ', '_') }}_{{ group.name | lower | replace(' ', '_') }} size mismatch");
+static_assert(sizeof(struct {{ name | lower | replace(' ', '_') }}_{{ group.name | lower | replace(' ', '_') }}) == {{ name | upper | replace(' ', '_') }}_REG_FIELD_SIZE, "{{ name | lower | replace(' ', '_') }}_{{ group.name | lower | replace(' ', '_') }} size mismatch");
 
 {% endfor %}
 {# Structures for non-grouped registers #}
@@ -314,20 +313,20 @@ static_assert(sizeof(struct {{ name | lower | replace(' ', '_') }}_{{ group.name
 {% endif %}
  * Access: {{ register.access.value | upper }}
  */
-struct __attribute__((aligned(REG_FIELD_SIZE))) {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | replace(' ', '_') }} {
+struct __attribute__((aligned({{ name | upper | replace(' ', '_') }}_REG_FIELD_SIZE))) {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | replace(' ', '_') }} {
 {% set prev_end = namespace(value=0) %}
 {% set reserved_count = namespace(value=0) %}
 {% for field in sorted_fields %}
 {% if field.offset > prev_end.value %}
 {% set padding = field.offset - prev_end.value %}
-    reg_field_t _reserved{{ reserved_count.value }} : {{ padding }}; /**< Reserved bits [{{ prev_end.value }}:{{ field.offset - 1 }}] */
+    {{ name | lower | replace(' ', '_') }}_reg_field_t _reserved{{ reserved_count.value }} : {{ padding }}; /**< Reserved bits [{{ prev_end.value }}:{{ field.offset - 1 }}] */
 {% set reserved_count.value = reserved_count.value + 1 %}
 {% endif %}
-    reg_field_t {{ field.name | lower | replace(' ', '_') }} : {{ field.width }}; /**< {% if field.description %}{{ field.description }} {% endif %}[{{ field.offset }}:{{ field.offset + field.width - 1 }}] */
+    {{ name | lower | replace(' ', '_') }}_reg_field_t {{ field.name | lower | replace(' ', '_') }} : {{ field.width }}; /**< {% if field.description %}{{ field.description }} {% endif %}[{{ field.offset }}:{{ field.offset + field.width - 1 }}] */
 {% set prev_end.value = field.offset + field.width %}
 {% endfor %}
 };
-static_assert(sizeof(struct {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | replace(' ', '_') }}) == REG_FIELD_SIZE, "{{ name | lower | replace(' ', '_') }}_{{ register.name | lower | replace(' ', '_') }} size mismatch");
+static_assert(sizeof(struct {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | replace(' ', '_') }}) == {{ name | upper | replace(' ', '_') }}_REG_FIELD_SIZE, "{{ name | lower | replace(' ', '_') }}_{{ register.name | lower | replace(' ', '_') }} size mismatch");
 
 {% endif %}
 {% endfor %}
@@ -340,7 +339,7 @@ static_assert(sizeof(struct {{ name | lower | replace(' ', '_') }}_{{ register.n
 
 /** @brief Union for {{ group.name }} register - allows raw and bitfield access (grouped) */
 typedef union {{ name | lower | replace(' ', '_') }}_{{ group.name | lower | replace(' ', '_') }}_u {
-    reg_field_t raw; /**< Raw register value */
+    {{ name | lower | replace(' ', '_') }}_reg_field_t raw; /**< Raw register value */
     struct {{ name | lower | replace(' ', '_') }}_{{ group.name | lower | replace(' ', '_') }} bits; /**< Bitfield access */
 } {{ name | lower | replace(' ', '_') }}_{{ group.name | lower | replace(' ', '_') }}_t;
 {% endfor %}
@@ -352,7 +351,7 @@ typedef union {{ name | lower | replace(' ', '_') }}_{{ group.name | lower | rep
 
 /** @brief Union for {{ register.name }} register - allows raw and bitfield access */
 typedef union {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | replace(' ', '_') }}_u {
-    reg_field_t raw; /**< Raw register value */
+    {{ name | lower | replace(' ', '_') }}_reg_field_t raw; /**< Raw register value */
     struct {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | replace(' ', '_') }} bits; /**< Bitfield access */
 } {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | replace(' ', '_') }}_t;
 {% endif %}
