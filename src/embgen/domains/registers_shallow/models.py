@@ -122,6 +122,10 @@ class LogicalGroup(BaseModel):
     count: int = Field(gt=0)
     template_bitfields: list[BitField]
     instances: list[LogicalInstance]
+    # True when multiple logical instances share one physical register (compact packing)
+    packed: bool = False
+    # True when each instance maps to its own physical register with identical layout
+    spread: bool = False
 
 
 class HjsonEntry(BaseModel):

@@ -205,6 +205,16 @@ def _build_logical_groups(
                 )
 
         instances.sort(key=lambda inst: inst.index)
+        unique_addresses = {inst.address for inst in instances}
+        if len(instances) > 1 and len(unique_addresses) == 1:
+            packed = True
+            spread = False
+        elif len(instances) > 1 and len(unique_addresses) == len(instances):
+            packed = False
+            spread = True
+        else:
+            packed = False
+            spread = False
         logical_groups.append(
             LogicalGroup(
                 name=yaml_group.name,
@@ -213,6 +223,8 @@ def _build_logical_groups(
                 count=yaml_group.count,
                 template_bitfields=yaml_group.bitfields,
                 instances=instances,
+                packed=packed,
+                spread=spread,
             )
         )
 

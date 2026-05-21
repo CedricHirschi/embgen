@@ -150,7 +150,41 @@ typedef enum {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | r
 /* ============================================================================
  * Field Accessor Macros
  * ========================================================================== */
+{% for group in logical_groups %}
+{% if group.packed %}
+
+/* {{ group.name }} Register Accessors (packed instances) */
+{% for field in group.template_bitfields %}
+#define {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_GET_{{ field.name | upper | replace(' ', '_') }}(reg, inst) \
+    (((reg) >> ({{ field.offset }} + (inst) * {{ field.width }})) & ((1U << {{ field.width }}) - 1))
+#define {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_SET_{{ field.name | upper | replace(' ', '_') }}(reg, inst, val) \
+    (((reg) & ~(((1U << {{ field.width }}) - 1) << ({{ field.offset }} + (inst) * {{ field.width }}))) | (((val) & ((1U << {{ field.width }}) - 1)) << ({{ field.offset }} + (inst) * {{ field.width }})))
+{% endfor %}
+{% elif group.spread %}
+
+/* {{ group.name }} Register Accessors */
+{% for field in group.template_bitfields %}
+#define {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_GET_{{ field.name | upper | replace(' ', '_') }}(reg) \
+    (((reg) >> {{ field.offset }}) & ((1U << {{ field.width }}) - 1))
+#define {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_SET_{{ field.name | upper | replace(' ', '_') }}(reg, val) \
+    (((reg) & ~(((1U << {{ field.width }}) - 1) << {{ field.offset }})) | (((val) & ((1U << {{ field.width }}) - 1)) << {{ field.offset }}))
+{% endfor %}
+{% else %}
 {% for register in regmap %}
+{% if register.name == group.name or register.name.startswith(group.name ~ '_') %}
+
+/* {{ register.name }} Register Accessors */
+{% for field in register.bitfields %}
+#define {{ name | upper | replace(' ', '_') }}_{{ register.name | upper | replace(' ', '_') }}_GET_{{ field.name | upper | replace(' ', '_') }}(reg) \
+    (((reg) >> {{ field.offset }}) & ((1U << {{ field.width }}) - 1))
+#define {{ name | upper | replace(' ', '_') }}_{{ register.name | upper | replace(' ', '_') }}_SET_{{ field.name | upper | replace(' ', '_') }}(reg, val) \
+    (((reg) & ~(((1U << {{ field.width }}) - 1) << {{ field.offset }})) | (((val) & ((1U << {{ field.width }}) - 1)) << {{ field.offset }}))
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% for register in standalone_registers %}
 
 /* {{ register.name }} Register Accessors */
 {% for field in register.bitfields %}

@@ -853,6 +853,37 @@ class TestRegisterGroupGeneration:
             assert "#define NUMBERS_ADDR_DATA(index)" in content
             assert "NUMBERS_DATA_LOGICAL_ADDRS" in content
 
+    def test_generate_header_multireg_accessor_deduplication(
+        self, generator: RegistersGenerator
+    ):
+        """Multireg groups emit spread or packed accessors instead of per-instance copies."""
+        config_path = (
+            Path(__file__).parent / "configs" / "registers_shallow" / "axi_dsp_timer_core.yml"
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(
+                config_path, {"h": "template.h.j2"}
+            )
+            assert "axi_dsp_timer_core.h" in filenames
+            content = (output_path / "axi_dsp_timer_core.h").read_text()
+
+            # Spread multireg: one accessor set per group (not per _0/_1/_2/_3 register)
+            assert "REG_QUEUE_SEL_GET_IN_SEL_0(reg)" in content
+            assert "REG_QUEUE_SEL_0_GET_IN_SEL_0_0" not in content
+            assert "REG_QUEUE_VALUE_BASE_GET_VALUE(reg)" in content
+            assert "REG_QUEUE_VALUE_BASE_0_GET_VALUE_0" not in content
+
+            # Packed multireg: indexed accessors on the shared physical register
+            assert "REG_QUEUE_VALUE_SHIFT_GET_VALUE(reg, inst)" in content
+            assert "REG_QUEUE_VALUE_SHIFT_GET_VALUE_0(reg)" not in content
+            assert "REG_QUEUE_LOGIC_GET_MODE(reg, inst)" in content
+            assert "REG_QUEUE_LOGIC_GET_MODE_0(reg)" not in content
+
+            # Standalone register accessors unchanged
+            assert "CAPTURE_LO_GET_VALUE(reg)" in content
+
     def test_generate_hjson_with_multireg(
         self, numbers_config: Path, generator: RegistersGenerator
     ):
