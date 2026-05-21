@@ -21,7 +21,7 @@
 {% for group in register_groups %}
 
 /** @brief Number of {{ group.name }} registers in the group */
-#define {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_COUNT {{ group.numbers | length }}
+#define {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_COUNT {{ group.count }}
 {% endfor %}
 
 /* ============================================================================
@@ -260,7 +260,7 @@ typedef enum {{ name | lower | replace(' ', '_') }}_{{ register.name | lower | r
 {% set sorted_fields = group.bitfields | sort(attribute='offset') %}
 
 /**
- * @brief {{ group.name }} Register (grouped, base address 0x{{ '%X' % group.base_address }}, count={{ group.numbers | length }})
+ * @brief {{ group.name }} Register (grouped, base address 0x{{ '%X' % group.base_address }}, count={{ group.count }})
 {% if group.description %}
  * {{ group.description }}
 {% endif %}
@@ -354,7 +354,7 @@ typedef struct {{ name | lower | replace(' ', '_') }} {
 {% if base_name not in emitted_groups %}
 {% for group in register_groups %}
 {% if group.name == base_name %}
-    union {{ name | lower | replace(' ', '_') }}_{{ group.name | lower | replace(' ', '_') }}_u {{ group.name | lower | replace(' ', '_') }}[{{ group.numbers | length }}];{% if group.description %} /**< {{ group.description }} (array of {{ group.numbers | length }}) */{% endif %}
+    union {{ name | lower | replace(' ', '_') }}_{{ group.name | lower | replace(' ', '_') }}_u {{ group.name | lower | replace(' ', '_') }}[{{ group.count }}];{% if group.description %} /**< {{ group.description }} (array of {{ group.count }}) */{% endif %}
 
 {% set _ = emitted_groups.append(base_name) %}
 {% endif %}
@@ -381,7 +381,7 @@ typedef struct {{ name | lower | replace(' ', '_') }} {
 {% if base_name not in emitted_groups %}
 {% for group in register_groups %}
 {% if group.name == base_name %}
-    .{{ group.name | lower | replace(' ', '_') }} = { {% for i in group.numbers %}{ .raw = {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_RESET }{% if not loop.last %}, {% endif %}{% endfor %} }{% if not loop.last %}, {% endif %} \
+    .{{ group.name | lower | replace(' ', '_') }} = { {% for i in range(group.count) %}{ .raw = {{ name | upper | replace(' ', '_') }}_{{ group.name | upper | replace(' ', '_') }}_RESET }{% if not loop.last %}, {% endif %}{% endfor %} }{% if not loop.last %}, {% endif %} \
 {% set _ = emitted_groups.append(base_name) %}
 {% endif %}
 {% endfor %}

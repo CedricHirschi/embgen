@@ -762,30 +762,12 @@ class TestRegisterGroupModel:
             base_address=0,
             access=Access.RW,
             bitfields=[BitField(name="VALUE", reset=0, width=16, offset=0)],
-            numbers=[0, 1, 2, 3],
+            count=4,
         )
         assert group.name == "DATA"
         assert group.base_address == 0
-        assert len(group.numbers) == 4
+        assert group.count == 4
         assert len(group.bitfields) == 1
-
-    def test_register_group_with_gaps(self):
-        """Test register group with non-contiguous numbers."""
-        from embgen.domains.registers_shallow.models import (
-            RegisterGroup,
-            BitField,
-            Access,
-        )
-
-        group = RegisterGroup(
-            name="CHANNEL",
-            description="Channel register",
-            base_address=0x10,
-            access=Access.RW,
-            bitfields=[BitField(name="CTRL", reset=0, width=8, offset=0)],
-            numbers=[0, 2, 4, 6],  # non-contiguous
-        )
-        assert group.numbers == [0, 2, 4, 6]
 
 
 class TestRegisterGroupGeneration:
@@ -814,7 +796,10 @@ class TestRegisterGroupGeneration:
         group = config.register_groups[0]
         assert group.name == "DATA"
         assert group.base_address == 0
-        assert group.numbers == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        assert group.count == 16
+
+        assert len(config.hjson_entries) == 1
+        assert config.hjson_entries[0].kind == "multireg"
 
         # Expanded registers should still exist for backward compatibility
         assert len(config.regmap_shallow) == 16
@@ -869,6 +854,48 @@ class TestRegisterGroupGeneration:
 
             # Should have address macro
             assert "#define NUMBERS_ADDR_DATA(index)" in content
+
+    def test_generate_hjson_with_multireg(
+        self, numbers_config: Path, generator: RegistersGenerator
+    ):
+        """Test that hjson generation emits multireg blocks instead of flat registers."""
+        import subprocess
+        import sys
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"hjson": "template.hjson.j2"}
+
+            code_gen = CodeGenerator(generator, output_path)
+            filenames = code_gen.generate_from_file(numbers_config, templates)
+
+            assert "numbers.hjson" in filenames
+            hjson_file = output_path / "numbers.hjson"
+            content = hjson_file.read_text()
+
+            assert "multireg:" in content
+            assert 'count: "16"' in content
+            assert 'name: "DATA0"' not in content
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "regtool.py",
+                    "-r",
+                    "-t",
+                    output_path.as_posix(),
+                    hjson_file.as_posix(),
+                ],
+                cwd=Path(__file__).parent.parent
+                / "src"
+                / "embgen"
+                / "domains"
+                / "registers_shallow"
+                / "regtool",
+                capture_output=True,
+                text=True,
+            )
+            assert result.returncode == 0, result.stderr
 
 
 class TestGeneratedPythonRegisterGroups:

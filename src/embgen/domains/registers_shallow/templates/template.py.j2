@@ -101,7 +101,7 @@ class {{ name }}(RegisterMap):
 {% endif %}
 {% endfor %}
 {% for group in register_groups %}
-        self.{{ group.name.lower() }}: dict[int, Register{{ group.name }}] = {i: Register{{ group.name }}(self._interface, {{ group.base_address }} + idx) for idx, i in enumerate({{ group.numbers }})}
+        self.{{ group.name.lower() }}: dict[int, Register{{ group.name }}] = {i: Register{{ group.name }}(self._interface, {{ group.base_address }} + i) for i in range({{ group.count }})}
 {% endfor %}
 
 
@@ -132,7 +132,7 @@ class Register{{ group.name }}(Register):
     """Register {{ group.name|upper }} (grouped register)
 
     Base Address: 0x{{ '%04x' % group.base_address }} ({{ group.base_address }})
-    Indices: {{ group.numbers }}
+    Count: {{ group.count }}
 
     {{ group.description or '' }}
     """

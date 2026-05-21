@@ -9,7 +9,7 @@ import sys
 from jinja2 import Template
 
 from .. import DomainGenerator, BaseConfig
-from .models import RegistersConfig, RegisterGroup
+from .models import HjsonEntry, RegistersConfig, RegisterGroup
 
 
 class RegistersGenerator(DomainGenerator):
@@ -28,35 +28,45 @@ class RegistersGenerator(DomainGenerator):
         config = RegistersConfig.model_validate(data)
         expanded_registers = []
         register_groups = []
+        hjson_entries = []
 
         for register in config.regmap_shallow:
-            if register.numbers:
-                # Create a RegisterGroup for this numbered register
+            if register.count:
                 group = RegisterGroup(
                     name=register.name,
                     description=register.description,
                     base_address=register.address,
                     access=register.access,
+                    access_hw=register.access_hw,
                     bitfields=register.bitfields,
-                    numbers=register.numbers,
+                    hwqe=register.hwqe,
+                    hwext=register.hwext,
+                    count=register.count,
+                    cname=register.cname,
+                    compact=register.compact,
+                    regwen_multi=register.regwen_multi,
                 )
                 register_groups.append(group)
+                hjson_entries.append(HjsonEntry(kind="multireg", group=group))
 
-                # Also expand individual registers for backward compatibility
                 base_address = register.address
-                for i, number in enumerate(register.numbers):
+                for i in range(register.count):
                     new_register = register.model_copy()
-                    new_register.name = f"{register.name}{number}"
+                    new_register.name = f"{register.name}{i}"
                     new_register.address = base_address + i
-                    new_register.numbers = None  # Clear numbers on expanded register
+                    new_register.count = None
+                    new_register.cname = None
+                    new_register.compact = None
+                    new_register.regwen_multi = False
                     expanded_registers.append(new_register)
             else:
+                hjson_entries.append(HjsonEntry(kind="register", reg=register))
                 expanded_registers.append(register)
 
-        # Clear the original regmap and extend it with the new registers
         config.regmap_shallow.clear()
         config.regmap_shallow.extend(expanded_registers)
         config.register_groups = register_groups
+        config.hjson_entries = hjson_entries
 
         return cast(BaseConfig, config)
 
@@ -73,6 +83,16 @@ class RegistersGenerator(DomainGenerator):
         for group in cfg.register_groups:
             group.bitfields = sorted(group.bitfields, key=lambda bf: bf.offset)
 
+        for entry in cfg.hjson_entries:
+            if entry.kind == "register" and entry.reg is not None:
+                entry.reg.bitfields = sorted(
+                    entry.reg.bitfields, key=lambda bf: bf.offset
+                )
+            elif entry.kind == "multireg" and entry.group is not None:
+                entry.group.bitfields = sorted(
+                    entry.group.bitfields, key=lambda bf: bf.offset
+                )
+
         # Collect all bitfields for templates that need flat access
         bitfields = [bf for reg in registers for bf in reg.bitfields]
 
@@ -83,6 +103,7 @@ class RegistersGenerator(DomainGenerator):
             width=cfg.width,
             regmap=registers,
             register_groups=cfg.register_groups,
+            hjson_entries=cfg.hjson_entries,
             bitfields=bitfields,
             access_separate=cfg.access_separate,
             generated_on=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

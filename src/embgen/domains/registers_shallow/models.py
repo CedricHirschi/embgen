@@ -1,9 +1,9 @@
 """Register map domain models."""
 
 from enum import Enum as BaseEnum
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 from ...models import Enum, BaseConfig
 
@@ -70,14 +70,17 @@ class Register(BaseModel):
     hwqe: bool = False  # If hardware uses ‘q’ enable signal, which is latched signal of software write pulse
     hwext: bool = False  # If the register is stored outside of the register module
 
-    # Meta field: Which numbers to generate for this register
-    # Example: Register 'data' has numbers 0 to 15
-    # This would generate registers data0, data1, ..., data15
-    numbers: Optional[list[int]] = None
+    # Number of identical register instances to generate (indices 0..count-1)
+    count: Optional[int] = Field(default=None, gt=0)
+
+    # multireg-specific optional fields (passed through to hjson)
+    cname: Optional[str] = None
+    compact: Optional[bool] = None
+    regwen_multi: bool = False
 
 
 class RegisterGroup(BaseModel):
-    """A group of identical registers with different indices (from 'numbers' expansion).
+    """A group of identical registers with different indices (from 'count' expansion).
 
     This represents the original register definition before expansion,
     allowing templates to generate a single base class/struct with array access.
@@ -94,7 +97,20 @@ class RegisterGroup(BaseModel):
     hwqe: bool = False  # If hardware uses ‘q’ enable signal, which is latched signal of software write pulse
     hwext: bool = False  # If the register is stored outside of the register module
 
-    numbers: list[int]  # The indices (e.g., [0, 1, 2, ..., 15])
+    count: int = Field(gt=0)
+
+    # multireg-specific optional fields (passed through to hjson)
+    cname: Optional[str] = None
+    compact: Optional[bool] = None
+    regwen_multi: bool = False
+
+
+class HjsonEntry(BaseModel):
+    """An ordered entry in the hjson register list."""
+
+    kind: Literal["register", "multireg"]
+    reg: Optional[Register] = None
+    group: Optional[RegisterGroup] = None
 
 
 class RegistersConfig(BaseConfig):
@@ -103,6 +119,7 @@ class RegistersConfig(BaseConfig):
     width: int = 32
     regmap_shallow: list[Register]
     register_groups: list[RegisterGroup] = []  # Groups of numbered registers
+    hjson_entries: list[HjsonEntry] = []
     access_separate: bool = False  # Separate hardware access methods
 
     @model_validator(mode="after")

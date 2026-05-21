@@ -6,7 +6,7 @@ width: 32
 
 regmap_shallow:
   - name: CFG_F
-    numbers: [1, 2]
+    count: 2
     description: "Phase configuration: end and switch points"
     address: 0
     access: rw
