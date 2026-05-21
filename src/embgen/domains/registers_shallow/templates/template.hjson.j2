@@ -47,9 +47,10 @@
 
   registers: [
 {% for item in hjson_entries %}
-{% if item.kind == "skipto" %}
+{# {% if item.kind == "skipto" %}
     { skipto: {{ item.offset }} }
-{% elif item.kind == "register" %}
+{% elif item.kind == "register" %} #}
+{% if item.kind == "register" %}
 {% set reg = item.entry.reg %}
     {
       name: "{{ reg.name }}"
