@@ -862,14 +862,15 @@ class TestRegisterGroupGeneration:
     ):
         """Multireg groups emit spread or packed accessors instead of per-instance copies."""
         config_path = (
-            Path(__file__).parent / "configs" / "registers_shallow" / "axi_dsp_timer_core.yml"
+            Path(__file__).parent
+            / "configs"
+            / "registers_shallow"
+            / "axi_dsp_timer_core.yml"
         )
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir)
             code_gen = CodeGenerator(generator, output_path)
-            filenames = code_gen.generate_from_file(
-                config_path, {"h": "template.h.j2"}
-            )
+            filenames = code_gen.generate_from_file(config_path, {"h": "template.h.j2"})
             assert "axi_dsp_timer_core.h" in filenames
             content = (output_path / "axi_dsp_timer_core.h").read_text()
 
@@ -1929,7 +1930,7 @@ class TestRegisterMapHelpers:
         dump = rm.regmap_dump
         assert "SimpleRegmap:" in dump
         assert "0x0000" in dump
-        assert "0x0008" in dump
+        assert "0x0002" in dump
         assert "MODE" in dump
         assert "VALUE" in dump
 
@@ -1959,7 +1960,7 @@ class TestRegisterMapHelpers:
         interface = generated_module_simple.Interface()
         rm = generated_module_simple.SimpleRegmap(interface)
 
-        rm.regmap_restore({0: 0x0102, 8: 0xCAFE})
+        rm.regmap_restore({0: 0x0102, 2: 0xCAFE})
 
         assert rm.control.mode == generated_module_simple.SimpleRegmap.EnumMode.NORMAL
         assert rm.data.value == 0xCAFE
@@ -1985,8 +1986,8 @@ class TestRegisterMapHelpers:
         rm2.data.value = 0x2222
 
         diffs = rm1.regmap_compare(rm2)
-        assert 8 in diffs
-        assert diffs[8] == (0x1111, 0x2222)
+        assert 2 in diffs
+        assert diffs[2] == (0x1111, 0x2222)
 
     def test_write_raw_decomposes_value(self, generated_module_simple):
         """Test write_raw() decomposes and writes bitfields."""
@@ -2019,4 +2020,4 @@ class TestRegisterMapHelpers:
         s = str(rm)
         assert "SimpleRegmap" in s
         assert "0x0000" in s
-        assert "0x0008" in s
+        assert "0x0001" in s

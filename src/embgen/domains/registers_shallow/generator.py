@@ -72,9 +72,7 @@ class RegistersGenerator(DomainGenerator):
             [
                 reg.model_copy(
                     update={
-                        "address": yaml_standalone_addresses.get(
-                            reg.name, reg.address
-                        )
+                        "address": yaml_standalone_addresses.get(reg.name, reg.address)
                     }
                 )
                 for reg in registers
@@ -130,6 +128,9 @@ class RegistersGenerator(DomainGenerator):
         cfg: RegistersConfig = config  # type: narrow
         env = template.environment
         context = self._prepare_template_context(cfg, env)
+
+        if template.name is None:
+            raise ValueError("Template name is None")
 
         if template.name.endswith("template.md.j2"):
             return context["_layout"].markdown

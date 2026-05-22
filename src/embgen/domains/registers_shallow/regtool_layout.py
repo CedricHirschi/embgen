@@ -8,10 +8,17 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 
-from jinja2 import Environment, Template
+from jinja2 import Environment
 
 from ...models import Enum as EmbgenEnum
-from .models import Access, BitField, HjsonEntry, LogicalGroup, LogicalInstance, Register
+from .models import (
+    Access,
+    BitField,
+    HjsonEntry,
+    LogicalGroup,
+    LogicalInstance,
+    Register,
+)
 
 if TYPE_CHECKING:
     from .models import RegistersConfig
@@ -76,11 +83,7 @@ def _multireg_slots(entry: HjsonEntry, regwidth: int) -> int:
     if entry.kind != "multireg" or entry.group is None:
         return 1
     group = entry.group
-    compact = (
-        group.compact
-        if group.compact is not None
-        else len(group.bitfields) == 1
-    )
+    compact = group.compact if group.compact is not None else len(group.bitfields) == 1
     if compact and len(group.bitfields) == 1:
         field_width = group.bitfields[0].width
         regs_per_creg = regwidth // field_width
@@ -128,14 +131,14 @@ def render_hjson(config: RegistersConfig, env: Environment) -> str:
 
 def _load_ip_block(hjson_text: str) -> Any:
     _ensure_regtool_importable()
-    from reggen.ip_block import IpBlock
+    from reggen.ip_block import IpBlock  # type: ignore[import]
 
     return IpBlock.from_text(hjson_text, [], "embgen generated hjson")
 
 
 def render_markdown(block: Any) -> str:
     _ensure_regtool_importable()
-    from reggen.gen_md import gen_md
+    from reggen.gen_md import gen_md  # type: ignore[import]
 
     out = io.StringIO()
     gen_md(block, out)
@@ -156,8 +159,8 @@ def _build_logical_groups(
     regwidth: int,
 ) -> list[LogicalGroup]:
     _ensure_regtool_importable()
-    from reggen.gen_md import multireg_is_compact
-    from reggen.multi_register import MultiRegister
+    from reggen.gen_md import multireg_is_compact  # type: ignore[import]
+    from reggen.multi_register import MultiRegister  # type: ignore[import]
 
     yaml_by_name = {g.name: g for g in yaml_groups}
     logical_groups: list[LogicalGroup] = []
@@ -240,9 +243,7 @@ def build_layout(
     reg_block = block.reg_blocks[None]
 
     physical_registers = [_convert_register(reg) for reg in reg_block.flat_regs]
-    logical_groups = _build_logical_groups(
-        block, config.register_groups, config.width
-    )
+    logical_groups = _build_logical_groups(block, config.register_groups, config.width)
 
     return RegtoolLayout(
         block=block,
