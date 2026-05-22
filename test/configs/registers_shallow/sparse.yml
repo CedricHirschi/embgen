@@ -1,0 +1,32 @@
+name: Sparse
+file: sparse
+regmap_shallow:
+  - name: REG_A
+    description: Register A
+    address: 0
+    bitfields:
+      - name: BIT
+        description: Test bit
+        width: 1
+        offset: 0
+        reset: 0
+
+  - name: REG_B
+    description: Register B
+    address: 1
+    bitfields:
+      - name: BIT
+        description: Test bit
+        width: 1
+        offset: 0
+        reset: 0
+
+  - name: REG_C
+    description: Register C
+    address: 3
+    bitfields:
+      - name: BIT
+        description: Test bit
+        width: 1
+        offset: 0
+        reset: 0

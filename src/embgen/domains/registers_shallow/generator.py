@@ -63,15 +63,31 @@ class RegistersGenerator(DomainGenerator):
 
         registers = layout.physical_registers
         logical_groups = layout.logical_groups
+        logical_group_names = {group.name for group in logical_groups}
+        yaml_standalone_addresses = {
+            reg.name: reg.address for reg in cfg.regmap_shallow if not reg.count
+        }
 
-        standalone_registers = [
-            reg
-            for reg in registers
-            if not (
-                reg.name in {group.name for group in logical_groups}
-                or any(reg.name.startswith(f"{g.name}_") for g in logical_groups)
-            )
-        ]
+        standalone_registers = sorted(
+            [
+                reg.model_copy(
+                    update={
+                        "address": yaml_standalone_addresses.get(
+                            reg.name, reg.address
+                        )
+                    }
+                )
+                for reg in registers
+                if not (
+                    reg.name in logical_group_names
+                    or any(
+                        reg.name.startswith(f"{group_name}_")
+                        for group_name in logical_group_names
+                    )
+                )
+            ],
+            key=lambda reg: reg.address,
+        )
 
         for reg in registers:
             reg.bitfields = sorted(reg.bitfields, key=lambda bf: bf.offset)

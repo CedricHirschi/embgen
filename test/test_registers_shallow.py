@@ -778,6 +778,10 @@ class TestRegisterGroupGeneration:
         return Path(__file__).parent / "configs" / "registers_shallow" / "numbers.yml"
 
     @pytest.fixture
+    def sparse_config(self) -> Path:
+        return Path(__file__).parent / "configs" / "registers_shallow" / "sparse.yml"
+
+    @pytest.fixture
     def generator(self) -> RegistersGenerator:
         return RegistersGenerator()
 
@@ -1083,6 +1087,10 @@ class TestRegisterMapMethods:
         return Path(__file__).parent / "configs" / "registers_shallow" / "numbers.yml"
 
     @pytest.fixture
+    def sparse_config(self) -> Path:
+        return Path(__file__).parent / "configs" / "registers_shallow" / "sparse.yml"
+
+    @pytest.fixture
     def generated_simple(self, simple_config: Path):
         """Generate and import the simple module."""
         import sys
@@ -1198,6 +1206,62 @@ class TestRegisterMapMethods:
             if pkg_name in sys.modules:
                 del sys.modules[pkg_name]
 
+    @pytest.fixture
+    def generated_sparse(self, sparse_config: Path):
+        """Generate and import the sparse module."""
+        import sys
+        import importlib.util
+        import types
+        import warnings
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+            templates = {"py": "template.py.j2"}
+
+            generator = RegistersGenerator()
+            code_gen = CodeGenerator(generator, output_path)
+            code_gen.generate_from_file(sparse_config, templates)
+
+            sys.path.insert(0, str(output_path))
+
+            pkg_name = "sparse_test_pkg"
+            pkg = types.ModuleType(pkg_name)
+            pkg.__path__ = [str(output_path)]
+            sys.modules[pkg_name] = pkg
+
+            base_file = output_path / "sparse_base.py"
+            base_spec = importlib.util.spec_from_file_location(
+                f"{pkg_name}.sparse_base",
+                base_file,
+            )
+            assert base_spec is not None and base_spec.loader is not None
+            base_module = importlib.util.module_from_spec(base_spec)
+            sys.modules[f"{pkg_name}.sparse_base"] = base_module
+            base_spec.loader.exec_module(base_module)
+
+            py_file = output_path / "sparse.py"
+            spec = importlib.util.spec_from_file_location(
+                f"{pkg_name}.sparse",
+                py_file,
+            )
+            assert spec is not None and spec.loader is not None
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[f"{pkg_name}.sparse"] = module
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=SyntaxWarning)
+                spec.loader.exec_module(module)
+
+            yield module
+
+            sys.path.remove(str(output_path))
+            if f"{pkg_name}.sparse" in sys.modules:
+                del sys.modules[f"{pkg_name}.sparse"]
+            if f"{pkg_name}.sparse_base" in sys.modules:
+                del sys.modules[f"{pkg_name}.sparse_base"]
+            if pkg_name in sys.modules:
+                del sys.modules[pkg_name]
+
     def test_registermap_reset_works_with_instance_attrs(self, generated_simple):
         """Test that RegisterMap.reset() works when registers are instance attributes.
 
@@ -1262,6 +1326,31 @@ class TestRegisterMapMethods:
         assert isinstance(registers, dict)
         assert len(registers) > 0
         assert all(isinstance(k, int) for k in registers.keys())
+
+    def test_sparse_register_addresses_come_from_yaml(self, generated_sparse):
+        """Standalone sparse register addresses should match YAML slots."""
+
+        Interface = generated_sparse.Interface
+        Sparse = generated_sparse.Sparse
+
+        rm = Sparse(Interface())
+
+        assert rm.reg_a._address == 0
+        assert rm.reg_b._address == 1
+        assert rm.reg_c._address == 3
+
+    def test_sparse_registermap_helpers_preserve_address_gaps(self, generated_sparse):
+        """RegisterMap helper surfaces should preserve sparse standalone addresses."""
+
+        Interface = generated_sparse.Interface
+        Sparse = generated_sparse.Sparse
+
+        rm = Sparse(Interface())
+
+        assert rm.regmap_addresses == {0, 1, 3}
+        assert set(rm.regmap_registers) == {0, 1, 3}
+        assert rm.regmap_registers[3]._address == 3
+        assert rm.regmap_get_register(3)._address == 3
 
     def test_registermap_reset_with_register_groups(self, generated_numbers):
         """Test that RegisterMap.regmap_reset() works with register groups."""
