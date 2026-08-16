@@ -1,0 +1,8 @@
+id: plugin_ok
+version: 1.0.0
+description: A demo plugin that is correctly configured
+
+contact:
+  author: Cedric Hirschi
+  email: cedr02@live.com
+  repository: https://github.com/CedricHirschi/embgen
