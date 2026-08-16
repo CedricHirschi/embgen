@@ -1,0 +1,27 @@
+---
+description: Built-in domain package layout and DomainGenerator contract
+globs: src/embgen/domains/**
+alwaysApply: false
+---
+
+# Domains
+
+Required layout:
+
+```
+<name>/
+  __init__.py      # `generator = NameGenerator()`
+  generator.py     # DomainGenerator subclass
+  models.py        # Pydantic, subclass BaseConfig
+  templates/       # template.<ext>.j2 and static support files
+```
+
+`name` is the CLI subcommand. `detect()` should match one distinctive YAML key (`commands`, `regmap`, `regmap_shallow`). Do not reuse `methods` without a tighter check; `jsonrpc` and `nanopb` already collide.
+
+`render()` passes a stable, sorted view to Jinja (by id, address, or name). Include `generated_on` when other templates in the domain already do.
+
+`post_generate()` copies static files only when the matching extension was generated, and only if `config.copy_support_files`. Return the copied filenames.
+
+User domains: `embgen new NAME --location DIR` or `EMBGEN_DOMAINS_DIR`. Same `generator` export. User domains override built-ins with the same `name`.
+
+Do not edit `regtool/` copies. See the `registers-regtool` skill for the hjson subprocess path.

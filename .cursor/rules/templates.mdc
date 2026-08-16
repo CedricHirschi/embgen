@@ -1,0 +1,21 @@
+---
+description: Jinja2 template naming and output-flag conventions
+globs: "**/*.j2"
+alwaysApply: false
+---
+
+# Templates
+
+Discovery is filename-based (`embgen.templates.parse_template_name`):
+
+- `template.<ext>.j2` → `--<ext>` → `<output_filename>.<ext>`
+- `template.<group>_multi.<ext>.j2` → `--<group>-multi`
+- `template.<group>_multi.<ext>.<suffix>.j2` → `<output_filename>_<suffix>.<ext>`
+
+Only `.j2` / `.jinja` files are discovered. Static companions (`commands_base.py`, `reg_common.h`) stay non-Jinja and are copied in `post_generate()`.
+
+Leading `_` is **not** skipped by `discover_templates()`. Do not name a partial `template.h.j2` or `_foo.h.j2`; those register as `--h`. Put macros in a `.j2` file whose parsed extension is unused, or keep helpers as Python in the generator.
+
+Jinja: `trim_blocks` and `lstrip_blocks` are on. Prefer `{% if %}` over dumping empty blocks. Sort in `render()`, not ad hoc in every template, when the domain already sorts.
+
+Mark generated files as generated (comment / docstring). Do not hand-edit output under `generated/`.

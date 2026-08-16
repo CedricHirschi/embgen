@@ -1,0 +1,14 @@
+---
+description: Vendored OpenTitan regtool trees are third-party
+globs: src/embgen/domains/**/regtool/**
+alwaysApply: false
+---
+
+# Vendored regtool
+
+These trees are OpenTitan `regtool` / `topgen` copies used when a registers domain emits `.hjson` and shells out to `regtool.py`.
+
+- Do not reformat, rename, or "type-hint" this code.
+- `ty` excludes both `regtool` directories.
+- Change them only when updating the vendor drop or fixing a concrete generation bug the user named.
+- Wrapper logic belongs in `domains/registers/generator.py` or `domains/registers_shallow/generator.py` (and `regtool_layout.py` for shallow).

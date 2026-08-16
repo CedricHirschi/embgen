@@ -1,0 +1,15 @@
+---
+description: Python style for embgen core and domain code
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Python
+
+- Target 3.11+. Use `X | None`, `list[str]`, `dict[str, T]`. No `Optional`/`Dict`/`List` in new code (existing domain models still use `Optional` in places; do not churn them for style).
+- Pydantic v2 only: `model_validate`, `field_validator`, `model_validator`, `computed_field`. Configs subclass `embgen.models.BaseConfig`.
+- `DomainGenerator.validate()` returns `BaseConfig`; use `cast(BaseConfig, MyConfig.model_validate(data))` like existing domains.
+- Google docstrings on public modules, classes, and functions in `src/embgen/` (not domain `generator.py` unless you are documenting a new hook).
+- `from __future__ import annotations` plus `TYPE_CHECKING` for circular imports (`CodeGenerator` <-> `DomainGenerator`).
+- Run tools through `uv run` / `just`. Do not add a `ruff`/`pytest` config unless asked; defaults live in `pyproject.toml` and `Justfile`.
+- Leave `src/embgen/domains/registers/regtool/` and `registers_shallow/regtool/` alone unless the task is explicitly about those trees.

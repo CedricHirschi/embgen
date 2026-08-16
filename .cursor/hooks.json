@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": "py .cursor/hooks/format_python.py",
+        "timeout": 30
+      }
+    ]
+  }
+}

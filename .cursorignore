@@ -1,0 +1,19 @@
+generated/
+reports/
+site/
+.venv/
+.ruff_cache/
+.pytest_cache/
+**/__pycache__/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Copied into docs/ by mkdocs hooks; not source
+docs/README.md
+docs/LICENSE.md
+
+# Huge OpenTitan SystemVerilog/C templates; Python wrappers stay indexed
+src/embgen/domains/registers/regtool/topgen/templates/
+src/embgen/domains/registers_shallow/regtool/topgen/templates/
+

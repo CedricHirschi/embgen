@@ -1,0 +1,13 @@
+---
+description: MkDocs Material docs for embgen
+globs: docs/**/*.md
+alwaysApply: false
+---
+
+# Docs
+
+- Site config: `mkdocs.yml`. Add new pages to `nav` or they will not show.
+- Domain user docs: `docs/domains/`. Extension how-tos: `docs/extending/`. Architecture: `docs/architecture/`.
+- Keep CLI flags in `docs/usage/cli.md` in sync with real `argparse` and discovered templates.
+- Google-style docstrings in Python are picked up by mkdocstrings. Do not duplicate the full API in Markdown; link to the generated reference.
+- `just serve` / `just docs`. Do not commit `site/` or the copied `docs/README.md` / `docs/LICENSE.md` (gitignored, produced by `docs/hooks.py`).

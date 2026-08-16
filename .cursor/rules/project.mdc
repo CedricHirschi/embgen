@@ -1,0 +1,12 @@
+---
+description: Always-on guardrails for the embgen repo
+alwaysApply: true
+---
+
+# embgen guardrails
+
+- Read `AGENTS.md` for the map. Recurring workflows: `.cursor/skills/` (`add-domain`, `add-template`, `debug-generation`, `registers-regtool`).
+- Package manager is `uv`. Task runner is `just`. Do not invent Makefile/tox/poetry flows.
+- Do not edit `src/embgen/domains/*/regtool/` or files under `generated/` / `reports/` / `site/`.
+- New domains export `generator` from `__init__.py`. Template names are the CLI flags (`template.h.j2` → `--h`).
+- `jsonrpc` and `nanopb` both `detect()` on a `methods` key. Do not rely on `embgen auto` to tell them apart.

@@ -5,6 +5,14 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+        }
+    },
     "yaml.schemas": {
         "generated/commands_schema.json": "test/configs/commands/simple.yml",
         "generated/registers_schema.json": [
@@ -13,6 +21,6 @@
             "test/configs/registers/pulser_general.yml",
             "test/configs/registers/numbers.yml",
             "test/configs/registers/soc_ctrl.yml"
-        ],
+        ]
     }
 }

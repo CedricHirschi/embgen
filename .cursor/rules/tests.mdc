@@ -1,0 +1,15 @@
+---
+description: Pytest layout and how to assert generation
+globs: test/**/*.py
+alwaysApply: false
+---
+
+# Tests
+
+- Files: `test/test_*.py`. Classes: `Test*`. Functions: `test_*`.
+- YAML fixtures: `test/configs/<domain>/`. Reuse them; do not inline large maps unless the case is one-off.
+- Generation tests write to `tempfile` directories, not `generated/`.
+- CLI tests use the in-process helper in `test_cli.py` (`run_cli`) unless you need a real subprocess.
+- Assert validation errors with `pytest.raises(ValidationError)`.
+- After adding a domain or template, cover: `detect()`, `validate()` happy/sad paths, at least one `CodeGenerator.generate_from_file` run, and CLI flags if they are new.
+- `just test` is the CI entrypoint (pytest-cov + HTML report). Do not enable xdist; config forces sequential runs.
