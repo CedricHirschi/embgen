@@ -1,3 +1,4 @@
+from embgen.generator import Generator
 from embgen.plugins.discover import discover_plugins
 
 from ..common import PLUGINS_DIR
@@ -16,6 +17,9 @@ def test_discover_ok_plugin():
     assert plugin.contact.author == "Cedric Hirschi"
     assert plugin.contact.email == "cedr02@live.com"
     assert plugin.contact.repository == "https://github.com/CedricHirschi/embgen"
+    assert plugin.generator_class is not Generator
+    assert issubclass(plugin.generator_class, Generator)
+    assert plugin.generator_class().generate("") == "Hello, world!"
 
 
 def test_discover_no_manifest_plugin():
