@@ -1,0 +1,8 @@
+id: plugin_no_generator
+version: 1.0.0
+description: A demo plugin that is missing a generator
+
+contact:
+  author: Cedric Hirschi
+  email: cedr02@live.com
+  repository: https://github.com/CedricHirschi/embgen

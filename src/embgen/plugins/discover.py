@@ -7,40 +7,50 @@ import yaml
 from pydantic import ValidationError
 
 from ..common import log_validation_error
-from ..generator import Generator
+from ..plugin import Generator, Schema
 from .models import Plugin
 
 log = logging.getLogger(__name__)
 
 
-def load_plugin(dir: Path) -> Plugin:
-    if not (embgen_file := dir / "embgen.yml").exists():
-        raise FileNotFoundError(f"embgen.yml not found in {dir.as_posix()}")
-    elif not (generator_file := dir / "generator.py").exists():
-        raise FileNotFoundError(f"generator.py not found in {dir.as_posix()}")
-
-    module_name = f"embgen._plugins.{dir.name}"
-    spec = spec_from_file_location(module_name, generator_file)
+def _load_plugin_file_class(file: Path, base_class: type) -> type:
+    if not file.exists():
+        raise FileNotFoundError(f"{file.as_posix()} not found")
+    module_name = f"embgen._plugins.{file.parent.name}"
+    spec = spec_from_file_location(module_name, file)
     if spec is None or spec.loader is None:
-        raise ImportError(f"Could not load {generator_file.as_posix()}")
-    generator_module = module_from_spec(spec)
-    sys.modules[module_name] = generator_module
-    spec.loader.exec_module(generator_module)
+        raise ImportError(f"Could not load {file.as_posix()}")
+    module = module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
 
-    generator_classes = [
+    classes = [
         cls
-        for cls in generator_module.__dict__.values()
-        if isinstance(cls, type) and issubclass(cls, Generator) and cls is not Generator
+        for cls in module.__dict__.values()
+        if isinstance(cls, type)
+        and issubclass(cls, base_class)
+        and cls is not base_class
     ]
-    if len(generator_classes) != 1:
+    if len(classes) != 1:
         raise ValueError(
-            f"Expected exactly one Generator subclass in {generator_file.as_posix()}, found {len(generator_classes)}"
+            f"Expected exactly one {base_class.__name__} subclass in {file.as_posix()}, found {len(classes)}"
         )
-    generator_class = generator_classes[0]
+
+    return classes[0]
+
+
+def load_plugin(dir: Path) -> Plugin:
+    embgen_file = dir / "embgen.yml"
+    if not embgen_file.exists():
+        raise FileNotFoundError(f"{embgen_file.as_posix()} not found")
+    embgen_config = yaml.safe_load(embgen_file.read_text())
+
+    generator_class = _load_plugin_file_class(dir / "generator.py", Generator)
+    schema_class = _load_plugin_file_class(dir / "schema.py", Schema)
 
     return Plugin.model_validate(
-        yaml.safe_load(embgen_file.read_text()),
-        context={"generator_class": generator_class},
+        embgen_config,
+        context={"generator_class": generator_class, "schema_class": schema_class},
     )
 
 

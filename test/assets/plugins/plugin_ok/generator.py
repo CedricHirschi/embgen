@@ -1,4 +1,4 @@
-from embgen.generator import Generator
+from embgen.plugin import Generator
 
 
 class PluginOkGenerator(Generator):
