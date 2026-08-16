@@ -12,13 +12,16 @@ template.<extension>.j2
 
 Examples:
 
-| Template File    | Output Extension | CLI Flag |
-| ---------------- | ---------------- | -------- |
-| `template.h.j2`  | `.h`             | `--h`    |
-| `template.py.j2` | `.py`            | `--py`   |
-| `template.md.j2` | `.md`            | `--md`   |
-| `template.c.j2`  | `.c`             | `--c`    |
-| `template.rs.j2` | `.rs`            | `--rs`   |
+| Template File         | Output Extension | CLI Flag      |
+| --------------------- | ---------------- | ------------- |
+| `template.h.j2`       | `.h`             | `--h`         |
+| `template.py.j2`      | `.py`            | `--py`        |
+| `template.md.j2`      | `.md`            | `--md`        |
+| `template.c.j2`       | `.c`             | `--c`         |
+| `template.rs.j2`      | `.rs`            | `--rs`        |
+| `template.hjson.j2`   | `.hjson`         | `--hjson`     |
+| `template.proto.j2`   | `.proto`         | `--proto`     |
+| `template.options.j2` | `.options`       | `--options`   |
 
 ## Template Location
 
@@ -251,19 +254,16 @@ Split templates into reusable parts:
 ```
 templates/
 ├── template.h.j2
-├── _macros.h.j2      # Shared macros (not discovered as output)
-└── _types.h.j2       # Shared type definitions
+├── macros.j2             # {% include %} helper (not an output format)
+└── commands_base.py      # Static file, copied in post_generate()
 ```
 
 ```jinja
-{% include "_macros.h.j2" %}
-{% include "_types.h.j2" %}
-
-// Main template content...
+{% include "macros.j2" %}
 ```
 
-!!! note
-    Files starting with `_` are not discovered as output templates.
+!!! warning
+    `discover_templates()` does **not** skip a leading `_`. A file named `_macros.h.j2` is registered as the `--h` template and will overwrite `template.h.j2` if both exist. Helpers should either use an extension you do not emit, or not use `.j2`/`.jinja` at all.
 
 ### Set Variables
 

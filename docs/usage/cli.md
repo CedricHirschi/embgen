@@ -5,8 +5,10 @@ embgen provides a command-line interface for generating code from YAML configura
 ## Basic Syntax
 
 ```bash
-embgen [OPTIONS] COMMAND INPUT -o OUTPUT [FORMAT_FLAGS]
+embgen [OPTIONS] COMMAND [ARGS]
 ```
+
+`-o` / `--output` defaults to `./generated` relative to the current working directory. Format flags still have to be listed (`--h`, `--py`, …).
 
 ## Global Options
 
@@ -21,11 +23,15 @@ embgen [OPTIONS] COMMAND INPUT -o OUTPUT [FORMAT_FLAGS]
 
 ### Domain Subcommands
 
-Each domain is exposed as a subcommand. The built-in domains are:
+Each domain is a subcommand. Built-in names:
 
 ```bash
-embgen commands INPUT -o OUTPUT [FLAGS]   # Generate from command definitions
-embgen registers INPUT -o OUTPUT [FLAGS]  # Generate from register maps
+embgen commands INPUT [FLAGS]              # Command protocols
+embgen registers INPUT [FLAGS]             # Register maps (`regmap`)
+embgen registers_shallow INPUT [FLAGS]     # Register maps (`regmap_shallow`)
+embgen jsonrpc INPUT [FLAGS]               # JSON-RPC methods
+embgen nanopb INPUT [FLAGS]                # NanoPB / protobuf methods
+embgen testing INPUT [FLAGS]               # Test-suite domain only
 ```
 
 ### Auto-detect Domain
@@ -46,7 +52,7 @@ embgen new DOMAIN_NAME [OPTIONS]
 
 | Option            | Description                                              |
 | ----------------- | -------------------------------------------------------- |
-| `--location PATH` | Directory where the domain folder will be created        |
+| `--location PATH` | Directory where the domain folder will be created (default: current directory) |
 | `--builtin`       | Create the domain in embgen's built-in domains directory |
 
 ## Domain-Specific Options
@@ -69,17 +75,44 @@ Each domain defines its own output format flags based on available templates:
 
     | Flag   | Output                                             |
     | ------ | -------------------------------------------------- |
-    | `--h`  | C header file (`commands.h`)                       |
-    | `--py` | Python module (`commands.py` + `commands_base.py`) |
-    | `--md` | Markdown documentation (`commands.md`)             |
+    | `--h`  | C header (`<file>.h`)                              |
+    | `--py` | Python module (`<file>.py` + `<file>_base.py`)     |
+    | `--md` | Markdown documentation (`<file>.md`)               |
 
 === "Registers"
 
-    | Flag   | Output                                         |
-    | ------ | ---------------------------------------------- |
-    | `--h`  | C header file (`<name>.h` + `reg_common.h/.c`) |
-    | `--py` | Python module (`<name>.py`)                    |
-    | `--md` | Markdown documentation (`<name>.md`)           |
+    | Flag        | Output                                                      |
+    | ----------- | ----------------------------------------------------------- |
+    | `--h`       | C header (`<file>.h`)                                       |
+    | `--py`      | Python module (`<file>.py` + `registers_base.py`)           |
+    | `--md`      | Markdown documentation                                      |
+    | `--hjson`   | Hjson, then OpenTitan `regtool.py`                          |
+    | `--c-multi` | `<file>_impl.h`, `<file>_base.h`, `<file>_base.c`           |
+
+=== "Registers (shallow)"
+
+    | Flag      | Output                                            |
+    | --------- | ------------------------------------------------- |
+    | `--h`     | C header                                          |
+    | `--py`    | Python module + `registers_base.py`               |
+    | `--md`    | Markdown                                          |
+    | `--hjson` | Hjson, then `regtool.py` (`*_reg_pkg.sv`, `*_reg_top.sv`) |
+
+=== "JSON-RPC"
+
+    | Flag   | Output   |
+    | ------ | -------- |
+    | `--py` | Python   |
+    | `--md` | Markdown |
+
+=== "NanoPB"
+
+    | Flag        | Output            |
+    | ----------- | ----------------- |
+    | `--proto`   | `.proto`          |
+    | `--options` | NanoPB `.options` |
+    | `--py`      | Python            |
+    | `--md`      | Markdown          |
 
 ## Examples
 
@@ -117,8 +150,11 @@ embgen auto config.yml -o generated/ --h
 
 embgen examines the YAML structure to determine the appropriate domain:
 
-- Files with a `commands` key → Commands domain
-- Files with a `regmap` key → Registers domain
+- `commands` → Commands
+- `regmap` → Registers
+- `regmap_shallow` → Registers (shallow)
+- `methods` → JSON-RPC **or** NanoPB (same key; use an explicit subcommand)
+- `items` (without `commands`/`regmap`) → testing
 
 ### Use Custom Domains
 
@@ -130,6 +166,9 @@ embgen --domains-dir ./my_domains mydom config.yml -o output/ --h
 ### Create a New Domain
 
 ```bash
+# Create in the current directory
+embgen new mydomain
+
 # Create in a custom location
 embgen new mydomain --location ./domains
 

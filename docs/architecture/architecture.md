@@ -30,8 +30,12 @@ flowchart TB
 
     subgraph Domains["Domain Generators"]
         DG["DomainGenerator ABC<br/>(domains/__init__.py)"]
-        CMD["CommandsGenerator<br/>(domains/commands/)"]
-        REG["RegistersGenerator<br/>(domains/registers/)"]
+        CMD["commands/"]
+        REG["registers/"]
+        REGS["registers_shallow/"]
+        RPC["jsonrpc/"]
+        NP["nanopb/"]
+        TST["testing/ (internal)"]
         User_Domain["User Domains<br/>(EMBGEN_DOMAINS_DIR)"]
     end
 
@@ -47,6 +51,10 @@ flowchart TB
     Disc --> |"Find domains"| DG
     DG --> CMD
     DG --> REG
+    DG --> REGS
+    DG --> RPC
+    DG --> NP
+    DG --> TST
     DG --> User_Domain
     CLI --> |"3. Create"| CG
     CG --> |"4. Parse YAML"| YAML
@@ -178,13 +186,15 @@ graph LR
             CMD_Mod["models.py"]
             CMD_Tmpl["templates/"]
         end
-        
+
         subgraph Registers["domains/registers/"]
             REG_Init["__init__.py"]
             REG_Gen["generator.py"]
             REG_Mod["models.py"]
             REG_Tmpl["templates/"]
         end
+
+        Other["registers_shallow/, jsonrpc/, nanopb/, testing/"]
     end
     
     subgraph UserDomains["User Domains (optional)"]
@@ -227,7 +237,7 @@ flowchart LR
 
 ## Key Design Patterns
 
-1. **Abstract Factory**: `DomainGenerator` ABC defines the interface, concrete implementations (CommandsGenerator, RegistersGenerator) are discovered dynamically.
+1. **Abstract Factory**: `DomainGenerator` ABC defines the interface. Concrete implementations (commands, registers, registers_shallow, jsonrpc, nanopb, testing) are discovered dynamically.
 
 2. **Strategy Pattern**: Each domain implements its own validation and rendering strategy.
 

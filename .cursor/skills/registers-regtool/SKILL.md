@@ -33,7 +33,7 @@ python regtool.py -r -t <output_dir> <output>/<name>.hjson
 
 If that subprocess fails, generated RTL/headers will be missing even though the `.hjson` exists. Run the same command manually with `uv run python`.
 
-Support files (`reg_common.h` / `.c`, `registers_base.py`) copy only when `--h` / `--py` ran and `copy_support_files` is true.
+Support files: `registers_base.py` copies when `--py` ran and `copy_support_files` is true. The generator also looks for `reg_common.h` / `.c` on `--h`; those files are not in the tree today, so nothing is copied.
 
 ## YAML gotchas
 

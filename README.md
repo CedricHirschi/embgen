@@ -76,13 +76,15 @@ embgen auto config.yml -o output/ --h
 
 ### Built-in Domains
 
-embgen ships with three built-in domains:
+embgen ships with these built-in domains:
 
-| Domain                                 | Description                  | Output Formats             |
-| -------------------------------------- | ---------------------------- | -------------------------- |
-| [Commands](docs/domains/commands.md)   | Command protocol definitions | C Header, Python, Markdown |
-| [Registers](docs/domains/registers.md) | Hardware register maps       | C Header, Python, Markdown |
-| [JSON-RPC](docs/domains/jsonrpc.md)    | JSON-RPC method definitions  | Python, Markdown           |
+| Domain | Description | Output formats |
+| --- | --- | --- |
+| [Commands](docs/domains/commands.md) | Command protocol definitions | C header, Python, Markdown |
+| [Registers](docs/domains/registers.md) | Hardware register maps (`regmap`) | C, Python, Markdown, Hjson, C multifile |
+| [Registers (shallow)](docs/domains/registers_shallow.md) | Register maps with OpenTitan `count` / packing | C, Python, Markdown, Hjson |
+| [JSON-RPC](docs/domains/jsonrpc.md) | JSON-RPC method definitions | Python, Markdown |
+| [NanoPB](docs/domains/nanopb.md) | Method lists for nanopb | Protobuf, options, Python, Markdown |
 
 ## Documentation
 
@@ -90,7 +92,7 @@ You can view the full documentation on [github.io](https://cedrichirschi.github.
 
 - [CLI Usage](docs/usage/cli.md): Complete command-line reference
 - [Python API](docs/usage/python-api.md): Using embgen as a library
-- [Built-in Domains](docs/domains/index.md): Commands and Registers documentation
+- [Built-in Domains](docs/domains/index.md): Commands, registers, JSON-RPC, NanoPB
 - [Creating Domains](docs/extending/index.md): How to create custom domains
 - [Architecture](docs/architecture/architecture.md): Internal design and module structure
 

@@ -229,4 +229,4 @@ code_gen.generate_from_file(Path("commands.yml"), templates)
 
 ## Post-Generation Files
 
-When generating Python output (`--py`), the Commands domain automatically copies `commands_base.py` to the output directory. This file contains base classes for command serialization and deserialization.
+When generating Python output (`--py`) and `copy_support_files` is true (the default), the Commands domain copies `commands_base.py` to `<support_file>.py` (default `<file>_base.py`). Set `copy_support_files: false` in YAML to skip it.

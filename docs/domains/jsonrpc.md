@@ -170,11 +170,6 @@ code_gen.generate_from_file(Path("api.yml"), templates)
 
 ## Auto-Detection
 
-The JSON-RPC domain is detected when the YAML file contains a `methods` key:
+`detect()` is true when the YAML has a `methods` key. The NanoPB domain uses the same key, and `embgen auto` returns whichever generator is first in discovery order.
 
-```yaml
-# Detected as JSON-RPC domain
-name: MyAPI
-methods:
-  - name: ping
-```
+Always call `embgen jsonrpc` when you mean this domain.

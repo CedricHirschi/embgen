@@ -60,6 +60,9 @@ FILE_TYPES = {
     "sv": "SystemVerilog",
     "v": "Verilog",
     "vhd": "VHDL",
+    "hjson": "Hjson",
+    "proto": "Protobuf",
+    "options": "NanoPB Options",
 }
 
 

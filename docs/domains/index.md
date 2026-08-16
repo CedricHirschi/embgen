@@ -1,74 +1,57 @@
 # Built-in Domains
 
-embgen includes three built-in domains for common embedded systems code generation tasks:
+embgen ships with these domains. Each one is a CLI subcommand (`embgen <domain> ...`).
 
-## [Commands](commands.md)
+## User-facing
 
-Generate code from command protocol definitions. Perfect for:
+| Domain | YAML key | What it generates |
+| --- | --- | --- |
+| [Commands](commands.md) | `commands` | Command protocol C header, Python, Markdown |
+| [Registers](registers.md) | `regmap` | Register map C, Python, Markdown, Hjson (OpenTitan regtool) |
+| [Registers (shallow)](registers_shallow.md) | `regmap_shallow` | Same idea, with OpenTitan-style `count` / packed multiregs |
+| [JSON-RPC](jsonrpc.md) | `methods` | JSON-RPC client Python and Markdown |
+| [NanoPB](nanopb.md) | `methods` | Protobuf + NanoPB options, Python, Markdown |
 
-- Embedded communication protocols
-- Serial command interfaces  
-- RPC-style APIs between host and device
-- Test automation interfaces
+## Internal
 
-**Output Formats:**
+`testing` (`items` key) exists for the test suite. It is not a product domain.
 
-- **C Header** — Command IDs, argument structures, enumerations
-- **Python** — Dataclasses with serialization/deserialization
-- **Markdown** — Human-readable documentation
+## Domain detection
 
-## [Registers](registers.md)
+`embgen auto` walks discovered generators and takes the **first** `detect()` that returns true.
 
-Generate code from hardware register map definitions. Perfect for:
+| YAML key | Domain |
+| --- | --- |
+| `commands` | Commands |
+| `regmap` | Registers |
+| `regmap_shallow` | Registers (shallow) |
+| `methods` | JSON-RPC **or** NanoPB (same key) |
+| `items` (and no `commands`/`regmap`) | testing |
 
-- MCU peripheral drivers
-- FPGA register interfaces
-- Hardware abstraction layers
-- Register documentation
-
-**Output Formats:**
-
-- **C Header** — Addresses, bitfield macros, accessor functions
-- **Python** — Register classes with bit manipulation
-- **Markdown** — Documentation with bit-level layouts
-
-## [JSON-RPC](jsonrpc.md)
-
-Generate client-side code from JSON-RPC method definitions. Perfect for:
-
-- JSON-RPC API client libraries
-- Host-side wrappers for embedded devices
-- API documentation
-
-**Output Formats:**
-
-- **Python** — Typed method classes with enum support
-- **Markdown** — Human-readable API documentation
-
-## Domain Detection
-
-When using `embgen auto`, the domain is detected by examining the YAML structure:
-
-| YAML Key   | Detected Domain |
-| ---------- | --------------- |
-| `commands` | Commands        |
-| `regmap`   | Registers       |
-| `methods`  | JSON-RPC        |
+`jsonrpc` and `nanopb` both look for `methods`. Do not use `embgen auto` to choose between them; call `embgen jsonrpc` or `embgen nanopb`.
 
 ```yaml
-# Detected as Commands domain
+# Commands
 name: MyCommands
 commands:
   - name: ping
     id: 0
 
-# Detected as Registers domain  
+# Registers
 name: MyRegisters
 regmap:
   - name: CONTROL
     address: 0x00
+    bitfields: []
 
-# Detected as JSON-RPC domain
+# Registers (shallow)
+name: MyRegisters
+regmap_shallow:
+  - name: CONTROL
+    address: 0x00
+    bitfields: []
+
+# JSON-RPC or NanoPB — pick the subcommand yourself
 name: MyAPI
 methods:
   - name: ping

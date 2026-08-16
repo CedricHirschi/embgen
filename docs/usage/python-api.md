@@ -92,7 +92,8 @@ from embgen.discovery import discover_domains
 
 # Discover built-in domains only
 domains = discover_domains()
-# Returns: {"commands": CommandsGenerator, "registers": RegistersGenerator}
+# Returns: {"commands": ..., "registers": ..., "registers_shallow": ...,
+#           "jsonrpc": ..., "nanopb": ..., "testing": ...}
 
 # Include custom domains directory
 domains = discover_domains(extra_domains_dir=Path("/path/to/domains"))
@@ -114,7 +115,7 @@ generator = detect_domain(data)
 generator = detect_domain(data, extra_domains_dir=Path("/path/to/domains"))
 ```
 
-Returns the matching `DomainGenerator` instance, or `None` if no domain matches the YAML data.
+Returns the **first** matching `DomainGenerator` (discovery dict order), or `None` if no domain matches. `jsonrpc` and `nanopb` both `detect()` on a `methods` key, so pick the generator from `discover_domains()["jsonrpc"]` / `["nanopb"]` instead of relying on `detect_domain`.
 
 ## Template Discovery
 
@@ -282,9 +283,9 @@ if __name__ == "__main__":
 
 ## Error Handling
 
-```python
-from pydantic import ValidationError
+`CodeGenerator.validate()` wraps domain/Pydantic failures in `RuntimeError`. `parse_yaml()` raises `FileNotFoundError` or `RuntimeError`.
 
+```python
 try:
     config = code_gen.validate(data)
 except RuntimeError as e:

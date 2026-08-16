@@ -16,7 +16,9 @@ nav:
       - Overview: domains/index.md
       - Commands: domains/commands.md
       - Registers: domains/registers.md
+      - Registers (shallow): domains/registers_shallow.md
       - JSON-RPC: domains/jsonrpc.md
+      - NanoPB: domains/nanopb.md
   - Extending embgen:
       - Overview: extending/index.md
       - Writing Models: extending/models.md
@@ -27,7 +29,7 @@ nav:
       - Architecture Overview: architecture/architecture.md
       - Full Python API Reference: architecture/full-api.md
 
-copyright: Copyright &copy; 2025 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
+copyright: Copyright &copy; 2026 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
 
 theme:
   name: material
