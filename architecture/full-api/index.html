@@ -960,6 +960,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#embgen.models.BaseConfig.support_output_filename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;support_output_filename
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1098,6 +1109,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;parse_template_name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embgen.templates.regex_replace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;regex_replace
       
     </span>
   </a>
@@ -1358,6 +1380,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#embgen.models.BaseConfig.support_output_filename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;support_output_filename
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1496,6 +1529,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;parse_template_name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embgen.templates.regex_replace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;regex_replace
       
     </span>
   </a>
@@ -1931,7 +1975,7 @@ template rendering and file I/O.</p>
 
 
 <a href="#embgen.generator.CodeGenerator.__init__" class="headerlink" title="Permanent link">&para;</a></h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">__init__</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">__init__</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">json_schema</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1980,6 +2024,22 @@ template rendering and file I/O.</p>
             </td>
             <td>
                 <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>json_schema</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to output JSON Schema files.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
             </td>
           </tr>
       </tbody>
@@ -2827,6 +2887,30 @@ template rendering and file I/O.</p>
 
 </div>
 
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="embgen.models.BaseConfig.support_output_filename" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">support_output_filename</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#embgen.models.BaseConfig.support_output_filename" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">support_output_filename</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Get the support output filename, if specified.</p>
+
+    </div>
+
+</div>
+
 
 
 
@@ -3452,6 +3536,26 @@ functions that are automatically available to all templates, such as:</p>
 
 </div>
 
+<div class="doc doc-object doc-function">
+
+
+<h3 id="embgen.templates.regex_replace" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">regex_replace</span>
+
+
+<a href="#embgen.templates.regex_replace" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">regex_replace</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">replacement</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Replace pattern in string using regex.</p>
+
+
+    </div>
+
+</div>
+
 
 
   </div>
@@ -3520,7 +3624,7 @@ functions that are automatically available to all templates, such as:</p>
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2025 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
+      Copyright &copy; 2026 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
     </div>
   
   

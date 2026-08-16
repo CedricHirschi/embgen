@@ -1093,25 +1093,40 @@
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>embgen<span class="w"> </span>auto<span class="w"> </span>config.yml<span class="w"> </span>-o<span class="w"> </span>output/<span class="w"> </span>--h
 </span></code></pre></div>
 <h3 id="built-in-domains">Built-in Domains<a class="headerlink" href="#built-in-domains" title="Permanent link">&para;</a></h3>
-<p>embgen ships with two built-in domains:</p>
+<p>embgen ships with these built-in domains:</p>
 <table>
 <thead>
 <tr>
 <th>Domain</th>
 <th>Description</th>
-<th>Output Formats</th>
+<th>Output formats</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><a href="domains/commands/">Commands</a></td>
 <td>Command protocol definitions</td>
-<td>C Header, Python, Markdown</td>
+<td>C header, Python, Markdown</td>
 </tr>
 <tr>
 <td><a href="domains/registers/">Registers</a></td>
-<td>Hardware register maps</td>
-<td>C Header, Python, Markdown</td>
+<td>Hardware register maps (<code>regmap</code>)</td>
+<td>C, Python, Markdown, Hjson, C multifile</td>
+</tr>
+<tr>
+<td><a href="domains/registers_shallow/">Registers (shallow)</a></td>
+<td>Register maps with OpenTitan <code>count</code> / packing</td>
+<td>C, Python, Markdown, Hjson</td>
+</tr>
+<tr>
+<td><a href="domains/jsonrpc/">JSON-RPC</a></td>
+<td>JSON-RPC method definitions</td>
+<td>Python, Markdown</td>
+</tr>
+<tr>
+<td><a href="domains/nanopb/">NanoPB</a></td>
+<td>Method lists for nanopb</td>
+<td>Protobuf, options, Python, Markdown</td>
 </tr>
 </tbody>
 </table>
@@ -1120,7 +1135,7 @@
 <ul>
 <li><a href="usage/cli/">CLI Usage</a>: Complete command-line reference</li>
 <li><a href="usage/python-api/">Python API</a>: Using embgen as a library</li>
-<li><a href="domains/">Built-in Domains</a>: Commands and Registers documentation</li>
+<li><a href="domains/">Built-in Domains</a>: Commands, registers, JSON-RPC, NanoPB</li>
 <li><a href="extending/">Creating Domains</a>: How to create custom domains</li>
 <li><a href="architecture/architecture/">Architecture</a>: Internal design and module structure</li>
 </ul>
@@ -1187,7 +1202,7 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2025 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
+      Copyright &copy; 2026 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
     </div>
   
   

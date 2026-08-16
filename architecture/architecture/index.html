@@ -983,8 +983,12 @@
 
     subgraph Domains["Domain Generators"]
         DG["DomainGenerator ABC&lt;br/&gt;(domains/__init__.py)"]
-        CMD["CommandsGenerator&lt;br/&gt;(domains/commands/)"]
-        REG["RegistersGenerator&lt;br/&gt;(domains/registers/)"]
+        CMD["commands/"]
+        REG["registers/"]
+        REGS["registers_shallow/"]
+        RPC["jsonrpc/"]
+        NP["nanopb/"]
+        TST["testing/ (internal)"]
         User_Domain["User Domains&lt;br/&gt;(EMBGEN_DOMAINS_DIR)"]
     end
 
@@ -1000,6 +1004,10 @@
     Disc --&gt; |"Find domains"| DG
     DG --&gt; CMD
     DG --&gt; REG
+    DG --&gt; REGS
+    DG --&gt; RPC
+    DG --&gt; NP
+    DG --&gt; TST
     DG --&gt; User_Domain
     CLI --&gt; |"3. Create"| CG
     CG --&gt; |"4. Parse YAML"| YAML
@@ -1126,6 +1134,8 @@
             REG_Mod["models.py"]
             REG_Tmpl["templates/"]
         end
+
+        Other["registers_shallow/, jsonrpc/, nanopb/, testing/"]
     end
 
     subgraph UserDomains["User Domains (optional)"]
@@ -1163,7 +1173,7 @@
 <h2 id="key-design-patterns">Key Design Patterns<a class="headerlink" href="#key-design-patterns" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
-<p><strong>Abstract Factory</strong>: <code>DomainGenerator</code> ABC defines the interface, concrete implementations (CommandsGenerator, RegistersGenerator) are discovered dynamically.</p>
+<p><strong>Abstract Factory</strong>: <code>DomainGenerator</code> ABC defines the interface. Concrete implementations (commands, registers, registers_shallow, jsonrpc, nanopb, testing) are discovered dynamically.</p>
 </li>
 <li>
 <p><strong>Strategy Pattern</strong>: Each domain implements its own validation and rendering strategy.</p>
@@ -1257,7 +1267,7 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2025 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
+      Copyright &copy; 2026 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
     </div>
   
   

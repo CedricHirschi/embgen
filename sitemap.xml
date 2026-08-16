@@ -2,58 +2,70 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://CedricHirschi.github.io/embgen/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/LICENSE/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/architecture/architecture/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/architecture/full-api/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/domains/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/domains/commands/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
+    </url>
+    <url>
+         <loc>https://CedricHirschi.github.io/embgen/domains/jsonrpc/</loc>
+         <lastmod>2026-08-16</lastmod>
+    </url>
+    <url>
+         <loc>https://CedricHirschi.github.io/embgen/domains/nanopb/</loc>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/domains/registers/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
+    </url>
+    <url>
+         <loc>https://CedricHirschi.github.io/embgen/domains/registers_shallow/</loc>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/extending/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/extending/generators/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/extending/models/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/extending/multifile/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/extending/templates/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/usage/cli/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
     <url>
          <loc>https://CedricHirschi.github.io/embgen/usage/python-api/</loc>
-         <lastmod>2026-01-05</lastmod>
+         <lastmod>2026-08-16</lastmod>
     </url>
 </urlset>

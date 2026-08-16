@@ -626,10 +626,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#commands" class="md-nav__link">
+  <a href="#user-facing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Commands
+        User-facing
       
     </span>
   </a>
@@ -637,10 +637,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#registers" class="md-nav__link">
+  <a href="#internal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Registers
+        Internal
       
     </span>
   </a>
@@ -651,7 +651,7 @@
   <a href="#domain-detection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Domain Detection
+        Domain detection
       
     </span>
   </a>
@@ -710,6 +710,90 @@
     
   
     Registers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="registers_shallow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registers (shallow)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="jsonrpc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON-RPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="nanopb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NanoPB
   
 
     
@@ -859,10 +943,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#commands" class="md-nav__link">
+  <a href="#user-facing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Commands
+        User-facing
       
     </span>
   </a>
@@ -870,10 +954,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#registers" class="md-nav__link">
+  <a href="#internal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Registers
+        Internal
       
     </span>
   </a>
@@ -884,7 +968,7 @@
   <a href="#domain-detection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Domain Detection
+        Domain detection
       
     </span>
   </a>
@@ -918,42 +1002,53 @@
 
 
 <h1 id="built-in-domains">Built-in Domains<a class="headerlink" href="#built-in-domains" title="Permanent link">&para;</a></h1>
-<p>embgen includes two built-in domains for common embedded systems code generation tasks:</p>
-<h2 id="commands"><a href="commands/">Commands</a><a class="headerlink" href="#commands" title="Permanent link">&para;</a></h2>
-<p>Generate code from command protocol definitions. Perfect for:</p>
-<ul>
-<li>Embedded communication protocols</li>
-<li>Serial command interfaces  </li>
-<li>RPC-style APIs between host and device</li>
-<li>Test automation interfaces</li>
-</ul>
-<p><strong>Output Formats:</strong></p>
-<ul>
-<li><strong>C Header</strong> — Command IDs, argument structures, enumerations</li>
-<li><strong>Python</strong> — Dataclasses with serialization/deserialization</li>
-<li><strong>Markdown</strong> — Human-readable documentation</li>
-</ul>
-<h2 id="registers"><a href="registers/">Registers</a><a class="headerlink" href="#registers" title="Permanent link">&para;</a></h2>
-<p>Generate code from hardware register map definitions. Perfect for:</p>
-<ul>
-<li>MCU peripheral drivers</li>
-<li>FPGA register interfaces</li>
-<li>Hardware abstraction layers</li>
-<li>Register documentation</li>
-</ul>
-<p><strong>Output Formats:</strong></p>
-<ul>
-<li><strong>C Header</strong> — Addresses, bitfield macros, accessor functions</li>
-<li><strong>Python</strong> — Register classes with bit manipulation</li>
-<li><strong>Markdown</strong> — Documentation with bit-level layouts</li>
-</ul>
-<h2 id="domain-detection">Domain Detection<a class="headerlink" href="#domain-detection" title="Permanent link">&para;</a></h2>
-<p>When using <code>embgen auto</code>, the domain is detected by examining the YAML structure:</p>
+<p>embgen ships with these domains. Each one is a CLI subcommand (<code>embgen &lt;domain&gt; ...</code>).</p>
+<h2 id="user-facing">User-facing<a class="headerlink" href="#user-facing" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>YAML Key</th>
-<th>Detected Domain</th>
+<th>Domain</th>
+<th>YAML key</th>
+<th>What it generates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="commands/">Commands</a></td>
+<td><code>commands</code></td>
+<td>Command protocol C header, Python, Markdown</td>
+</tr>
+<tr>
+<td><a href="registers/">Registers</a></td>
+<td><code>regmap</code></td>
+<td>Register map C, Python, Markdown, Hjson (OpenTitan regtool)</td>
+</tr>
+<tr>
+<td><a href="registers_shallow/">Registers (shallow)</a></td>
+<td><code>regmap_shallow</code></td>
+<td>Same idea, with OpenTitan-style <code>count</code> / packed multiregs</td>
+</tr>
+<tr>
+<td><a href="jsonrpc/">JSON-RPC</a></td>
+<td><code>methods</code></td>
+<td>JSON-RPC client Python and Markdown</td>
+</tr>
+<tr>
+<td><a href="nanopb/">NanoPB</a></td>
+<td><code>methods</code></td>
+<td>Protobuf + NanoPB options, Python, Markdown</td>
+</tr>
+</tbody>
+</table>
+<h2 id="internal">Internal<a class="headerlink" href="#internal" title="Permanent link">&para;</a></h2>
+<p><code>testing</code> (<code>items</code> key) exists for the test suite. It is not a product domain.</p>
+<h2 id="domain-detection">Domain detection<a class="headerlink" href="#domain-detection" title="Permanent link">&para;</a></h2>
+<p><code>embgen auto</code> walks discovered generators and takes the <strong>first</strong> <code>detect()</code> that returns true.</p>
+<table>
+<thead>
+<tr>
+<th>YAML key</th>
+<th>Domain</th>
 </tr>
 </thead>
 <tbody>
@@ -965,19 +1060,45 @@
 <td><code>regmap</code></td>
 <td>Registers</td>
 </tr>
+<tr>
+<td><code>regmap_shallow</code></td>
+<td>Registers (shallow)</td>
+</tr>
+<tr>
+<td><code>methods</code></td>
+<td>JSON-RPC <strong>or</strong> NanoPB (same key)</td>
+</tr>
+<tr>
+<td><code>items</code> (and no <code>commands</code>/<code>regmap</code>)</td>
+<td>testing</td>
+</tr>
 </tbody>
 </table>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Detected as Commands domain</span>
+<p><code>jsonrpc</code> and <code>nanopb</code> both look for <code>methods</code>. Do not use <code>embgen auto</code> to choose between them; call <code>embgen jsonrpc</code> or <code>embgen nanopb</code>.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Commands</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyCommands</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nt">commands</span><span class="p">:</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ping</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Detected as Registers domain  </span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Registers</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyRegisters</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="nt">regmap</span><span class="p">:</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CONTROL</span>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x00</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="nt">bitfields</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="c1"># Registers (shallow)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyRegisters</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="nt">regmap_shallow</span><span class="p">:</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CONTROL</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x00</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="nt">bitfields</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="c1"># JSON-RPC or NanoPB — pick the subcommand yourself</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyAPI</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="nt">methods</span><span class="p">:</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ping</span>
 </span></code></pre></div>
 
 
@@ -1056,7 +1177,7 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2025 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
+      Copyright &copy; 2026 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
     </div>
   
   

@@ -1580,6 +1580,21 @@
 <td><code>.rs</code></td>
 <td><code>--rs</code></td>
 </tr>
+<tr>
+<td><code>template.hjson.j2</code></td>
+<td><code>.hjson</code></td>
+<td><code>--hjson</code></td>
+</tr>
+<tr>
+<td><code>template.proto.j2</code></td>
+<td><code>.proto</code></td>
+<td><code>--proto</code></td>
+</tr>
+<tr>
+<td><code>template.options.j2</code></td>
+<td><code>.options</code></td>
+<td><code>--options</code></td>
+</tr>
 </tbody>
 </table>
 <h2 id="template-location">Template Location<a class="headerlink" href="#template-location" title="Permanent link">&para;</a></h2>
@@ -1787,17 +1802,14 @@
 <p>Split templates into reusable parts:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>templates/
 </span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>├── template.h.j2
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>├── _macros.h.j2      # Shared macros (not discovered as output)
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>└── _types.h.j2       # Shared type definitions
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>├── macros.j2             # {% include %} helper (not an output format)
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>└── commands_base.py      # Static file, copied in post_generate()
 </span></code></pre></div>
-<div class="language-jinja highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="cp">{%</span> <span class="k">include</span> <span class="s2">&quot;_macros.h.j2&quot;</span> <span class="cp">%}</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="cp">{%</span> <span class="k">include</span> <span class="s2">&quot;_types.h.j2&quot;</span> <span class="cp">%}</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="x">// Main template content...</span>
+<div class="language-jinja highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="cp">{%</span> <span class="k">include</span> <span class="s2">&quot;macros.j2&quot;</span> <span class="cp">%}</span>
 </span></code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Files starting with <code>_</code> are not discovered as output templates.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code>discover_templates()</code> does <strong>not</strong> skip a leading <code>_</code>. A file named <code>_macros.h.j2</code> is registered as the <code>--h</code> template and will overwrite <code>template.h.j2</code> if both exist. Helpers should either use an extension you do not emit, or not use <code>.j2</code>/<code>.jinja</code> at all.</p>
 </div>
 <h3 id="set-variables">Set Variables<a class="headerlink" href="#set-variables" title="Permanent link">&para;</a></h3>
 <div class="language-jinja highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="cp">{%</span> <span class="k">set</span> <span class="nv">sorted_items</span> <span class="o">=</span> <span class="nv">config.items</span> <span class="o">|</span> <span class="nf">sort</span><span class="o">(</span><span class="nv">attribute</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="o">)</span> <span class="cp">%}</span>
@@ -1934,7 +1946,7 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2025 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
+      Copyright &copy; 2026 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
     </div>
   
   

@@ -683,10 +683,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generate_from_fileinput_path-path-templates-dict---liststr" class="md-nav__link">
+  <a href="#generate_from_fileinput_path-path-templates-dict--none--none-multifile_groups-dict--none--none---liststr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        generate_from_file(input_path: Path, templates: dict) -&gt; list[str]
+        generate_from_file(input_path: Path, templates: dict | None = None, multifile_groups: dict | None = None) -&gt; list[str]
       
     </span>
   </a>
@@ -694,10 +694,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generateconfig-baseconfig-templates-dict---liststr" class="md-nav__link">
+  <a href="#generateconfig-baseconfig-templates-dict--none--none-multifile_groups-dict--none--none---liststr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        generate(config: BaseConfig, templates: dict) -&gt; list[str]
+        generate(config: BaseConfig, templates: dict | None = None, multifile_groups: dict | None = None) -&gt; list[str]
       
     </span>
   </a>
@@ -1173,10 +1173,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generate_from_fileinput_path-path-templates-dict---liststr" class="md-nav__link">
+  <a href="#generate_from_fileinput_path-path-templates-dict--none--none-multifile_groups-dict--none--none---liststr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        generate_from_file(input_path: Path, templates: dict) -&gt; list[str]
+        generate_from_file(input_path: Path, templates: dict | None = None, multifile_groups: dict | None = None) -&gt; list[str]
       
     </span>
   </a>
@@ -1184,10 +1184,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generateconfig-baseconfig-templates-dict---liststr" class="md-nav__link">
+  <a href="#generateconfig-baseconfig-templates-dict--none--none-multifile_groups-dict--none--none---liststr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        generate(config: BaseConfig, templates: dict) -&gt; list[str]
+        generate(config: BaseConfig, templates: dict | None = None, multifile_groups: dict | None = None) -&gt; list[str]
       
     </span>
   </a>
@@ -1462,6 +1462,11 @@
 <td><code>Path</code></td>
 <td>Directory for output files</td>
 </tr>
+<tr>
+<td><code>json_schema</code></td>
+<td><code>bool</code></td>
+<td>Whether to output a JSON Schema file (default: <code>False</code>)</td>
+</tr>
 </tbody>
 </table>
 <h4 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h4>
@@ -1473,12 +1478,12 @@
 <p>Validate YAML data against the domain schema.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">code_gen</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </span></code></pre></div>
-<h5 id="generate_from_fileinput_path-path-templates-dict---liststr"><code>generate_from_file(input_path: Path, templates: dict) -&gt; list[str]</code><a class="headerlink" href="#generate_from_fileinput_path-path-templates-dict---liststr" title="Permanent link">&para;</a></h5>
+<h5 id="generate_from_fileinput_path-path-templates-dict--none--none-multifile_groups-dict--none--none---liststr"><code>generate_from_file(input_path: Path, templates: dict | None = None, multifile_groups: dict | None = None) -&gt; list[str]</code><a class="headerlink" href="#generate_from_fileinput_path-path-templates-dict--none--none-multifile_groups-dict--none--none---liststr" title="Permanent link">&para;</a></h5>
 <p>Generate output files from a YAML input file.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">templates</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;h&quot;</span><span class="p">:</span> <span class="s2">&quot;template.h.j2&quot;</span><span class="p">,</span> <span class="s2">&quot;md&quot;</span><span class="p">:</span> <span class="s2">&quot;template.md.j2&quot;</span><span class="p">}</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">filenames</span> <span class="o">=</span> <span class="n">code_gen</span><span class="o">.</span><span class="n">generate_from_file</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;config.yml&quot;</span><span class="p">),</span> <span class="n">templates</span><span class="p">)</span>
 </span></code></pre></div>
-<h5 id="generateconfig-baseconfig-templates-dict---liststr"><code>generate(config: BaseConfig, templates: dict) -&gt; list[str]</code><a class="headerlink" href="#generateconfig-baseconfig-templates-dict---liststr" title="Permanent link">&para;</a></h5>
+<h5 id="generateconfig-baseconfig-templates-dict--none--none-multifile_groups-dict--none--none---liststr"><code>generate(config: BaseConfig, templates: dict | None = None, multifile_groups: dict | None = None) -&gt; list[str]</code><a class="headerlink" href="#generateconfig-baseconfig-templates-dict--none--none-multifile_groups-dict--none--none---liststr" title="Permanent link">&para;</a></h5>
 <p>Generate output files from an already-validated configuration.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">code_gen</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">filenames</span> <span class="o">=</span> <span class="n">code_gen</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">templates</span><span class="p">)</span>
@@ -1490,21 +1495,25 @@
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># Discover built-in domains only</span>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">domains</span> <span class="o">=</span> <span class="n">discover_domains</span><span class="p">()</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># Returns: {&quot;commands&quot;: CommandsGenerator, &quot;registers&quot;: RegistersGenerator}</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># Include custom domains directory</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">domains</span> <span class="o">=</span> <span class="n">discover_domains</span><span class="p">(</span><span class="n">extra_domains_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/path/to/domains&quot;</span><span class="p">))</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># Returns: {&quot;commands&quot;: ..., &quot;registers&quot;: ..., &quot;registers_shallow&quot;: ...,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="c1">#           &quot;jsonrpc&quot;: ..., &quot;nanopb&quot;: ..., &quot;testing&quot;: ...}</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="c1"># Include custom domains directory</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="n">domains</span> <span class="o">=</span> <span class="n">discover_domains</span><span class="p">(</span><span class="n">extra_domains_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/path/to/domains&quot;</span><span class="p">))</span>
 </span></code></pre></div>
 <h3 id="detect_domain">detect_domain<a class="headerlink" href="#detect_domain" title="Permanent link">&para;</a></h3>
 <p>Auto-detect which domain should handle given YAML data.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">embgen.discovery</span><span class="w"> </span><span class="kn">import</span> <span class="n">detect_domain</span><span class="p">,</span> <span class="n">discover_domains</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">embgen.discovery</span><span class="w"> </span><span class="kn">import</span> <span class="n">detect_domain</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">domains</span> <span class="o">=</span> <span class="n">discover_domains</span><span class="p">()</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;MyCommands&quot;</span><span class="p">,</span> <span class="s2">&quot;commands&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]}</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">domain_name</span> <span class="o">=</span> <span class="n">detect_domain</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">domains</span><span class="p">)</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Returns: &quot;commands&quot;</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;MyCommands&quot;</span><span class="p">,</span> <span class="s2">&quot;commands&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]}</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">generator</span> <span class="o">=</span> <span class="n">detect_domain</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># Returns: CommandsGenerator instance, or None if not detected</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># With a custom domains directory</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="n">generator</span> <span class="o">=</span> <span class="n">detect_domain</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extra_domains_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/path/to/domains&quot;</span><span class="p">))</span>
 </span></code></pre></div>
+<p>Returns the <strong>first</strong> matching <code>DomainGenerator</code> (discovery dict order), or <code>None</code> if no domain matches. <code>jsonrpc</code> and <code>nanopb</code> both <code>detect()</code> on a <code>methods</code> key, so pick the generator from <code>discover_domains()["jsonrpc"]</code> / <code>["nanopb"]</code> instead of relying on <code>detect_domain</code>.</p>
 <h2 id="template-discovery">Template Discovery<a class="headerlink" href="#template-discovery" title="Permanent link">&para;</a></h2>
 <h3 id="discover_templates">discover_templates<a class="headerlink" href="#discover_templates" title="Permanent link">&para;</a></h3>
 <p>Discover available templates for a domain.</p>
@@ -1643,17 +1652,16 @@
 </span><span id="__span-14-34"><a id="__codelineno-14-34" name="__codelineno-14-34" href="#__codelineno-14-34"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span><span class="si">}</span><span class="s2"> files: </span><span class="si">{</span><span class="n">files</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationError</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="k">try</span><span class="p">:</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">code_gen</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="k">try</span><span class="p">:</span>
-</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">code_gen</span><span class="o">.</span><span class="n">parse_yaml</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;missing.yml&quot;</span><span class="p">))</span>
-</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File not found: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<p><code>CodeGenerator.validate()</code> wraps domain/Pydantic failures in <code>RuntimeError</code>. <code>parse_yaml()</code> raises <code>FileNotFoundError</code> or <code>RuntimeError</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">try</span><span class="p">:</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">code_gen</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="k">try</span><span class="p">:</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">code_gen</span><span class="o">.</span><span class="n">parse_yaml</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;missing.yml&quot;</span><span class="p">))</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File not found: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 
 
@@ -1732,7 +1740,7 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2025 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
+      Copyright &copy; 2026 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
     </div>
   
   

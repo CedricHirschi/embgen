@@ -806,6 +806,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../registers_shallow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registers (shallow)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jsonrpc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON-RPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../nanopb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NanoPB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1343,7 +1427,7 @@
 </span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="n">code_gen</span><span class="o">.</span><span class="n">generate_from_file</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;commands.yml&quot;</span><span class="p">),</span> <span class="n">templates</span><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="post-generation-files">Post-Generation Files<a class="headerlink" href="#post-generation-files" title="Permanent link">&para;</a></h2>
-<p>When generating Python output (<code>--py</code>), the Commands domain automatically copies <code>commands_base.py</code> to the output directory. This file contains base classes for command serialization and deserialization.</p>
+<p>When generating Python output (<code>--py</code>) and <code>copy_support_files</code> is true (the default), the Commands domain copies <code>commands_base.py</code> to <code>&lt;support_file&gt;.py</code> (default <code>&lt;file&gt;_base.py</code>). Set <code>copy_support_files: false</code> in YAML to skip it.</p>
 
 
 
@@ -1421,7 +1505,7 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2025 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
+      Copyright &copy; 2026 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
     </div>
   
   

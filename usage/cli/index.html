@@ -1380,8 +1380,9 @@
 <h1 id="cli-usage">CLI Usage<a class="headerlink" href="#cli-usage" title="Permanent link">&para;</a></h1>
 <p>embgen provides a command-line interface for generating code from YAML configuration files.</p>
 <h2 id="basic-syntax">Basic Syntax<a class="headerlink" href="#basic-syntax" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>embgen<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span>INPUT<span class="w"> </span>-o<span class="w"> </span>OUTPUT<span class="w"> </span><span class="o">[</span>FORMAT_FLAGS<span class="o">]</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>embgen<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>
 </span></code></pre></div>
+<p><code>-o</code> / <code>--output</code> defaults to <code>./generated</code> relative to the current working directory. Format flags still have to be listed (<code>--h</code>, <code>--py</code>, …).</p>
 <h2 id="global-options">Global Options<a class="headerlink" href="#global-options" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1400,6 +1401,10 @@
 <td>Enable debug output with timing information</td>
 </tr>
 <tr>
+<td><code>-s</code>, <code>--silent</code></td>
+<td>Suppress all but warning and error messages</td>
+</tr>
+<tr>
 <td><code>--domains-dir PATH</code></td>
 <td>Load additional domains from this directory</td>
 </tr>
@@ -1407,9 +1412,13 @@
 </table>
 <h2 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">&para;</a></h2>
 <h3 id="domain-subcommands">Domain Subcommands<a class="headerlink" href="#domain-subcommands" title="Permanent link">&para;</a></h3>
-<p>Each domain is exposed as a subcommand. The built-in domains are:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>embgen<span class="w"> </span>commands<span class="w"> </span>INPUT<span class="w"> </span>-o<span class="w"> </span>OUTPUT<span class="w"> </span><span class="o">[</span>FLAGS<span class="o">]</span><span class="w">   </span><span class="c1"># Generate from command definitions</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>embgen<span class="w"> </span>registers<span class="w"> </span>INPUT<span class="w"> </span>-o<span class="w"> </span>OUTPUT<span class="w"> </span><span class="o">[</span>FLAGS<span class="o">]</span><span class="w">  </span><span class="c1"># Generate from register maps</span>
+<p>Each domain is a subcommand. Built-in names:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>embgen<span class="w"> </span>commands<span class="w"> </span>INPUT<span class="w"> </span><span class="o">[</span>FLAGS<span class="o">]</span><span class="w">              </span><span class="c1"># Command protocols</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>embgen<span class="w"> </span>registers<span class="w"> </span>INPUT<span class="w"> </span><span class="o">[</span>FLAGS<span class="o">]</span><span class="w">             </span><span class="c1"># Register maps (`regmap`)</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>embgen<span class="w"> </span>registers_shallow<span class="w"> </span>INPUT<span class="w"> </span><span class="o">[</span>FLAGS<span class="o">]</span><span class="w">     </span><span class="c1"># Register maps (`regmap_shallow`)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>embgen<span class="w"> </span>jsonrpc<span class="w"> </span>INPUT<span class="w"> </span><span class="o">[</span>FLAGS<span class="o">]</span><span class="w">               </span><span class="c1"># JSON-RPC methods</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>embgen<span class="w"> </span>nanopb<span class="w"> </span>INPUT<span class="w"> </span><span class="o">[</span>FLAGS<span class="o">]</span><span class="w">                </span><span class="c1"># NanoPB / protobuf methods</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>embgen<span class="w"> </span>testing<span class="w"> </span>INPUT<span class="w"> </span><span class="o">[</span>FLAGS<span class="o">]</span><span class="w">               </span><span class="c1"># Test-suite domain only</span>
 </span></code></pre></div>
 <h3 id="auto-detect-domain">Auto-detect Domain<a class="headerlink" href="#auto-detect-domain" title="Permanent link">&para;</a></h3>
 <p>Use <code>auto</code> to let embgen detect the domain from the YAML content:</p>
@@ -1429,7 +1438,7 @@
 <tbody>
 <tr>
 <td><code>--location PATH</code></td>
-<td>Directory where the domain folder will be created</td>
+<td>Directory where the domain folder will be created (default: current directory)</td>
 </tr>
 <tr>
 <td><code>--builtin</code></td>
@@ -1456,11 +1465,15 @@
 <td><code>-o</code>, <code>--output PATH</code></td>
 <td>Output directory for generated files</td>
 </tr>
+<tr>
+<td><code>--json-schema</code></td>
+<td>Output a JSON Schema file for the domain's configuration model</td>
+</tr>
 </tbody>
 </table>
 <h3 id="output-format-flags">Output Format Flags<a class="headerlink" href="#output-format-flags" title="Permanent link">&para;</a></h3>
 <p>Each domain defines its own output format flags based on available templates:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="commands_1" name="__tabbed_1" type="radio" /><input id="registers" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="commands_1">Commands</label><label for="registers">Registers</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:5"><input checked="checked" id="commands_1" name="__tabbed_1" type="radio" /><input id="registers" name="__tabbed_1" type="radio" /><input id="registers-shallow" name="__tabbed_1" type="radio" /><input id="json-rpc" name="__tabbed_1" type="radio" /><input id="nanopb" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="commands_1">Commands</label><label for="registers">Registers</label><label for="registers-shallow">Registers (shallow)</label><label for="json-rpc">JSON-RPC</label><label for="nanopb">NanoPB</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <table>
@@ -1473,15 +1486,15 @@
 <tbody>
 <tr>
 <td><code>--h</code></td>
-<td>C header file (<code>commands.h</code>)</td>
+<td>C header (<code>&lt;file&gt;.h</code>)</td>
 </tr>
 <tr>
 <td><code>--py</code></td>
-<td>Python module (<code>commands.py</code> + <code>commands_base.py</code>)</td>
+<td>Python module (<code>&lt;file&gt;.py</code> + <code>&lt;file&gt;_base.py</code>)</td>
 </tr>
 <tr>
 <td><code>--md</code></td>
-<td>Markdown documentation (<code>commands.md</code>)</td>
+<td>Markdown documentation (<code>&lt;file&gt;.md</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -1497,15 +1510,99 @@
 <tbody>
 <tr>
 <td><code>--h</code></td>
-<td>C header file (<code>&lt;name&gt;.h</code> + <code>reg_common.h/.c</code>)</td>
+<td>C header (<code>&lt;file&gt;.h</code>)</td>
 </tr>
 <tr>
 <td><code>--py</code></td>
-<td>Python module (<code>&lt;name&gt;.py</code>)</td>
+<td>Python module (<code>&lt;file&gt;.py</code> + <code>registers_base.py</code>)</td>
 </tr>
 <tr>
 <td><code>--md</code></td>
-<td>Markdown documentation (<code>&lt;name&gt;.md</code>)</td>
+<td>Markdown documentation</td>
+</tr>
+<tr>
+<td><code>--hjson</code></td>
+<td>Hjson, then OpenTitan <code>regtool.py</code></td>
+</tr>
+<tr>
+<td><code>--c-multi</code></td>
+<td><code>&lt;file&gt;_impl.h</code>, <code>&lt;file&gt;_base.h</code>, <code>&lt;file&gt;_base.c</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--h</code></td>
+<td>C header</td>
+</tr>
+<tr>
+<td><code>--py</code></td>
+<td>Python module + <code>registers_base.py</code></td>
+</tr>
+<tr>
+<td><code>--md</code></td>
+<td>Markdown</td>
+</tr>
+<tr>
+<td><code>--hjson</code></td>
+<td>Hjson, then <code>regtool.py</code> (<code>*_reg_pkg.sv</code>, <code>*_reg_top.sv</code>)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--py</code></td>
+<td>Python</td>
+</tr>
+<tr>
+<td><code>--md</code></td>
+<td>Markdown</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--proto</code></td>
+<td><code>.proto</code></td>
+</tr>
+<tr>
+<td><code>--options</code></td>
+<td>NanoPB <code>.options</code></td>
+</tr>
+<tr>
+<td><code>--py</code></td>
+<td>Python</td>
+</tr>
+<tr>
+<td><code>--md</code></td>
+<td>Markdown</td>
 </tr>
 </tbody>
 </table>
@@ -1532,19 +1629,25 @@
 </span></code></pre></div>
 <p>embgen examines the YAML structure to determine the appropriate domain:</p>
 <ul>
-<li>Files with a <code>commands</code> key → Commands domain</li>
-<li>Files with a <code>regmap</code> key → Registers domain</li>
+<li><code>commands</code> → Commands</li>
+<li><code>regmap</code> → Registers</li>
+<li><code>regmap_shallow</code> → Registers (shallow)</li>
+<li><code>methods</code> → JSON-RPC <strong>or</strong> NanoPB (same key; use an explicit subcommand)</li>
+<li><code>items</code> (without <code>commands</code>/<code>regmap</code>) → testing</li>
 </ul>
 <h3 id="use-custom-domains">Use Custom Domains<a class="headerlink" href="#use-custom-domains" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Load domains from a custom directory</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>embgen<span class="w"> </span>--domains-dir<span class="w"> </span>./my_domains<span class="w"> </span>mydom<span class="w"> </span>config.yml<span class="w"> </span>-o<span class="w"> </span>output/<span class="w"> </span>--h
 </span></code></pre></div>
 <h3 id="create-a-new-domain">Create a New Domain<a class="headerlink" href="#create-a-new-domain" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Create in a custom location</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>embgen<span class="w"> </span>new<span class="w"> </span>mydomain<span class="w"> </span>--location<span class="w"> </span>./domains
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Create in the current directory</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>embgen<span class="w"> </span>new<span class="w"> </span>mydomain
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Create as a built-in domain</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>embgen<span class="w"> </span>new<span class="w"> </span>mydomain<span class="w"> </span>--builtin
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Create in a custom location</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>embgen<span class="w"> </span>new<span class="w"> </span>mydomain<span class="w"> </span>--location<span class="w"> </span>./domains
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># Create as a built-in domain</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>embgen<span class="w"> </span>new<span class="w"> </span>mydomain<span class="w"> </span>--builtin
 </span></code></pre></div>
 <h2 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h2>
 <table>
@@ -1599,7 +1702,7 @@
 </span></code></pre></div>
 <h3 id="auto-detect-failure">Auto-detect Failure<a class="headerlink" href="#auto-detect-failure" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>$<span class="w"> </span>embgen<span class="w"> </span>auto<span class="w"> </span>unknown.yml<span class="w"> </span>-o<span class="w"> </span>output/<span class="w"> </span>--h
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>Error:<span class="w"> </span>Could<span class="w"> </span>not<span class="w"> </span>auto-detect<span class="w"> </span>domain.<span class="w"> </span>Abailable:<span class="w"> </span><span class="o">[</span>...<span class="o">]</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>Error:<span class="w"> </span>Could<span class="w"> </span>not<span class="w"> </span>auto-detect<span class="w"> </span>domain.<span class="w"> </span>Available:<span class="w"> </span><span class="o">[</span>...<span class="o">]</span>
 </span></code></pre></div>
 
 
@@ -1678,7 +1781,7 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2025 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
+      Copyright &copy; 2026 <a href="mailto:cedr02@live.com">Cedric Hirschi</a>
     </div>
   
   
