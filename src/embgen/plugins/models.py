@@ -1,6 +1,7 @@
 from typing import Any
 
 from pydantic import ValidationInfo, model_validator
+from pydantic_extra_types.semantic_version import SemanticVersion
 
 from ..common import StrictModel
 from ..plugin import Generator, Schema
@@ -14,7 +15,7 @@ class PluginContact(StrictModel):
 
 class Plugin(StrictModel):
     id: str
-    version: str
+    version: SemanticVersion
     description: str
     contact: PluginContact
     generator_class: type[Generator]
