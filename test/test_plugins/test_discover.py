@@ -1,10 +1,17 @@
-from embgen.plugins.discover import discover_plugins
+from pytest import fixture
+
+from embgen.plugins.discover import PluginDiscovery
 
 from ..common import PLUGINS_DIR
 
 
-def test_discover_ok_plugin():
-    plugins = discover_plugins(PLUGINS_DIR)
+@fixture
+def plugin_discovery():
+    return PluginDiscovery(PLUGINS_DIR)
+
+
+def test_discover_ok_plugin(plugin_discovery: PluginDiscovery):
+    plugins = plugin_discovery.discover_plugins()
     assert len(plugins) >= 1
 
     assert PLUGINS_DIR / "plugin_ok" in plugins
@@ -20,25 +27,25 @@ def test_discover_ok_plugin():
     assert plugin.schema_class is not None
 
 
-def test_discover_no_manifest_plugin():
-    plugins = discover_plugins(PLUGINS_DIR)
+def test_discover_no_manifest_plugin(plugin_discovery: PluginDiscovery):
+    plugins = plugin_discovery.discover_plugins()
 
     assert PLUGINS_DIR / "plugin_no_manifest" not in plugins
 
 
-def test_discover_no_generator_plugin():
-    plugins = discover_plugins(PLUGINS_DIR)
+def test_discover_no_generator_plugin(plugin_discovery: PluginDiscovery):
+    plugins = plugin_discovery.discover_plugins()
 
     assert PLUGINS_DIR / "plugin_no_generator" not in plugins
 
 
-def test_discover_no_schema_plugin():
-    plugins = discover_plugins(PLUGINS_DIR)
+def test_discover_no_schema_plugin(plugin_discovery: PluginDiscovery):
+    plugins = plugin_discovery.discover_plugins()
 
     assert PLUGINS_DIR / "plugin_no_schema" not in plugins
 
 
-def test_discover_invalid_manifest_plugin():
-    plugins = discover_plugins(PLUGINS_DIR)
+def test_discover_invalid_manifest_plugin(plugin_discovery: PluginDiscovery):
+    plugins = plugin_discovery.discover_plugins()
 
     assert PLUGINS_DIR / "plugin_invalid_manifest" not in plugins

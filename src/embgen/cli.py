@@ -2,19 +2,16 @@ import argparse
 import logging
 from pathlib import Path
 
-from rich.console import Console
-from rich.logging import RichHandler
 from rich.table import Table
-from rich.traceback import install as install_traceback
 
-from .plugins.discover import discover_plugins
+from .common import console, setup_logging
+from .plugins.discover import PluginDiscovery
 
 log = logging.getLogger(__name__)
-console = Console()
 
 
 def do_list(plugins_dir: Path) -> None:
-    plugins = discover_plugins(plugins_dir)
+    plugins = PluginDiscovery(plugins_dir).discover_plugins()
     if len(plugins) == 0:
         log.warning("No plugins found")
         return
@@ -26,19 +23,13 @@ def do_list(plugins_dir: Path) -> None:
     table.add_column("Description", justify="left")
     for plugin_path, plugin in plugins.items():
         table.add_row(
-            plugin_path.as_posix(), plugin.id, plugin.version, plugin.description
+            plugin_path.as_posix(), plugin.id, str(plugin.version), plugin.description
         )
     console.print(table)
 
 
 def main() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(message)s",
-        datefmt="[%X]",
-        handlers=[RichHandler(console=console)],
-    )
-    install_traceback()
+    setup_logging()
 
     parse = argparse.ArgumentParser()
     parse.add_argument("--plugins-dir", type=Path, default=Path("plugins"))
