@@ -1,6 +1,10 @@
-from embgen.plugin import Generator
+from pathlib import Path
+
+from embgen.plugin import GeneratedFile, Generator
+
+from .schema import PluginInvalidManifestSchema
 
 
-class PluginInvalidManifestGenerator(Generator):
-    def generate(self, input: str) -> str:
-        return "Hello, world!"
+class PluginInvalidManifestGenerator(Generator[PluginInvalidManifestSchema]):
+    def generate(self, input: PluginInvalidManifestSchema) -> list[GeneratedFile]:
+        return [GeneratedFile(path=Path("output.txt"), content="Hello, world!")]
