@@ -1,5 +1,6 @@
 import logging
 import sys
+import types
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
@@ -32,13 +33,22 @@ class PluginDiscovery:
 
     @staticmethod
     def load_class_file(file: Path, base_class: type) -> type:
-        module_name = f"embgen._plugins.{file.parent.name}"
-        spec = spec_from_file_location(module_name, file)
-        if spec is None or spec.loader is None:
-            raise ImportError(f"Could not load {file.as_posix()}")
-        module = module_from_spec(spec)
-        sys.modules[module_name] = module
-        spec.loader.exec_module(module)
+        package_name = f"embgen._plugins.{file.parent.name}"
+        module_name = f"{package_name}.{file.stem}"
+
+        if package_name not in sys.modules:
+            package_module = types.ModuleType(package_name)
+            package_module.__path__ = [str(file.parent)]
+            sys.modules[package_name] = package_module
+
+        module = sys.modules.get(module_name)
+        if module is None:
+            spec = spec_from_file_location(module_name, file)
+            if spec is None or spec.loader is None:
+                raise ImportError(f"Could not load {file.as_posix()}")
+            module = module_from_spec(spec)
+            sys.modules[module_name] = module
+            spec.loader.exec_module(module)
 
         classes = [
             cls
