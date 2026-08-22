@@ -1,0 +1,4 @@
+name: included_device
+version: 1.1.0
+frequency_hz: 48000000
+features: !include sub_features.yml

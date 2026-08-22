@@ -1,0 +1,11 @@
+{
+  # High-performance MCU configuration with comments
+  name: sam_e70
+  version: 3.5.0
+  frequency_hz: 300000000
+  features: [
+    ethernet
+    qspi
+    fpu
+  ]
+}

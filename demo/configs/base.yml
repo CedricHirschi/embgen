@@ -1,0 +1,6 @@
+name: stm32_core
+version: 1.0.0
+frequency_hz: 16000000
+features:
+  - uart
+  - spi

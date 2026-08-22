@@ -1,0 +1,3 @@
+version = "2.0.0"
+frequency_hz = 80000000
+features = ["i2c", "can", "usb"]

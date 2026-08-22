@@ -1,0 +1,8 @@
+{
+  "name": "{{ device_name }}",
+  "version": "{{ major }}.{{ minor }}.0",
+  "frequency_hz": {{ freq }},
+  "features": [
+    "{{ ENV_FEATURE | default('uart') }}"
+  ]
+}
