@@ -12,15 +12,6 @@ wheels = [
 ]
 
 [[package]]
-name = "anyconfig"
-version = "0.16.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d8/64/31c093235034a8225eca6e19e2dab03decf91d3f12a6f55417536f1338bb/anyconfig-0.16.0.tar.gz", hash = "sha256:6fcadd786f3507c0ac3fac09eeba32e4e048ab7c44b4380732e7d3a2a5fcac7b", size = 247369, upload-time = "2026-08-11T01:55:40.165Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/6f/fa563dd5dd6923744fc07112738c24a58b484e0e3c16e3002f58161b4fbb/anyconfig-0.16.0-py3-none-any.whl", hash = "sha256:c9f8b4ef36f600e5c19d8251f8658731cb1e34fe6174e2a293f8602924edd116", size = 107111, upload-time = "2026-08-11T01:55:38.185Z" },
-]
-
-[[package]]
 name = "babel"
 version = "2.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -402,9 +393,11 @@ name = "embgen"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "anyconfig" },
+    { name = "hjson" },
+    { name = "jinja2" },
     { name = "pydantic" },
     { name = "pydantic-extra-types", extra = ["all"] },
+    { name = "pyyaml" },
     { name = "rich" },
 ]
 
@@ -426,9 +419,11 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "anyconfig", specifier = ">=0.16.0" },
+    { name = "hjson", specifier = ">=3.1.0" },
+    { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pydantic-extra-types", extras = ["all"], specifier = ">=2.11.1" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "rich", specifier = ">=14.2.0" },
 ]
 
@@ -479,6 +474,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/0d/0c/3a471b6e31951dce2360477420d0a8d1e00dea6cf33b70f3e8c3ab6e28e1/griffe-1.15.0.tar.gz", hash = "sha256:7726e3afd6f298fbc3696e67958803e7ac843c1cfe59734b6251a40cdbfb5eea", size = 424112, upload-time = "2025-11-10T15:03:15.52Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9c/83/3b1d03d36f224edded98e9affd0467630fc09d766c0e56fb1498cbb04a9b/griffe-1.15.0-py3-none-any.whl", hash = "sha256:6f6762661949411031f5fcda9593f586e6ce8340f0ba88921a0f2ef7a81eb9a3", size = 150705, upload-time = "2025-11-10T15:03:13.549Z" },
+]
+
+[[package]]
+name = "hjson"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/82/e5/0b56d723a76ca67abadbf7fb71609fb0ea7e6926e94fcca6c65a85b36a0e/hjson-3.1.0.tar.gz", hash = "sha256:55af475a27cf83a7969c808399d7bccdec8fb836a07ddbd574587593b9cdcf75", size = 40541, upload-time = "2022-08-13T02:53:01.919Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1f/7f/13cd798d180af4bf4c0ceddeefba2b864a63c71645abc0308b768d67bb81/hjson-3.1.0-py3-none-any.whl", hash = "sha256:65713cdcf13214fb554eb8b4ef803419733f4f5e551047c9b711098ab7186b89", size = 54018, upload-time = "2022-08-13T02:52:59.899Z" },
 ]
 
 [[package]]
