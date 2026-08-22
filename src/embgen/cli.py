@@ -150,6 +150,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Enable verbose debug logging"
     )
+    parser.add_argument(
+        "-q", "--quiet", action="store_true", help="Suppress all output except errors"
+    )
 
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
@@ -252,8 +255,13 @@ def main() -> None:
     if args.plugins_dir is None:
         args.plugins_dir = [Path("plugins")]
 
-    if args.verbose:
+    if args.quiet and args.verbose:
+        parser.error("Cannot use both quiet and verbose options together.")
+    elif args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
+    elif args.quiet:
+        logging.getLogger().setLevel(logging.ERROR)
+        console.quiet = True
 
     try:
         if args.subcommand == "list":
