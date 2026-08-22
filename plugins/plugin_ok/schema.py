@@ -2,4 +2,5 @@ from embgen.plugin import Schema
 
 
 class PluginOkSchema(Schema):
-    pass
+    name: str
+    greetings: list[str]
