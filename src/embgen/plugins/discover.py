@@ -180,5 +180,6 @@ class PluginDiscovery:
                 continue
 
             result[dir] = plugin
+            log.debug(f"Discovered plugin '{plugin.id}' in {dir.as_posix()}")
 
         return result
