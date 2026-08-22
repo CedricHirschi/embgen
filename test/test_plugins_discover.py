@@ -2,7 +2,7 @@ from pytest import fixture
 
 from embgen.plugins.discover import PluginDiscovery
 
-from ..common import PLUGINS_DIR
+from .common import PLUGINS_DIR
 
 
 @fixture
