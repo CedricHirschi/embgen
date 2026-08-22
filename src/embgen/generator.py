@@ -8,18 +8,16 @@ from .plugins.models import Plugin
 
 
 class Generator:
-    def __init__(self, output_dir: Path, plugin_dirs: list[Path]) -> None:
+    def __init__(
+        self, output_dir: Path, plugin_dirs: list[Path], log_fail: bool = True
+    ) -> None:
         self.output_dir = output_dir
         self.plugin_dirs = plugin_dirs
+        self.log_fail = log_fail
 
         self.plugins: dict[str, Plugin] = {}
-        for plugin_dir in self.plugin_dirs:
-            plugins = PluginDiscovery(plugin_dir).discover_plugins()
-            for plugin in plugins.values():
-                if plugin.id in self.plugins:
-                    raise ValueError(f"Duplicate plugin ID: {plugin.id}")
-
-                self.plugins[plugin.id] = plugin
+        for plugin in PluginDiscovery(self.plugin_dirs).discover_plugins().values():
+            self.plugins[plugin.id] = plugin
 
     def generate(
         self,
@@ -34,7 +32,7 @@ class Generator:
         if plugin_id not in self.plugins:
             raise ValueError(f"Plugin ID not found: {plugin_id}")
 
-        loader = Loader(self.plugins[plugin_id].schema_class)
+        loader = Loader(self.plugins[plugin_id].schema_class, log_fail=self.log_fail)
 
         if isinstance(config, Path) or (
             isinstance(config, str) and Path(config).exists()

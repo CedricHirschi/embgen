@@ -26,6 +26,17 @@ def log_validation_error(
 console = Console()
 
 
+def print_validation_error(error: ValidationError) -> None:
+    errors = error.errors()
+    console.print(f"[red]{len(errors)}[/] validation errors:")
+    for err in errors:
+        err_type = err["type"]
+        err_url = "/" + "/".join(err["loc"]) if err["loc"] else ""  # type: ignore
+        err_msg = err["msg"]
+        err_help = f"(See {err['url']})" if err.get("url") else ""  # type: ignore
+        console.print(f"[blue]  {err_url}[/]: {err_type}: {err_msg} {err_help}")
+
+
 def setup_logging(level: int | str = logging.INFO) -> logging.Logger:
     logging.basicConfig(
         level=level,

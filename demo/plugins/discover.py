@@ -10,7 +10,7 @@ PLUGINS_DIR = Path(__file__).parents[2] / "test" / "assets" / "plugins"
 log = setup_logging("DEBUG")
 
 
-discovery = PluginDiscovery(PLUGINS_DIR)
+discovery = PluginDiscovery([PLUGINS_DIR])
 
 plugins = discovery.discover_plugins()
 

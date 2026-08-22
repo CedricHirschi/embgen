@@ -7,7 +7,7 @@ from .common import PLUGINS_DIR
 
 @fixture
 def plugin_discovery():
-    return PluginDiscovery(PLUGINS_DIR)
+    return PluginDiscovery([PLUGINS_DIR])
 
 
 def test_discover_ok_plugin(plugin_discovery: PluginDiscovery):

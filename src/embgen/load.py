@@ -174,8 +174,9 @@ class Loader(Generic[SchemaT]):
         schema_class: The Pydantic Schema model to validate and instantiate.
     """
 
-    def __init__(self, schema_class: type[SchemaT]):
+    def __init__(self, schema_class: type[SchemaT], log_fail: bool = True) -> None:
         self.schema_class = schema_class
+        self.log_fail = log_fail
 
     def load_dict(self, data: Any) -> SchemaT:
         """Validate and construct a schema instance from a raw dictionary or mapping.
@@ -192,7 +193,8 @@ class Loader(Generic[SchemaT]):
         try:
             return self.schema_class.model_validate(data)
         except ValidationError as e:
-            log_validation_error(log, e)
+            if self.log_fail:
+                log_validation_error(log, e)
             raise
 
     def load(

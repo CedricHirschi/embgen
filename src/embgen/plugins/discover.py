@@ -15,8 +15,10 @@ log = logging.getLogger(__name__)
 
 
 class PluginDiscovery:
-    def __init__(self, plugin_dir: Path):
-        self.plugin_dir = plugin_dir.resolve().absolute()
+    def __init__(self, plugin_dirs: list[Path]):
+        self.plugin_dirs = [
+            plugin_dir.resolve().absolute() for plugin_dir in plugin_dirs
+        ]
 
     @staticmethod
     def load_manifest(
@@ -153,33 +155,39 @@ class PluginDiscovery:
         return True
 
     def discover_plugins(self) -> dict[Path, Plugin]:
-        log.debug(f"Discovering plugins in {self.plugin_dir.as_posix()}")
-
-        if not self.plugin_dir.is_dir():
-            raise NotADirectoryError(
-                f"{self.plugin_dir.as_posix()} is not a directory or does not exist"
-            )
-
         result = {}
 
-        for dir in self.plugin_dir.glob("*"):
-            if not dir.is_dir():
-                continue
+        for plugin_dir in self.plugin_dirs:
+            log.debug(f"Discovering plugins in {plugin_dir.as_posix()}")
 
-            try:
-                plugin = self.load_plugin(dir)
-            except FileNotFoundError as e:
-                log.warning(f"Incomplete plugin {dir.as_posix()}: {e.filename}")
-                continue
-            except ValidationError as e:
-                log.warning(f"Invalid embgen.yml in {dir.as_posix()}")
-                log_validation_error(log, e, logging.WARNING)
-                continue
-            except Exception as e:
-                log.warning(f"Error loading plugin {dir.as_posix()}: {e}")
-                continue
+            if not plugin_dir.is_dir():
+                raise NotADirectoryError(
+                    f"{plugin_dir.as_posix()} is not a directory or does not exist"
+                )
 
-            result[dir] = plugin
-            log.debug(f"Discovered plugin '{plugin.id}' in {dir.as_posix()}")
+            for dir in plugin_dir.glob("*"):
+                if not dir.is_dir():
+                    continue
+
+                try:
+                    plugin = self.load_plugin(dir)
+                except FileNotFoundError as e:
+                    log.warning(f"Incomplete plugin {dir.as_posix()}: {e.filename}")
+                    continue
+                except ValidationError as e:
+                    log.warning(f"Invalid embgen.yml in {dir.as_posix()}")
+                    log_validation_error(log, e, logging.WARNING)
+                    continue
+                except Exception as e:
+                    log.warning(f"Error loading plugin {dir.as_posix()}: {e}")
+                    continue
+
+                if dir in result:
+                    raise ValueError(
+                        f"Duplicate plugin ID: {plugin.id} in {dir.as_posix()}"
+                    )
+
+                result[dir] = plugin
+                log.debug(f"Discovered plugin '{plugin.id}' in {dir.as_posix()}")
 
         return result

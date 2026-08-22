@@ -10,6 +10,7 @@ dependencies = [
     "pydantic-extra-types[all]>=2.11.1",
     "pyyaml>=6.0.3",
     "rich>=14.2.0",
+    "rich-argparse>=1.8.0",
 ]
 
 [project.scripts]
