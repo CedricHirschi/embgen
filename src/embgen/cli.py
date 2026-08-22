@@ -15,6 +15,9 @@ from .plugins.discover import PluginDiscovery
 log = logging.getLogger(__name__)
 
 
+INTERNAL_PLUGINS_DIR = Path(__file__).parents[2] / "plugins"
+
+
 def parse_context(context_args: list[str] | None) -> dict[str, Any] | None:
     """Parse a list of KEY=VAL strings into a dictionary."""
     if not context_args:
@@ -153,6 +156,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory to search for plugins (can be specified multiple times)",
     )
     parser.add_argument(
+        "--no-internal-plugins",
+        action="store_true",
+        help="Disable loading of internal plugins",
+    )
+    parser.add_argument(
         "-v", "--verbose", action="store_true", help="Enable verbose debug logging"
     )
     parser.add_argument(
@@ -259,6 +267,9 @@ def main() -> None:
 
     if args.plugins_dir is None:
         args.plugins_dir = [Path("plugins")]
+    if not args.no_internal_plugins:
+        args.plugins_dir.append(INTERNAL_PLUGINS_DIR)
+    args.plugins_dir = list(set(p.resolve() for p in args.plugins_dir))
 
     if args.quiet and args.verbose:
         parser.error("Cannot use both quiet and verbose options together.")
@@ -267,6 +278,9 @@ def main() -> None:
     elif args.quiet:
         logging.getLogger().setLevel(logging.ERROR)
         console.quiet = True
+
+    if not args.plugins_dir:
+        parser.error("No plugin directories specified.")
 
     try:
         if args.subcommand == "list":
@@ -280,9 +294,7 @@ def main() -> None:
         else:
             parser.print_help()
     except Exception as e:
-        raise RuntimeError(
-            f"Error occured executing '{args.subcommand}' subcommand"
-        ) from e
+        console.print(f"[bold red]Error:[/] {e}")
 
 
 if __name__ == "__main__":
