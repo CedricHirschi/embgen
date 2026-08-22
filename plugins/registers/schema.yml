@@ -1,0 +1,32 @@
+name: example_registers
+description: Example Register Map
+
+registers:
+  - name: CONTROL
+    description: Control Register
+    address: 0x00
+    bitfields:
+      - name: ENABLE
+        description: Enable the device
+        reset: 0
+        width: 1
+        offset: 0
+      - name: MODE
+        description: Operating mode
+        reset: 0
+        width: 2
+        offset: 1
+  - name: STATUS
+    description: Status Register
+    address: 0x04
+    bitfields:
+      - name: READY
+        description: Device ready status
+        reset: 0
+        width: 1
+        offset: 0
+      - name: ERROR
+        description: Error status
+        reset: 0
+        width: 1
+        offset: 1

@@ -56,37 +56,42 @@ def do_list(args: argparse.Namespace) -> None:
 
 
 def do_generate(args: argparse.Namespace) -> None:
-    gen = Generator(args.output_dir, args.plugins_dir)
+    gen = Generator(args.output_dir, args.plugins_dir, log_fail=False)
 
     context = parse_context(args.context)
     config = get_config_arg(args.configs)
 
-    if args.dry_run:
-        console.print("[yellow]Dry run mode enabled. No files will be written.[/]")
-        files = gen.generate(
-            plugin_id=args.plugin,
-            config=config,
-            all=args.all,
-            template=args.template,
-            context=context,
-            env=not args.no_env,
-        )
+    try:
+        if args.dry_run:
+            console.print("[yellow]Dry run mode enabled. No files will be written.[/]")
+            files = gen.generate(
+                plugin_id=args.plugin,
+                config=config,
+                all=args.all,
+                template=args.template,
+                context=context,
+                env=not args.no_env,
+            )
 
-    else:
-        files = gen.run(
-            plugin_id=args.plugin,
-            config=config,
-            all=args.all,
-            template=args.template,
-            context=context,
-            env=not args.no_env,
-        )
+        else:
+            files = gen.run(
+                plugin_id=args.plugin,
+                config=config,
+                all=args.all,
+                template=args.template,
+                context=context,
+                env=not args.no_env,
+            )
 
-    for file in files:
-        dest = (args.output_dir / file.path).resolve().as_posix()
-        console.print(
-            f"[bold green]Generated[/] file {dest} ({len(file.content)} bytes)"
-        )
+        for file in files:
+            dest = (args.output_dir / file.path).resolve().as_posix()
+            console.print(
+                f"[bold green]Generated[/] file {dest} ({len(file.content)} bytes)"
+            )
+    except ValidationError as e:
+        console.print(f"[bold red]Generation failed[/] for plugin '{args.plugin}':")
+        print_validation_error(e)
+        exit(1)
 
 
 def do_validate(args: argparse.Namespace) -> None:
