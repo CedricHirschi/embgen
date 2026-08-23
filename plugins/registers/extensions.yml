@@ -1,3 +1,6 @@
 extensions:
   - .md
   - .rdl
+  - .py
+
+base_file: regmap_base

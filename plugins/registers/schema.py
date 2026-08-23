@@ -6,7 +6,7 @@ from pydantic import model_validator
 from embgen.common import StrictModel
 from embgen.plugin import Schema
 
-RegmapExtension = Literal[".md", ".rdl"]
+RegmapExtension = Literal[".md", ".rdl", ".py"]
 
 
 class Access(BaseEnum):
@@ -38,6 +38,8 @@ class BitField(StrictModel):
     width: int = 1
     offset: Optional[int] = None
     enums: Optional[list[Enum]] = None
+    access: Access = Access.RW
+    access_hw: Optional[Access] = None
 
     @model_validator(mode="after")
     def validate_reset(self) -> "BitField":
@@ -75,6 +77,10 @@ class RegmapSchema(Schema):
     description: Optional[str] = None
     width: int = 32
     access_separate: bool = False
+    access: Access = Access.RW
+    access_hw: Optional[Access] = None
+
+    registers: list[Register]
 
     extensions: list[RegmapExtension]
-    registers: list[Register]
+    base_file: str = "..regmap_base"

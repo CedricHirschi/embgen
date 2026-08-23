@@ -122,6 +122,160 @@ class RegmapGenerator(Generator[RegmapSchema]):
 
         return c
 
+    def _generate_py(self, input: RegmapSchema) -> str:
+        c = ""
+
+        c += f"# Generated Register Map: {input.name}\n"
+        if input.description:
+            c += f"# Description: {input.description}\n"
+        c += "# This file is auto-generated. Do not edit manually.\n\n"
+
+        c += "from enum import Enum\n\n"
+
+        c += f"from {input.base_file} import (\n"
+        c += "    Access,\n    BitField,\n    Register,\n    RegisterMap,\n    RegisterMapInterface,\n"
+        c += ")\n\n\n"
+
+        enums_class_name = input.name.title().replace("_", "") + "Enums"
+        if any(bf.enums is not None for reg in input.registers for bf in reg.bitfields):
+            c += f"class {enums_class_name}:\n"
+            c += '    """Enumeration classes for registers and bitfields"""\n\n'
+            for register in input.registers:
+                for bitfield in register.bitfields:
+                    if bitfield.enums is not None:
+                        enum_name = f"{register.name.title().replace('_', '')}{bitfield.name.title().replace('_', '')}"
+                        c += f"    class {enum_name}(Enum):\n"
+                        c += f'        """Enumeration for {register.name}.{bitfield.name}"""\n\n'
+                        for enum in bitfield.enums:
+                            if enum.description is None:
+                                c += f"        {enum.name} = {enum.value}\n"
+                            else:
+                                c += f"        {enum.name} = {enum.value}  # {enum.description}\n"
+                        c += "\n"
+            c += "\n"
+
+        c += f"class {input.name.title().replace('_', '')}(RegisterMap):\n"
+
+        if input.description:
+            c += f'    """{input.description}"""\n\n'
+
+        added_defaults = False
+        if input.access is not None and input.access != Access.RW:
+            c += f"    sw = Access.{input.access.name}\n"
+            added_defaults = True
+        if input.access_hw is not None and input.access_hw != Access.RW:
+            c += f"    hw = Access.{input.access_hw.name}\n"
+            added_defaults = True
+        if added_defaults:
+            c += "\n"
+
+        current_register_address = 0
+
+        for register in input.registers:
+            c += f"    class {register.name.title().replace('_', '')}(Register):\n"
+            if register.description:
+                c += f"        # {register.description}\n"
+
+            if register.address is not None:
+                c += f"        _address = 0x{register.address:X}\n\n"
+                current_register_address = register.address + (input.width // 8)
+            else:
+                c += f"        _address = 0x{current_register_address:X}\n\n"
+                current_register_address += input.width // 8
+
+            added_defaults = False
+            if register.access is not None and register.access != Access.RW:
+                c += f"        _access = Access.{register.access.name}\n"
+                added_defaults = True
+            if register.access_hw is not None and register.access_hw != Access.RW:
+                c += f"        _access_hw = Access.{register.access_hw.name}\n"
+                added_defaults = True
+            if added_defaults:
+                c += "\n"
+
+            current_bitfield_offset = 0
+
+            for bitfield in register.bitfields:
+                enum_name = None
+                if bitfield.enums is not None:
+                    enum_name = f"{register.name.title().replace('_', '')}{bitfield.name.title().replace('_', '')}"
+
+                c += f"        class {bitfield.name.title().replace('_', '')}(BitField):\n"
+                if bitfield.description:
+                    c += f"            # {bitfield.description}\n"
+
+                offset = (
+                    bitfield.offset
+                    if bitfield.offset is not None
+                    else current_bitfield_offset
+                )
+
+                c += f"            _register_address = 0x{register.address:X}\n"
+                c += f"            _offset = {offset}\n"
+                if bitfield.width != 1:
+                    c += f"            _width = {bitfield.width}\n"
+
+                if bitfield.access is not None and bitfield.access != Access.RW:
+                    c += "\n"
+                    c += f"            _access = Access.{bitfield.access.name}\n"
+                if bitfield.access_hw is not None and bitfield.access_hw != Access.RW:
+                    if not (
+                        bitfield.access is not None and bitfield.access != Access.RW
+                    ):
+                        c += "\n"
+                    c += f"            _access_hw = Access.{bitfield.access_hw.name}\n"
+
+                if bitfield.enums is not None:
+                    c += "\n"
+                    c += f"            _enum = {enums_class_name}.{register.name.title().replace('_', '')}{bitfield.name.title().replace('_', '')}\n"
+
+                if bitfield.reset is not None:
+                    c += "\n"
+                    if isinstance(bitfield.reset, int):
+                        if bitfield.enums is None:
+                            if bitfield.reset != 0:
+                                c += f"            _reset = {bitfield.reset:d}\n"
+                                c += "\n"
+                        else:
+                            reset_name = None
+                            for enum in bitfield.enums:
+                                if enum.value == bitfield.reset:
+                                    reset_name = enum.name
+                                    break
+                            if reset_name is not None:
+                                c += f"            _reset = {enums_class_name}.{enum_name}.{reset_name}\n"
+                                c += "\n"
+                            elif bitfield.reset != 0:
+                                c += f"            _reset = {bitfield.reset:d}\n"
+                                c += "\n"
+                    elif isinstance(bitfield.reset, Enum):
+                        c += f"            _reset = {enums_class_name}.{enum_name}.{bitfield.reset.name}\n"
+                        c += "\n"
+                    elif isinstance(bitfield.reset, bool):
+                        c += f"            _reset = {'True' if bitfield.reset else 'False'}\n"
+                        c += "\n"
+
+            # c += "\n"
+            c += "        def __init__(self, intf: RegisterMapInterface):\n"
+            for bitfield in register.bitfields:
+                c += f"            self._{bitfield.name.lower()} = self.{bitfield.name.title().replace('_', '')}(intf)\n"
+            c += "\n"
+            for bitfield in register.bitfields:
+                c += f"            self.{bitfield.name.lower()} = self._{bitfield.name.lower()}.value\n"
+            c += "\n"
+
+        c += "    def __init__(self, intf: RegisterMapInterface):\n"
+        for register in input.registers:
+            c += f"        self.{register.name.lower()} = self.{register.name.title().replace('_', '')}(intf)\n"
+
+        c += "\n\n__all__ = [\n"
+        c += f"    '{enums_class_name}',\n"
+        c += f"    '{input.name.title().replace('_', '')}',\n"
+        c += "    'RegisterMapInterface',\n"
+        c += "]\n"
+
+        return c
+
     def generate(self, input: RegmapSchema) -> list[GeneratedFile]:
         result = []
 
@@ -136,5 +290,10 @@ class RegmapGenerator(Generator[RegmapSchema]):
                     content = self._generate_rdl(input)
                     result.append(
                         GeneratedFile(path=Path("regmap.rdl"), content=content)
+                    )
+                case ".py":
+                    content = self._generate_py(input)
+                    result.append(
+                        GeneratedFile(path=Path("regmap.py"), content=content)
                     )
         return result
