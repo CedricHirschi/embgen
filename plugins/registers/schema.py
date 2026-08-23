@@ -56,6 +56,10 @@ class BitField(StrictModel):
                     raise ValueError(
                         f"BitField {self.name} has invalid reset enum value: {self.reset}. Available enums: {[e.name for e in self.enums]}"
                     )
+        elif isinstance(self.reset, str):
+            raise ValueError(
+                f"BitField {self.name} has a string reset but no enums defined. Either define enums on the bitfield or use an int/bool reset."
+            )
         return self
 
 

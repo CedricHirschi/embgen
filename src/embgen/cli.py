@@ -269,7 +269,7 @@ def main() -> None:
         args.plugins_dir = [Path("plugins")]
     if not args.no_internal_plugins:
         args.plugins_dir.append(INTERNAL_PLUGINS_DIR)
-    args.plugins_dir = list(set(p.resolve() for p in args.plugins_dir))
+    args.plugins_dir = list(dict.fromkeys(p.resolve() for p in args.plugins_dir))
 
     if args.quiet and args.verbose:
         parser.error("Cannot use both quiet and verbose options together.")
@@ -295,6 +295,7 @@ def main() -> None:
             parser.print_help()
     except Exception as e:
         console.print(f"[bold red]Error:[/] {e}")
+        raise SystemExit(1) from e
 
 
 if __name__ == "__main__":

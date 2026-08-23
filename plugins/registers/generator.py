@@ -80,7 +80,9 @@ class RegmapGenerator(Generator[RegmapSchema]):
                     c += "            };\n\n"
 
                 if bitfield.reset is not None:
-                    if isinstance(bitfield.reset, int):
+                    if isinstance(bitfield.reset, bool):
+                        c += f"            reset = {bitfield.width}'d{'1' if bitfield.reset else '0'};\n"
+                    elif isinstance(bitfield.reset, int):
                         if bitfield.enums is None:
                             c += f"            reset = {bitfield.width}'d{bitfield.reset:d};\n"
                         else:
@@ -95,8 +97,6 @@ class RegmapGenerator(Generator[RegmapSchema]):
                                 c += f"            reset = {bitfield.width}'d{bitfield.reset:d};\n"
                     elif isinstance(bitfield.reset, Enum):
                         c += f"            reset = {bitfield.reset.name};\n"
-                    elif isinstance(bitfield.reset, bool):
-                        c += f"            reset = {bitfield.width}'d{'1' if bitfield.reset else '0'};\n"
 
                 if bitfield.enums is not None:
                     c += f"            encode = {register.name.lower()}_{bitfield.name.lower()}_e;\n"
@@ -110,6 +110,7 @@ class RegmapGenerator(Generator[RegmapSchema]):
                 lsb = offset
 
                 c += f"        }} {bitfield.name} [{msb}:{lsb}];\n\n"
+                current_bitfield_offset = offset + bitfield.width
 
             if register.address is not None:
                 c += f"    }} {register.name} @ 0x{register.address:X};\n\n"
@@ -176,12 +177,17 @@ class RegmapGenerator(Generator[RegmapSchema]):
             if register.description:
                 c += f"        # {register.description}\n"
 
+            resolved_address = (
+                register.address
+                if register.address is not None
+                else current_register_address
+            )
             if register.address is not None:
-                c += f"        _address = 0x{register.address:X}\n\n"
                 current_register_address = register.address + (input.width // 8)
             else:
-                c += f"        _address = 0x{current_register_address:X}\n\n"
                 current_register_address += input.width // 8
+
+            c += f"        _address = 0x{resolved_address:X}\n\n"
 
             added_defaults = False
             if register.access is not None and register.access != Access.RW:
@@ -210,7 +216,7 @@ class RegmapGenerator(Generator[RegmapSchema]):
                     else current_bitfield_offset
                 )
 
-                c += f"            _register_address = 0x{register.address:X}\n"
+                c += f"            _register_address = 0x{resolved_address:X}\n"
                 c += f"            _offset = {offset}\n"
                 if bitfield.width != 1:
                     c += f"            _width = {bitfield.width}\n"
@@ -242,7 +248,10 @@ class RegmapGenerator(Generator[RegmapSchema]):
 
                 if bitfield.reset is not None:
                     c += "\n"
-                    if isinstance(bitfield.reset, int):
+                    if isinstance(bitfield.reset, bool):
+                        c += f"            _reset = {'True' if bitfield.reset else 'False'}\n"
+                        c += "\n"
+                    elif isinstance(bitfield.reset, int):
                         if bitfield.enums is None:
                             if bitfield.reset != 0:
                                 c += f"            _reset = {bitfield.reset:d}\n"
@@ -262,9 +271,8 @@ class RegmapGenerator(Generator[RegmapSchema]):
                     elif isinstance(bitfield.reset, Enum):
                         c += f"            _reset = {enums_class_name}.{enum_name}.{bitfield.reset.name}\n"
                         c += "\n"
-                    elif isinstance(bitfield.reset, bool):
-                        c += f"            _reset = {'True' if bitfield.reset else 'False'}\n"
-                        c += "\n"
+
+                current_bitfield_offset = offset + bitfield.width
 
             c += "        def __init__(self, intf: RegisterMapInterface):\n"
             for bitfield in register.bitfields:

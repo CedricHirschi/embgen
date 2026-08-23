@@ -17,7 +17,7 @@ def log_validation_error(
     log.log(level, f"{len(errors)} validation errors:")
     for err in errors:
         err_type = err["type"]
-        err_url = "/" + "/".join(err["loc"]) if err["loc"] else ""  # type: ignore
+        err_url = "/" + "/".join(map(str, err["loc"])) if err["loc"] else ""  # type: ignore
         err_msg = err["msg"]
         err_help = f"(See {err['url']})" if err.get("url") else ""  # type: ignore
         log.log(level, f"  {err_url}: {err_type}: {err_msg} {err_help}")

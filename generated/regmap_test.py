@@ -1,4 +1,4 @@
-from regmap import (
+from regmap import (  # type: ignore
     ExampleRegisters,
     ExampleRegistersEnums,
     RegisterMapInterface,

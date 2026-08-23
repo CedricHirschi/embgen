@@ -52,6 +52,3 @@ testpaths = ["test"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-
-[tool.ty.src]
-exclude = ["src/embgen/domains/registers/regtool", "src/embgen/domains/registers_shallow/regtool"]

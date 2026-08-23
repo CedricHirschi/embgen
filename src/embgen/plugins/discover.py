@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import sys
 import types
@@ -35,7 +36,9 @@ class PluginDiscovery:
 
     @staticmethod
     def load_class_file(file: Path, base_class: type) -> type:
-        package_name = f"embgen._plugins.{file.parent.name}"
+        dir_path = file.parent.resolve().absolute()
+        dir_hash = hashlib.sha256(dir_path.as_posix().encode()).hexdigest()[:12]
+        package_name = f"embgen._plugins.{file.parent.name}_{dir_hash}"
         module_name = f"{package_name}.{file.stem}"
 
         if package_name not in sys.modules:
@@ -156,6 +159,7 @@ class PluginDiscovery:
 
     def discover_plugins(self) -> dict[Path, Plugin]:
         result = {}
+        seen_ids: dict[str, Path] = {}
 
         for plugin_dir in self.plugin_dirs:
             log.debug(f"Discovering plugins in {plugin_dir.as_posix()}")
@@ -182,10 +186,12 @@ class PluginDiscovery:
                     log.warning(f"Error loading plugin {dir.as_posix()}: {e}")
                     continue
 
-                if dir in result:
+                if plugin.id in seen_ids:
                     raise ValueError(
-                        f"Duplicate plugin ID: {plugin.id} in {dir.as_posix()}"
+                        f"Duplicate plugin ID: '{plugin.id}' in {dir.as_posix()} "
+                        f"(already discovered in {seen_ids[plugin.id].as_posix()})"
                     )
+                seen_ids[plugin.id] = dir
 
                 result[dir] = plugin
                 log.debug(f"Discovered plugin '{plugin.id}' in {dir.as_posix()}")

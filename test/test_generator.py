@@ -40,7 +40,7 @@ def test_generator_init_duplicate_plugin_id(tmp_path: Path):
     with pytest.raises(ValueError) as exc_info:
         Generator(output_dir=tmp_path, plugin_dirs=[PLUGINS_DIR, PLUGINS_DIR])
 
-    assert "Duplicate plugin ID: plugin_ok" in str(exc_info.value)
+    assert "Duplicate plugin ID: 'plugin_ok'" in str(exc_info.value)
 
 
 def test_generate_unknown_plugin_id(generator: Generator):
