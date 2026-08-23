@@ -1,5 +1,7 @@
 name: example_registers
 description: Example Register Map
+width: 32
+access_separate: true
 
 registers:
   - name: CONTROL
@@ -13,12 +15,19 @@ registers:
         offset: 0
       - name: MODE
         description: Operating mode
-        reset: 0
+        reset: ACTIVE
         width: 2
-        offset: 1
+        offset: 3
+        enums:
+          - { name: SHUTDOWN, value: 0, description: Device is shut down }
+          - { name: IDLE, value: 1, description: Device is idle }
+          - { name: ACTIVE, value: 2, description: Device is active }
+          - { name: RESERVED, value: 3, description: Reserved mode }
   - name: STATUS
     description: Status Register
     address: 0x04
+    access: r
+    access_hw: w
     bitfields:
       - name: READY
         description: Device ready status
@@ -29,4 +38,4 @@ registers:
         description: Error status
         reset: 0
         width: 1
-        offset: 1
+        offset: 8
