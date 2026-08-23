@@ -133,7 +133,7 @@ class RegmapGenerator(Generator[RegmapSchema]):
         c += "from enum import Enum\n\n"
 
         c += f"from {input.base_file} import (\n"
-        c += "    Access,\n    BitField,\n    Register,\n    RegisterMap,\n    RegisterMapInterface,\n"
+        c += "    Access,\n    BitField,\n    Register,\n    RegisterMap,\n    RegisterMapInterface,\n    Value,\n"
         c += ")\n\n\n"
 
         enums_class_name = input.name.title().replace("_", "") + "Enums"
@@ -215,15 +215,26 @@ class RegmapGenerator(Generator[RegmapSchema]):
                 if bitfield.width != 1:
                     c += f"            _width = {bitfield.width}\n"
 
-                if bitfield.access is not None and bitfield.access != Access.RW:
+                bf_access = bitfield.access
+                if (bf_access is None or bf_access == Access.RW) and (
+                    register.access is not None and register.access != Access.RW
+                ):
+                    bf_access = register.access
+
+                if bf_access is not None and bf_access != Access.RW:
                     c += "\n"
-                    c += f"            _access = Access.{bitfield.access.name}\n"
-                if bitfield.access_hw is not None and bitfield.access_hw != Access.RW:
-                    if not (
-                        bitfield.access is not None and bitfield.access != Access.RW
-                    ):
+                    c += f"            _access = Access.{bf_access.name}\n"
+
+                bf_access_hw = bitfield.access_hw
+                if (bf_access_hw is None or bf_access_hw == Access.RW) and (
+                    register.access_hw is not None and register.access_hw != Access.RW
+                ):
+                    bf_access_hw = register.access_hw
+
+                if bf_access_hw is not None and bf_access_hw != Access.RW:
+                    if not (bf_access is not None and bf_access != Access.RW):
                         c += "\n"
-                    c += f"            _access_hw = Access.{bitfield.access_hw.name}\n"
+                    c += f"            _access_hw = Access.{bf_access_hw.name}\n"
 
                 if bitfield.enums is not None:
                     c += "\n"
@@ -255,13 +266,19 @@ class RegmapGenerator(Generator[RegmapSchema]):
                         c += f"            _reset = {'True' if bitfield.reset else 'False'}\n"
                         c += "\n"
 
-            # c += "\n"
             c += "        def __init__(self, intf: RegisterMapInterface):\n"
             for bitfield in register.bitfields:
                 c += f"            self._{bitfield.name.lower()} = self.{bitfield.name.title().replace('_', '')}(intf)\n"
-            c += "\n"
+
             for bitfield in register.bitfields:
-                c += f"            self.{bitfield.name.lower()} = self._{bitfield.name.lower()}.value\n"
+                bf_name = bitfield.name.lower()
+                c += "\n"
+                c += "        @property\n"
+                c += f"        def {bf_name}(self) -> Value:\n"
+                c += f"            return self._{bf_name}.value\n\n"
+                c += f"        @{bf_name}.setter\n"
+                c += f"        def {bf_name}(self, val: Value) -> None:\n"
+                c += f"            self._{bf_name}.value = val\n"
             c += "\n"
 
         c += "    def __init__(self, intf: RegisterMapInterface):\n"

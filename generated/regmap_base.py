@@ -12,29 +12,25 @@ Value = int | bool | Enum
 
 
 class RegisterMapInterface:
-    memory: dict[int, dict[int, int]] = {}
-
-    def read(self, address: int, offset: int, width: int, reset: Value) -> int:
+    def read(self, address: int, offset: int, width: int, reset: int) -> int:
         raise NotImplementedError(
             "RegisterMapInterface.read must be implemented in subclass"
         )
 
-    def write(self, address: int, offset: int, width: int, value: Value) -> None:
+    def write(self, address: int, offset: int, width: int, value: int) -> None:
         raise NotImplementedError(
             "RegisterMapInterface.write must be implemented in subclass"
         )
 
 
 class RegisterMap:
-    access: Access = Access.RW
-    access_hw: Optional[Access] = None
+    _access: Access = Access.RW
 
 
 class Register:
-    address: int
+    _address: int
 
-    access: Access = Access.RW
-    access_hw: Optional[Access] = None
+    _access: Access = Access.RW
 
 
 class BitField:
@@ -52,24 +48,56 @@ class BitField:
     def __init__(self, intf: RegisterMapInterface):
         self._intf = intf
 
+    def _value_to_int(self, val: Value) -> int:
+        if isinstance(val, bool):
+            return int(val)
+        elif isinstance(val, Enum):
+            return val.value
+        elif isinstance(val, int):
+            return val
+        else:
+            raise ValueError(
+                f"Invalid value type: {type(val)}. Expected int, bool, or Enum."
+            )
+
+    def _to_value(self, raw: int) -> Value:
+        if self._enum is not None:
+            try:
+                return self._enum(raw)
+            except ValueError:
+                raise ValueError(
+                    f"Raw value {raw} does not correspond to any enum in {self._enum}"
+                )
+        elif isinstance(self._reset, bool):
+            return bool(raw)
+        elif isinstance(self._reset, int):
+            return raw
+        else:
+            raise ValueError(
+                f"Invalid reset type: {type(self._reset)}. Expected int, bool, or Enum."
+            )
+
     @property
     def value(self) -> Value:
-        if self._access not in (Access.WO, Access.RW):
+        if self._access not in (Access.RO, Access.RW):
             raise ValueError(
                 f"Cannot read value of BitField with access type {self._access}"
             )
 
-        raise NotImplementedError(
-            "BitField.value getter must be implemented in subclass"
+        raw = self._intf.read(
+            self._register_address,
+            self._offset,
+            self._width,
+            self._value_to_int(self._reset),
         )
+        return self._to_value(raw)
 
     @value.setter
     def value(self, val: Value) -> None:
-        if self._access not in (Access.RO, Access.RW):
+        if self._access not in (Access.WO, Access.RW):
             raise ValueError(
                 f"Cannot write value of BitField with access type {self._access}"
             )
 
-        raise NotImplementedError(
-            "BitField.value setter must be implemented in subclass"
-        )
+        raw = self._value_to_int(val)
+        self._intf.write(self._register_address, self._offset, self._width, raw)
