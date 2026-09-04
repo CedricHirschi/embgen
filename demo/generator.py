@@ -2,9 +2,10 @@ from pathlib import Path
 
 from embgen.common import setup_logging
 from embgen.generator import Generator
+from embgen.plugins.discover import BUILTIN_PLUGINS_DIR
 
 OUTPUT_DIR = Path(__file__).parent / "output"
-PLUGINS_DIR = Path(__file__).parents[1] / "plugins"
+PLUGINS_DIR = BUILTIN_PLUGINS_DIR
 
 log = setup_logging("DEBUG")
 

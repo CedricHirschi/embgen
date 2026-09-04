@@ -1,8 +1,23 @@
 from pytest import fixture
 
-from embgen.plugins.discover import PluginDiscovery
+from embgen.plugins.discover import BUILTIN_PLUGINS_DIR, PluginDiscovery
 
 from .common import PLUGINS_DIR
+
+
+def test_builtin_plugins_dir_exists():
+    assert BUILTIN_PLUGINS_DIR.exists()
+    assert BUILTIN_PLUGINS_DIR.is_dir()
+    assert (BUILTIN_PLUGINS_DIR / "registers").exists()
+    assert (BUILTIN_PLUGINS_DIR / "plugin_ok").exists()
+
+
+def test_discover_builtin_plugins_default():
+    discovery = PluginDiscovery()
+    plugins = discovery.discover_plugins()
+    plugin_ids = [p.id for p in plugins.values()]
+    assert "registers" in plugin_ids
+    assert "plugin_ok" in plugin_ids
 
 
 @fixture

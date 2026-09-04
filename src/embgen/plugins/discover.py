@@ -14,9 +14,13 @@ from .models import Plugin
 
 log = logging.getLogger(__name__)
 
+BUILTIN_PLUGINS_DIR = Path(__file__).parent
+
 
 class PluginDiscovery:
-    def __init__(self, plugin_dirs: list[Path]):
+    def __init__(self, plugin_dirs: list[Path] | None = None):
+        if plugin_dirs is None:
+            plugin_dirs = [BUILTIN_PLUGINS_DIR]
         self.plugin_dirs = [
             plugin_dir.resolve().absolute() for plugin_dir in plugin_dirs
         ]
@@ -170,7 +174,11 @@ class PluginDiscovery:
                 )
 
             for dir in plugin_dir.glob("*"):
-                if not dir.is_dir():
+                if (
+                    not dir.is_dir()
+                    or dir.name == "__pycache__"
+                    or dir.name.startswith(".")
+                ):
                     continue
 
                 try:

@@ -10,12 +10,11 @@ from rich_argparse import RichHelpFormatter
 
 from .common import console, print_validation_error, setup_logging
 from .generator import Generator
-from .plugins.discover import PluginDiscovery
+from .plugins.discover import BUILTIN_PLUGINS_DIR, PluginDiscovery
 
 log = logging.getLogger(__name__)
 
-
-INTERNAL_PLUGINS_DIR = Path(__file__).parents[2] / "plugins"
+INTERNAL_PLUGINS_DIR = BUILTIN_PLUGINS_DIR
 
 
 def parse_context(context_args: list[str] | None) -> dict[str, Any] | None:
@@ -157,6 +156,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--no-internal-plugins",
+        "--no-builtin-plugins",
+        dest="no_internal_plugins",
         action="store_true",
         help="Disable loading of internal plugins",
     )
@@ -259,16 +260,16 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     setup_logging()
 
     parser = build_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if args.plugins_dir is None:
-        args.plugins_dir = [Path("plugins")]
+        args.plugins_dir = []
     if not args.no_internal_plugins:
-        args.plugins_dir.append(INTERNAL_PLUGINS_DIR)
+        args.plugins_dir.append(BUILTIN_PLUGINS_DIR)
     args.plugins_dir = list(dict.fromkeys(p.resolve() for p in args.plugins_dir))
 
     if args.quiet and args.verbose:
