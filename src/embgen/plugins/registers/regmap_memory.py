@@ -1,6 +1,7 @@
-from regmap import (  # type: ignore
-    ExampleRegisters,
-    ExampleRegistersEnums,
+# Generated Register Map Memory Interface
+# This file is auto-generated. Do not edit manually.
+
+from regmap_base import (  # type: ignore
     RegisterMapInterface,
 )
 
@@ -35,25 +36,3 @@ class MemoryInterface(RegisterMapInterface):
 
         self.memory[address][offset] = value
         print(f"> write {address=}, {offset=}, {width=}, {value=}")
-
-
-enums = ExampleRegistersEnums()
-intf = MemoryInterface()
-regmap = ExampleRegisters(intf=intf)
-
-print("\nSetting values...")
-regmap.control.enable = True
-print(f"Read back enable: {regmap.control.enable}")
-
-print("\nSetting enum mode...")
-regmap.control.mode = ExampleRegistersEnums.ControlMode.SHUTDOWN
-print(f"Read back mode: {regmap.control.mode}")
-
-print("\nReading read-only status...")
-print(f"Read back ready: {regmap.status.ready}")
-
-print("\nTesting read-only protection on status.ready...")
-try:
-    regmap.status.ready = True
-except ValueError as e:
-    print(f"Caught expected error on read-only write: {e}")

@@ -304,6 +304,13 @@ class RegmapGenerator(Generator[RegmapSchema]):
     def _generate_regmap_base(self) -> str:
         return (Path(__file__).parent / "regmap_base.py").read_text()
 
+    def _generate_regmap_memory(self, input: RegmapSchema) -> str:
+        return (
+            (Path(__file__).parent / "regmap_memory.py")
+            .read_text()
+            .replace("from regmap_base", f"from {input.base_file}")
+        )
+
     def generate(self, input: RegmapSchema) -> list[GeneratedFile]:
         result = []
 
@@ -327,6 +334,10 @@ class RegmapGenerator(Generator[RegmapSchema]):
                             GeneratedFile(
                                 path=Path("regmap_base.py"),
                                 content=self._generate_regmap_base(),
+                            ),
+                            GeneratedFile(
+                                path=Path("regmap_memory.py"),
+                                content=self._generate_regmap_memory(input),
                             ),
                         ]
                     )
